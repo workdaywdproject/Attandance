@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Employee Management</title>
+    <title>Admin - Registration</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
@@ -11,34 +11,32 @@
 <body>
 
     <div class="admin-container">
-        <div class="admin-header">
-            <h2>Admin Dashboard (ဝန်ထမ်းစီမံခန့်ခွဲမှု)</h2>
-            <a href="dashboard.html" class="btn btn-purple">ပြက္ခဒိန်ကြည့်ရန်</a>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2 style="margin:0;">Admin Dashboard (ဝန်ထမ်းစီမံခြင်း)</h2>
+            <a href="dashboard.html" class="btn-blue" style="width:auto; padding:10px 20px; text-decoration:none;">ပြက္ခဒိန်ကြည့်ရန်</a>
         </div>
 
         <div class="card">
-            <h3 id="form-title">ဝန်ထမ်းအသစ် စာရင်းသွင်းရန်</h3>
-            <div class="form-grid">
-                <input type="text" id="admin-emp-id" placeholder="ဝန်ထမ်း ID (ဥပမာ - EMP001)" onchange="checkDuplicateID()">
-                <input type="text" id="admin-emp-name" placeholder="ဝန်ထမ်း နာမည်">
-                
-                <div>
-                    <button onclick="registerFaceScan()" class="btn-yellow" style="margin-bottom: 8px;">📸 Face Scan ဖတ်မည်</button>
-                    <p id="face-status" style="font-size: 0.85rem; color: #ef4444; font-weight: 600; text-align: center;">Face Data: မရှိသေးပါ</p>
-                </div>
-
-                <input type="hidden" id="admin-face-data" value="">
-            </div>
-
-            <div id="admin-cam-box" class="hidden" style="margin-top: 16px; text-align: center;">
-                <video id="admin-video" autoplay muted style="max-width: 320px; border: 3px solid #2563eb;"></video>
-                <p style="color: #6b7280; font-size: 0.85rem; margin-top: 4px;">မျက်နှာကို ကင်မရာတည့်တည့် ထားပေးပါ (အစိမ်းရောင်အချက်ပြသည်အထိ စောင့်ပါ)...</p>
-            </div>
-
-            <button onclick="saveEmployee()" id="btn-save" class="btn-blue" style="margin-top: 16px;">စာရင်းသိမ်းမည်</button>
+            <h3 id="form-title" style="margin-bottom:16px;">ဝန်ထမ်းအသစ် စာရင်းသွင်းရန်</h3>
+            <input type="text" id="admin-emp-id" placeholder="ဝန်ထမ်း ID (ဥပမာ - EMP001)" onchange="checkDuplicateID()">
+            <input type="text" id="admin-emp-name" placeholder="ဝန်ထမ်း နာမည်">
+            
+            <button onclick="startFaceScan('ADMIN')" class="btn-yellow" style="margin-bottom:12px;">📸 မျက်နှာစကန်ဖတ်မည် (Liveness Check)</button>
+            <p id="face-status" style="text-align:center; font-weight:600; color:#ef4444; margin-bottom:16px;">Face Data: မရှိသေးပါ</p>
+            
+            <input type="hidden" id="admin-face-data">
+            <button onclick="saveEmployee()" id="btn-save" class="btn-blue">စာရင်းသိမ်းမည်</button>
         </div>
 
-        <div class="card">
+        <div id="admin-cam-box" class="hidden card" style="margin-top:16px;">
+            <div id="admin-instruction" class="instruction-box">ခဏစောင့်ပါ... AI စနစ်ပြင်ဆင်နေပါသည်</div>
+            <div class="camera-wrapper">
+                <video id="admin-video" autoplay muted playsinline></video>
+                <div class="camera-overlay"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
             <h3>ဝန်ထမ်းများ စာရင်း</h3>
             <div class="table-responsive">
                 <table>
@@ -46,7 +44,7 @@
                         <tr>
                             <th>ဝန်ထမ်း ID</th>
                             <th>နာမည်</th>
-                            <th>Face Data Status</th>
+                            <th>Face Status</th>
                             <th>လုပ်ဆောင်ချက်</th>
                         </tr>
                     </thead>
@@ -58,6 +56,7 @@
 
     <script src="script.js"></script>
     <script>
+        // စာမျက်နှာပွင့်လာသည်နှင့် Table အား ဆွဲတင်ခြင်း
         window.onload = function() { fetchEmployees(); };
     </script>
 </body>
