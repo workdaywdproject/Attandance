@@ -16,6 +16,49 @@ try {
 window.globalCamStream = null;
 let detectionTimer = null;
 
+// ==================== CUSTOM POP-UP CARD BOX CONTROLLER ====================
+let postStatusAction = null;
+
+function showStatus(type, title, message, callback = null) {
+    const modal = document.getElementById('status-modal');
+    const iconEl = document.getElementById('status-icon');
+    const titleEl = document.getElementById('status-title');
+    const msgEl = document.getElementById('status-message');
+    const btnEl = document.getElementById('status-btn');
+
+    if (!modal) {
+        // Fallback if elements not present on active page
+        alert(message);
+        if (callback) callback();
+        return;
+    }
+
+    if (type === 'success') {
+        iconEl.innerText = "✓";
+        iconEl.style.color = "var(--success)";
+        titleEl.style.color = "var(--success)";
+        btnEl.className = "btn-green";
+    } else {
+        iconEl.innerText = "❌";
+        iconEl.style.color = "var(--danger)";
+        titleEl.style.color = "var(--danger)";
+        btnEl.className = "btn-red";
+    }
+
+    titleEl.innerText = title;
+    msgEl.innerText = message;
+    postStatusAction = callback;
+    modal.classList.remove('hidden');
+}
+
+function closeStatusModal() {
+    document.getElementById('status-modal').classList.add('hidden');
+    if (postStatusAction) {
+        postStatusAction();
+        postStatusAction = null;
+    }
+}
+
 // ==================== ၂။ ADMIN SECURITY & ACCESS CONTROL ====================
 function openLoginModal() {
     document.getElementById('login-modal').classList.remove('hidden');
@@ -31,7 +74,7 @@ async function verifyAdminLogin() {
     const userInp = document.getElementById('login-user').value.trim();
     const passInp = document.getElementById('login-pass').value.trim();
 
-    if(!userInp || !passInp) { alert("အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်သွင်းပါ။"); return; }
+    if(!userInp || !passInp) { showStatus('error', 'သတိပေးချက်', 'အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်သွင်းပါ။'); return; }
     if(!appSupabase) return;
 
     const { data, error } = await appSupabase
@@ -41,16 +84,17 @@ async function verifyAdminLogin() {
         .eq('password', passInp);
 
     if (error) {
-        alert("စနစ်အတွင်း အမှားအယွင်းရှိပါသည်: " + error.message);
+        showStatus('error', 'စနစ်ချို့ယွင်းမှု', error.message);
         return;
     }
 
     if(data && data.length > 0) {
         sessionStorage.setItem('admin_authenticated', 'true');
-        alert("✓ စစ်ဆေးမှု အောင်မြင်ပါသည်။");
-        window.location.href = 'dashboard.html';
+        showStatus('success', 'အောင်မြင်ပါသည်', 'စစ်ဆေးမှု အောင်မြင်ပါသည်။', () => {
+            window.location.href = 'dashboard.html';
+        });
     } else {
-        alert("❌ အချက်အလက် မှားယွင်းနေပါသည်။");
+        showStatus('error', 'ငြင်းပယ်ပါသည်', 'အချက်အလက် မှားယွင်းနေပါသည်။');
     }
 }
 
@@ -61,8 +105,8 @@ function handleLogout() {
 
 async function changeAdminPassword() {
     const newPass = document.getElementById('new-admin-pass').value.trim();
-    if(!newPass) { alert("စကားဝှက်အသစ် ဖြည့်သွင်းပါ။"); return; }
-    if(newPass.length < 6) { alert("စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။"); return; }
+    if(!newPass) { showStatus('error', 'သတိပေးချက်', 'စကားဝှက်အသစ် ဖြည့်သွင်းပါ။'); return; }
+    if(newPass.length < 6) { showStatus('error', 'သတိပေးချက်', 'စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။'); return; }
 
     if(!appSupabase) return;
 
@@ -72,9 +116,9 @@ async function changeAdminPassword() {
         .eq('username', 'admin');
 
     if(error) {
-        alert("လုပ်ဆောင်မှု မအောင်မြင်ပါ: " + error.message);
+        showStatus('error', 'မအောင်မြင်ပါ', error.message);
     } else {
-        alert("✓ စကားဝှက် ပြောင်းလဲမှု အောင်မြင်ပါသည်။");
+        showStatus('success', 'အောင်မြင်ပါသည်', 'စကားဝှက် ပြောင်းလဲမှု အောင်မြင်ပါသည်။');
         document.getElementById('new-admin-pass').value = "";
     }
 }
@@ -92,7 +136,6 @@ async function loadFaceModels() {
         await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
         console.log("Biometric Models Loaded.");
         
-        // Admin Dashboard စာမျက်နှာဖြစ်ပါက ဝန်ထမ်းစာရင်းကို တန်းဆွဲထုတ်မည်
         if (document.getElementById('employee-table-body') && sessionStorage.getItem('admin_authenticated') === 'true') {
             fetchEmployees();
         }
@@ -108,7 +151,7 @@ window.onload = () => {
     }
 };
 
-// ==================== ၄။ BIOMETRIC AUTO-RECOGNITION VERIFICATION (INDEX) ====================
+// ==================== ၄။ BIOMETRIC AUTO-RECOGNITION VERIFICATION ====================
 let matchedEmployeeId = null;
 let matchedEmployeeName = null;
 
@@ -196,15 +239,16 @@ async function startAutoFaceScan() {
                         }
 
                         if(isRecognized) {
-                            alert(`✓ အထောက်အထား ကိုက်ညီမှုရှိပါသည်။`);
-                            document.getElementById('step-1').classList.add('hidden');
-                            
-                            document.getElementById('recognized-name').innerText = matchedEmployeeName;
-                            document.getElementById('recognized-id').innerText = matchedEmployeeId;
-                            document.getElementById('step-2').classList.remove('hidden');
+                            showStatus('success', 'စစ်ဆေးမှုအောင်မြင်ပါသည်', 'ဝန်ထမ်းအထောက်အထား ကိုက်ညီမှုရှိပါသည်။', () => {
+                                document.getElementById('step-1').classList.add('hidden');
+                                document.getElementById('recognized-name').innerText = matchedEmployeeName;
+                                document.getElementById('recognized-id').innerText = matchedEmployeeId;
+                                document.getElementById('step-2').classList.remove('hidden');
+                            });
                         } else {
-                            alert("❌ ဝန်ထမ်းမှတ်တမ်း ရှာမတွေ့ပါ။");
-                            location.reload();
+                            showStatus('error', 'မအောင်မြင်ပါ', 'ဝန်ထမ်းမှတ်တမ်း ရှာမတွေ့ပါ။', () => {
+                                location.reload();
+                            });
                         }
                     }
                 }
@@ -212,7 +256,7 @@ async function startAutoFaceScan() {
         }, 300); 
 
     } catch (err) {
-        alert("ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: " + err.name);
+        showStatus('error', 'ချိတ်ဆက်မှုបរာဇယ', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name);
     }
 }
 
@@ -335,13 +379,13 @@ async function startFaceScan(role) {
                                 window.globalCamStream.getTracks().forEach(track => track.stop());
                                 window.globalCamStream = null;
                             }
-                            alert("✓ ဇီဝအချက်အလက် မှတ်တမ်းယူခြင်း အောင်မြင်ပါသည်။");
+                            showStatus('success', 'အောင်မြင်ပါသည်', 'ဇီဝအချက်အလက် မှတ်တမ်းယူခြင်း အောင်မြင်ပါသည်။');
                         }, HOLD_DURATION);
                     }
                 }
             }
         }, 300); 
-    } catch (err) { alert("ဗီဒီယိုစနစ် ချက်ဆက်မှု မအောင်မြင်ပါ: " + err.name); }
+    } catch (err) { showStatus('error', 'အမှားအယွင်း', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name); }
 }
 
 // ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD) ====================
@@ -356,7 +400,7 @@ async function checkDuplicateID() {
 
     const btnSave = document.getElementById('btn-save');
     if (data.length > 0 && !isEditing) {
-        alert("❌ ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးဖြစ်သည်။");
+        showStatus('error', 'သတိပေးချက်', 'ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးဖြစ်သည်။');
         document.getElementById('admin-emp-id').style.borderColor = "var(--danger)";
         if(btnSave) { btnSave.disabled = true; btnSave.style.opacity = "0.5"; }
     } else {
@@ -371,7 +415,7 @@ async function saveEmployee() {
     const faceData = document.getElementById('admin-face-data').value;
 
     if (!empId || !name || !faceData || !appSupabase) { 
-        alert("လိုအပ်သော အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။"); 
+        showStatus('error', 'သတိပေးချက်', 'လိုအပ်သော အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။'); 
         return; 
     }
 
@@ -383,11 +427,12 @@ async function saveEmployee() {
     }
 
     if (query.error) { 
-        alert("သိမ်းဆည်းမှု မအောင်မြင်ပါ: " + query.error.message); 
+        showStatus('error', 'မအောင်မြင်ပါ', query.error.message); 
     } else { 
-        alert("✓ ဝန်ထမ်းအချက်အလက် သိမ်းဆည်းမှု အောင်မြင်ပါသည်။"); 
-        resetAdminForm(); 
-        fetchEmployees(); 
+        showStatus('success', 'အောင်မြင်ပါသည်', 'ဝန်ထမ်းအချက်အလက် သိမ်းဆည်းမှု အောင်မြင်ပါသည်။', () => {
+            resetAdminForm(); 
+            fetchEmployees(); 
+        });
     }
 }
 
@@ -475,6 +520,8 @@ function submitAttendance() {
     const type = document.querySelector('input[name="attendance-type"]:checked').value;
     const remark = document.getElementById('remark').value;
 
+    closeConfirmModal(); // Close the first confirmation box
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {
             const { error } = await appSupabase.from('attendance_logs').insert([
@@ -488,16 +535,17 @@ function submitAttendance() {
             ]);
 
             if (error) {
-                alert("လုပ်ဆောင်မှု မအောင်မြင်ပါ: " + error.message);
+                showStatus('error', 'မအောင်မြင်ပါ', error.message);
             } else { 
-                alert("✓ တက်ရောက်မှုမှတ်တမ်း တင်ပြခြင်း အောင်မြင်ပါသည်။"); 
-                location.reload(); 
+                showStatus('success', 'အောင်မြင်ပါသည်', 'တက်ရောက်မှုမှတ်တမ်း တင်ပြခြင်း အောင်မြင်ပါသည်။', () => {
+                    location.reload();
+                });
             }
         }, (geoErr) => {
-            alert("GPS စနစ် အသုံးပြုခွင့် ပေးရန် လိုအပ်ပါသည်။");
+            showStatus('error', 'GPS လိုအပ်ချက်', 'GPS စနစ် အသုံးပြုခွင့် ပေးရန် လိုအပ်ပါသည်။');
         });
     } else { 
-        alert("တည်နေရာပြစနစ်အား အသုံးပြု၍မရပါ။"); 
+        showStatus('error', 'စနစ်လိုအပ်ချက်', 'တည်နေရာပြစနစ်အား အသုံးပြု၍မရပါ။'); 
     }
 }
 
