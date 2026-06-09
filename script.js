@@ -24,7 +24,7 @@ async function loadFaceModels() {
 }
 loadFaceModels();
 
-// ==================== ၃။ 3-STEP PROFESSIONAL BIOMETRIC VERIFICATION ====================
+// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (WITH 2-SECOND HOLD) ====================
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -61,9 +61,12 @@ async function startFaceScan(role) {
         
         await video.play();
 
-        // 🔄 အဆင့် ၃ ဆင့် သတ်မှတ်ခြင်း လုပ်ငန်းစဉ်
+        // ⏱️ အချိန်ဆွဲရန်အတွက် သီးသန့် Variable များ သတ်မှတ်ခြင်း
         let livenessStep = 'HEAD_TURN'; 
-        instruction.innerText = "[အဆင့် ၁/၃] အထောက်အထား စစ်ဆေးရန် ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
+        let stepStartTime = Date.now(); // လက်ရှိအချိန်ကို မှတ်သားထားရန်
+        const HOLD_DURATION = 2000; // အဆင့်တစ်ခုချင်းစီကို ထိန်းထားရမည့်အချိန် (၂ စက္ကန့်)
+
+        instruction.innerText = "[အဆင့် ၁/၃] အထောက်အထား စစ်ဆေးရန် ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပြီး ၂ စက္ကန့်ခန့် တည်ငြိမ်စွာ နေပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
 
@@ -77,65 +80,78 @@ async function startFaceScan(role) {
 
             if (result) {
                 const landmarks = result.landmarks;
-                
-                // 📐 Biometric Landmarks Points ရယူခြင်း
-                const nose = landmarks.getNose()[0]; // နှာခေါင်းထိပ်မှတ်
-                const noseBridge = landmarks.getNose()[3]; // နှာခေါင်းအလယ်မှတ်
+                const nose = landmarks.getNose()[0]; 
+                const noseBridge = landmarks.getNose()[3]; 
                 const leftJaw = landmarks.getJawOutline()[0]; 
                 const rightJaw = landmarks.getJawOutline()[16]; 
-                const topJaw = landmarks.getJawOutlinepermanent ? landmarks.getJawOutline()[8] : landmarks.getJawOutline()[8]; // မေးစေ့အောက်ခြေမှတ်
+                const topJaw = landmarks.getJawOutline()[8]; 
 
-                // X-Axis (ဘယ်ညာလှည့်မှု တိုင်းတာခြင်း)
+                // X-Axis & Y-Axis Ratio တွက်ချက်မှုများ
                 const distanceToLeft = Math.abs(nose.x - leftJaw.x);
                 const distanceToRight = Math.abs(nose.x - rightJaw.x);
                 const turnRatio = distanceToLeft / distanceToRight;
-
-                // Y-Axis (အပေါ်မော့ အောက်ညှိမ့်မှု တိုင်းတာခြင်း)
                 const distanceNoseToChin = Math.abs(topJaw.y - noseBridge.y);
 
-                // ------------------ [အဆင့် ၁] ခေါင်း ဘယ်ညာလှည့်ခြင်း စစ်ဆေးမှု ------------------
+                const currentTime = Date.now();
+
+                // ------------------ [အဆင့် ၁] ခေါင်း ဘယ်ညာလှည့်ခြင်း (၂ စက္ကန့် စောင့်မည်) ------------------
                 if (livenessStep === 'HEAD_TURN') {
+                    // အသုံးပြုသူက လမ်းညွှန်ချက်အတိုင်း ဘယ် သို့မဟုတ် ညာ လှည့်ထားမှသာ အချိန်စမှတ်မည်
                     if (turnRatio < 0.52 || turnRatio > 1.95) {
-                        livenessStep = 'HEAD_NOD'; 
-                        instruction.innerText = "[အဆင့် ၂/၃] ကျေးဇူးပြု၍ ခေါင်းကို အပေါ်သို့ အနည်းငယ် မော့ပေးပါ (သို့မဟုတ်) အောက်သို့ ညှိမ့်ပေးပါ...";
+                        // လှည့်ထားသည့် အချိန်သည် ၂ စက္ကန့် ပြည့်သွားပါက နောက်တစ်ဆင့်သို့ ကူးမည်
+                        if (currentTime - stepStartTime >= HOLD_DURATION) {
+                            livenessStep = 'HEAD_NOD'; 
+                            stepStartTime = Date.now(); // ဒုတိယအဆင့်အတွက် အချိန်ပြန်စမည်
+                            instruction.innerText = "[အဆင့် ၂/၃] ကျေးဇူးပြု၍ ခေါင်းကို အပေါ်သို့မော့ပါ (သို့မဟုတ်) အောက်သို့ညှိမ့်ပြီး ၂ စက္ကန့်ခန့် ငြိမ်ပေးပါ...";
+                        }
+                    } else {
+                        // အကယ်၍ ခေါင်းပြန်တည့်သွားပါက အချိန်ကို ပြန်စ (Reset) မည်
+                        stepStartTime = Date.now();
                     }
                 } 
-                // ------------------ [အဆင့် ၂] ခေါင်းအပေါ်မော့/အောက်ညှိမ့် စစ်ဆေးမှု ------------------
+                // ------------------ [အဆင့် ၂] ခေါင်းအပေါ်မော့/အောက်ညှိမ့် (၂ စက္ကန့် စောင့်မည်) ------------------
                 else if (livenessStep === 'HEAD_NOD') {
-                    // မော့ခြင်း သို့မဟုတ် ညှိမ့်ခြင်းကြောင့် ဖြစ်ပေါ်လာသော Vertical မျက်နှာအချိုးပြောင်းလဲမှုကို တိုင်းတာခြင်း
-                    if (distanceNoseToChin < 110 || distanceNoseToChin > 175) {
-                        livenessStep = 'CAMERA_FOCUS';
-                        instruction.innerText = "[အဆင့် ၃/၃] လုပ်ငန်းစဉ်ပြီးဆုံးရန် ကင်မရာကို တည့်တည့်ကြည့်ပြီး ခေတ္တငြိမ်ပေးပါ...";
+                    if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
+                        if (currentTime - stepStartTime >= HOLD_DURATION) {
+                            livenessStep = 'CAMERA_FOCUS';
+                            stepStartTime = Date.now(); // တတိယအဆင့်အတွက် အချိန်ပြန်စမည်
+                            instruction.innerText = "[အဆင့် ၃/၃] လုပ်ငန်းစဉ်ပြီးဆုံးရန် ကင်မရာကို ဗဟိုတည့်တည့်ကြည့်ပြီး ၂ စက္ကန့်ခန့် ငြိမ်ပေးပါ...";
+                        }
+                    } else {
+                        stepStartTime = Date.now();
                     }
                 }
-                // ------------------ [အဆင့် ၃] ကင်မရာကို တည့်တည့်ကြည့်ပြီး ငြိမ်နေမှု စစ်ဆေးမှု ------------------
+                // ------------------ [အဆင့် ၃] ကင်မရာကို တည့်တည့်ကြည့်ပြီး တည်ငြိမ်စွာနေခြင်း (၂ စက္ကန့် စောင့်မည်) ------------------
                 else if (livenessStep === 'CAMERA_FOCUS') {
-                    // မျက်နှာသည် ကင်မရာသို့ ဗဟိုတည့်တည့်၌ တည်ငြိမ်စွာ ရှိမရှိ စစ်ဆေးခြင်း
                     if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
                         
-                        clearInterval(detectionTimer);
+                        if (currentTime - stepStartTime >= HOLD_DURATION) {
+                            clearInterval(detectionTimer);
 
-                        if (isAdmin) {
-                            document.getElementById('admin-face-data').value = JSON.stringify(Array.from(result.descriptor));
-                            const faceStatus = document.getElementById('face-status');
-                            faceStatus.innerText = "✓ ဇီဝအချက်အလက် စစ်ဆေးမှု အောင်မြင်ပါသည်";
-                            faceStatus.style.color = "#10b981";
-                            document.getElementById('admin-cam-box').classList.add('hidden');
-                        } else {
-                            document.getElementById('step-2').classList.add('hidden');
-                            document.getElementById('step-3').classList.remove('hidden');
+                            if (isAdmin) {
+                                document.getElementById('admin-face-data').value = JSON.stringify(Array.from(result.descriptor));
+                                const faceStatus = document.getElementById('face-status');
+                                faceStatus.innerText = "✓ ဇီဝအချက်အလက် စစ်ဆေးမှု အောင်မြင်ပါသည်";
+                                faceStatus.style.color = "#10b981";
+                                document.getElementById('admin-cam-box').classList.add('hidden');
+                            } else {
+                                document.getElementById('step-2').classList.add('hidden');
+                                document.getElementById('step-3').classList.remove('hidden');
+                            }
+
+                            if (window.globalCamStream) {
+                                window.globalCamStream.getTracks().forEach(track => track.stop());
+                                window.globalCamStream = null;
+                            }
+
+                            alert("✓ အထောက်အထား စစ်ဆေးခြင်း လုပ်ငန်းစဉ် အောင်မြင်ပါသည်။");
                         }
-
-                        if (window.globalCamStream) {
-                            window.globalCamStream.getTracks().forEach(track => track.stop());
-                            window.globalCamStream = null;
-                        }
-
-                        alert("✓ အထောက်အထား စစ်ဆေးခြင်း လုပ်ငန်းစဉ် အောင်မြင်ပါသည်။");
+                    } else {
+                        stepStartTime = Date.now();
                     }
                 }
             }
-        }, 400); 
+        }, 300); // သက်တောင့်သက်သာ ပိုမိုတိကျစေရန် စစ်ဆေးနှုန်းကို 300ms သို့ ညှိထားပါသည်
 
     } catch (err) {
         alert("ဗီဒီယိုစနစ် အလုပ်လုပ်ရန် အခက်အခဲရှိပါသည်- " + err.name);
@@ -223,7 +239,7 @@ function editEmployee(id, name, face) {
 }
 
 async function deleteEmployee(empId) {
-    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေჩာပါသလား?")) {
+    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေသာပါသလား?")) {
         await appSupabase.from('employees').delete().eq('employee_id', empId);
         fetchEmployees();
     }
