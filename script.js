@@ -1,5 +1,4 @@
 // ==================== ၁။ SUPABASE CONFIGURATION ====================
-// HTML ဘက်မှ ပါလာပြီးသား Supabase Client ကို ထပ်ခါတလဲလဲ Declare မဖြစ်စေရန် စစ်ဆေးခြင်း
 const API_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
 const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
 
@@ -8,7 +7,7 @@ try {
     if (typeof supabase !== 'undefined' && supabase.createClient) {
         appSupabase = supabase.createClient(API_URL, API_KEY);
     } else {
-        console.error("Supabase Library library standard is missing.");
+        console.error("Supabase Library is missing.");
     }
 } catch (err) {
     console.log("Supabase initialization caught: ", err.message);
@@ -17,14 +16,13 @@ try {
 window.globalCamStream = null;
 let detectionTimer = null;
 
-// ==================== ၂။ AI MODELS LOADING (GITHUB PAGES PATH FIX) ====================
+// ==================== ၂။ AI MODELS LOADING ====================
 async function loadFaceModels() {
     try {
         if (typeof faceapi === 'undefined') {
             console.error("FaceAPI is not loaded yet.");
             return;
         }
-        // GitHub Pages တက်ခေါက်ပါက Base Path ကို တိုက်ရိုက်ရှာဖွေရန်
         const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
         const modelsPath = `${window.location.origin}${basePath}/models`;
 
@@ -34,7 +32,6 @@ async function loadFaceModels() {
         await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
         console.log("Biometric Models Loaded Successfully.");
         
-        // Models တက်လာပြီးမှ ဇယားကို ဆွဲထုတ်ရန် (fetchEmployees exists check)
         if (typeof fetchEmployees === 'function') {
             fetchEmployees();
         }
@@ -43,7 +40,6 @@ async function loadFaceModels() {
     }
 }
 
-// စာမျက်နှာပွင့်သည်နှင့် Model ကို အလိုအလျောက်တင်မည်
 window.onload = () => {
     loadFaceModels();
     if(document.getElementById('calendar')) {
@@ -51,7 +47,7 @@ window.onload = () => {
     }
 };
 
-// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (SUCCESS -> 1s DELAY) ====================
+// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (FIXED DUPLICATE ALERTS) ====================
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -86,7 +82,7 @@ async function startFaceScan(role) {
 
         let livenessStep = 'HEAD_TURN'; 
         let isWaiting = false; 
-        const HOLD_DURATION = 1000; // ⏱️ တောင်းဆိုချက်အရ စောင့်ဆိုင်းချိန်ကို (၁) စက္ကန့် သို့ ပြောင်းထားပါသည်
+        const HOLD_DURATION = 1000; // စောင့်ဆိုင်းချိန် (၁) စက္ကန့်
 
         instruction.innerText = "[အဆင့် ၁/၃] အထောက်အထား စစ်ဆေးရန် ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
 
@@ -116,13 +112,12 @@ async function startFaceScan(role) {
                 // ------------------ [အဆင့် ၁] ခေါင်း ဘယ်ညာလှည့်ခြင်း ------------------
                 if (livenessStep === 'HEAD_TURN') {
                     if (turnRatio < 0.55 || turnRatio > 1.85) {
-                        isWaiting = true;
-                        instruction.innerText = "✓ အဆင့် ၁ အောင်မြင်ပါသည်။ (၁) စက္ကန့် စောင့်ပါ...";
+                        isWaiting = true; // စစ်ဆေးမှုကို ခေတ္တ Lock ချမည်
                         
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "[အဆင့် ၂/၃] ကျေးဇူးပြု၍ ခေါင်းကို အပေါ်သို့မော့ပါ (သို့မဟုတ်) အောက်သို့ညှိမ့်ပေးပါ...";
-                            isWaiting = false; 
+                            isWaiting = false; // နောက်တစ်ဆင့်အတွက် Lock ဖြုတ်မည်
                         }, HOLD_DURATION);
                     }
                 } 
@@ -130,7 +125,6 @@ async function startFaceScan(role) {
                 else if (livenessStep === 'HEAD_NOD') {
                     if (distanceNoseToChin < 115 || distanceNoseToChin > 170) {
                         isWaiting = true;
-                        instruction.innerText = "✓ အဆင့် ၂ အောင်မြင်ပါသည်။ (၁) စက္ကန့် စောင့်ပါ...";
                         
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
@@ -142,29 +136,32 @@ async function startFaceScan(role) {
                 // ------------------ [အဆင့် ၃] ကင်မရာကို ဗဟိုတည့်တည့်ကြည့်ခြင်း ------------------
                 else if (livenessStep === 'CAMERA_FOCUS') {
                     if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
-                        isWaiting = true;
-                        instruction.innerText = "✓ အဆင့် ၃ အောင်မြင်ပါသည်။ သိမ်းဆည်းနေပါသည်...";
+                        isWaiting = true; // Loop ထပ်မဝင်စေရန် ချက်ချင်း Lock ချသည်
+                        clearInterval(detectionTimer); // 🛑 Timer ကို ချက်ချင်း ရပ်ပစ်ခြင်းဖြင့် Alert ထပ်ခါတလဲလဲ ပေါ်ခြင်းကို တားဆီးသည်
                         
-                        setTimeout(() => {
-                            clearInterval(detectionTimer);
+                        instruction.innerText = "လုပ်ငန်းစဉ် ပြီးမြောက်သွားပါပြီ...";
 
+                        setTimeout(() => {
                             if (isAdmin) {
                                 document.getElementById('admin-face-data').value = JSON.stringify(Array.from(result.descriptor));
                                 const faceStatus = document.getElementById('face-status');
-                                faceStatus.innerText = "✓ ဇီဝအချက်အလက် စစ်ဆေးမှု အောင်မြင်ပါသည်";
-                                faceStatus.style.color = "#10b981";
+                                if(faceStatus) {
+                                    faceStatus.innerText = "✓ ဇီဝအချက်အလက် စစ်ဆေးမှု အောင်မြင်ပါသည်";
+                                    faceStatus.style.color = "#10b981";
+                                }
                                 document.getElementById('admin-cam-box').classList.add('hidden');
                             } else {
                                 document.getElementById('step-2').classList.add('hidden');
                                 document.getElementById('step-3').classList.remove('hidden');
                             }
 
-                            // ❌ Cannot access localStream bug fix -> window.globalCamStream ကို တိုက်ရိုက်သုံးပြီး ပိတ်ခြင်း
+                            // ကင်မရာ ပိတ်သိမ်းခြင်း
                             if (window.globalCamStream) {
                                 window.globalCamStream.getTracks().forEach(track => track.stop());
                                 window.globalCamStream = null;
                             }
 
+                            // 🔔 အဆင့်သုံးဆင့်လုံး ပြီးဆုံးမှ Alert ကို တစ်ကြိမ်တည်း တိကျစွာ ပြသမည်
                             alert("✓ အထောက်အထား စစ်ဆေးခြင်း လုပ်ငန်းစဉ် အောင်မြင်ပါသည်။");
                         }, HOLD_DURATION);
                     }
@@ -251,8 +248,11 @@ function editEmployee(id, name, face) {
     document.getElementById('admin-emp-id').disabled = true;
     document.getElementById('admin-emp-name').value = name;
     document.getElementById('admin-face-data').value = face;
-    document.getElementById('face-status').innerText = "✓ ဇီဝအချက်အလက် ထည့်သွင်းပြီး";
-    document.getElementById('face-status').style.color = "#10b981";
+    const faceStatus = document.getElementById('face-status');
+    if(faceStatus) {
+        faceStatus.innerText = "✓ ဇီဝအချက်အလက် ထည့်သွင်းပြီး";
+        faceStatus.style.color = "#10b981";
+    }
     document.getElementById('form-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
     isEditing = true;
 }
