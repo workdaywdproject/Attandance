@@ -24,7 +24,7 @@ async function loadFaceModels() {
 }
 loadFaceModels();
 
-// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (WITH 2-SECOND HOLD) ====================
+// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (SUCCESS -> 2s DELAY) ====================
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -61,17 +61,16 @@ async function startFaceScan(role) {
         
         await video.play();
 
-        // ⏱️ အချိန်ဆွဲရန်အတွက် သီးသန့် Variable များ သတ်မှတ်ခြင်း
+        // ⏱️ Flow Logic ထိန်းချုပ်မည့် State Variable များ
         let livenessStep = 'HEAD_TURN'; 
-        let stepStartTime = Date.now(); // လက်ရှိအချိန်ကို မှတ်သားထားရန်
-        const HOLD_DURATION = 2000; // အဆင့်တစ်ခုချင်းစီကို ထိန်းထားရမည့်အချိန် (၂ စက္ကန့်)
+        let isWaiting = false; // စောင့်ဆိုင်းချိန် (၂ စက္ကန့်) အတွင်း ဝင်မစစ်ရန် Lock ချမည့် Variable
 
-        instruction.innerText = "[အဆင့် ၁/၃] အထောက်အထား စစ်ဆေးရန် ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပြီး ၂ စက္ကန့်ခန့် တည်ငြိမ်စွာ နေပေးပါ...";
+        instruction.innerText = "[အဆင့် ၁/၃] အထောက်အထား စစ်ဆေးရန် ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
 
         detectionTimer = setInterval(async () => {
-            if (video.paused || video.ended) return;
+            if (video.paused || video.ended || isWaiting) return;
 
             const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
                                         .withFaceLandmarks()
@@ -86,46 +85,48 @@ async function startFaceScan(role) {
                 const rightJaw = landmarks.getJawOutline()[16]; 
                 const topJaw = landmarks.getJawOutline()[8]; 
 
-                // X-Axis & Y-Axis Ratio တွက်ချက်မှုများ
+                // X & Y Axes calculations
                 const distanceToLeft = Math.abs(nose.x - leftJaw.x);
                 const distanceToRight = Math.abs(nose.x - rightJaw.x);
                 const turnRatio = distanceToLeft / distanceToRight;
                 const distanceNoseToChin = Math.abs(topJaw.y - noseBridge.y);
 
-                const currentTime = Date.now();
-
-                // ------------------ [အဆင့် ၁] ခေါင်း ဘယ်ညာလှည့်ခြင်း (၂ စက္ကန့် စောင့်မည်) ------------------
+                // ------------------ [အဆင့် ၁] ခေါင်း ဘယ်ညာလှည့်ခြင်း စစ်ဆေးမှု ------------------
                 if (livenessStep === 'HEAD_TURN') {
-                    // အသုံးပြုသူက လမ်းညွှန်ချက်အတိုင်း ဘယ် သို့မဟုတ် ညာ လှည့်ထားမှသာ အချိန်စမှတ်မည်
                     if (turnRatio < 0.52 || turnRatio > 1.95) {
-                        // လှည့်ထားသည့် အချိန်သည် ၂ စက္ကန့် ပြည့်သွားပါက နောက်တစ်ဆင့်သို့ ကူးမည်
-                        if (currentTime - stepStartTime >= HOLD_DURATION) {
-                            livenessStep = 'HEAD_NOD'; 
-                            stepStartTime = Date.now(); // ဒုတိယအဆင့်အတွက် အချိန်ပြန်စမည်
-                            instruction.innerText = "[အဆင့် ၂/၃] ကျေးဇူးပြု၍ ခေါင်းကို အပေါ်သို့မော့ပါ (သို့မဟုတ်) အောက်သို့ညှိမ့်ပြီး ၂ စက္ကန့်ခန့် ငြိမ်ပေးပါ...";
-                        }
-                    } else {
-                        // အကယ်၍ ခေါင်းပြန်တည့်သွားပါက အချိန်ကို ပြန်စ (Reset) မည်
-                        stepStartTime = Date.now();
+                        isWaiting = true; // စစ်ဆေးမှုကို ခေတ္တရပ်ဆိုင်းမည်
+                        instruction.innerText = "✓ အဆင့် ၁ အောင်မြင်ပါသည်။ ခေတ္တစောင့်ဆိုင်းပါ...";
+                        
+                        // အောင်မြင်ပြီး (၂) စက္ကန့် စောင့်ဆိုင်းခြင်း
+                        setTimeout(() => {
+                            livenessStep = 'HEAD_NOD';
+                            instruction.innerText = "[အဆင့် ၂/၃] ကျေးဇူးပြု၍ ခေါင်းကို အပေါ်သို့မော့ပါ (သို့မဟုတ်) အောက်သို့ညှိမ့်ပေးပါ...";
+                            isWaiting = false; // ဒုတိယအဆင့်အတွက် စစ်ဆေးမှု ပြန်စမည်
+                        }, 2000);
                     }
                 } 
-                // ------------------ [အဆင့် ၂] ခေါင်းအပေါ်မော့/အောက်ညှိမ့် (၂ စက္ကန့် စောင့်မည်) ------------------
+                // ------------------ [အဆင့် ၂] ခေါင်းအပေါ်မော့/အောက်ညှိမ့် စစ်ဆေးမှု ------------------
                 else if (livenessStep === 'HEAD_NOD') {
                     if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
-                        if (currentTime - stepStartTime >= HOLD_DURATION) {
+                        isWaiting = true;
+                        instruction.innerText = "✓ အဆင့် ၂ အောင်မြင်ပါသည်။ ခေတ္တစောင့်ဆိုင်းပါ...";
+                        
+                        // အောင်မြင်ပြီး (၂) စက္ကန့် စောင့်ဆိုင်းခြင်း
+                        setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
-                            stepStartTime = Date.now(); // တတိယအဆင့်အတွက် အချိန်ပြန်စမည်
-                            instruction.innerText = "[အဆင့် ၃/၃] လုပ်ငန်းစဉ်ပြီးဆုံးရန် ကင်မရာကို ဗဟိုတည့်တည့်ကြည့်ပြီး ၂ စက္ကန့်ခန့် ငြိမ်ပေးပါ...";
-                        }
-                    } else {
-                        stepStartTime = Date.now();
+                            instruction.innerText = "[အဆင့် ၃/၃] လုပ်ငန်းစဉ်ပြီးဆုံးရန် ကင်မရာကို ဗဟိုတည့်တည့် စိုက်ကြည့်ပေးပါ...";
+                            isWaiting = false; // တတိယအဆင့်အတွက် စစ်ဆေးမှု ပြန်စမည်
+                        }, 2000);
                     }
                 }
-                // ------------------ [အဆင့် ၃] ကင်မရာကို တည့်တည့်ကြည့်ပြီး တည်ငြိမ်စွာနေခြင်း (၂ စက္ကန့် စောင့်မည်) ------------------
+                // ------------------ [အဆင့် ၃] ကင်မရာကို ဗဟိုတည့်တည့်ကြည့်ခြင်း စစ်ဆေးမှု ------------------
                 else if (livenessStep === 'CAMERA_FOCUS') {
                     if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
+                        isWaiting = true;
+                        instruction.innerText = "✓ အဆင့် ၃ အောင်မြင်ပါသည်။ စနစ်အတွင်း မှတ်တမ်းတင်နေပါသည်...";
                         
-                        if (currentTime - stepStartTime >= HOLD_DURATION) {
+                        // အောင်မြင်ပြီး (၂) စက္ကန့် စောင့်ဆိုင်းပြီးမှ Database သို့ သိမ်းဆည်းမည်
+                        setTimeout(() => {
                             clearInterval(detectionTimer);
 
                             if (isAdmin) {
@@ -145,13 +146,11 @@ async function startFaceScan(role) {
                             }
 
                             alert("✓ အထောက်အထား စစ်ဆေးခြင်း လုပ်ငန်းစဉ် အောင်မြင်ပါသည်။");
-                        }
-                    } else {
-                        stepStartTime = Date.now();
+                        }, 2000);
                     }
                 }
             }
-        }, 300); // သက်တောင့်သက်သာ ပိုမိုတိကျစေရန် စစ်ဆေးနှုန်းကို 300ms သို့ ညှိထားပါသည်
+        }, 300); 
 
     } catch (err) {
         alert("ဗီဒီယိုစနစ် အလုပ်လုပ်ရန် အခက်အခဲရှိပါသည်- " + err.name);
@@ -239,7 +238,7 @@ function editEmployee(id, name, face) {
 }
 
 async function deleteEmployee(empId) {
-    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေသာပါသလား?")) {
+    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေချာပါသလား?")) {
         await appSupabase.from('employees').delete().eq('employee_id', empId);
         fetchEmployees();
     }
