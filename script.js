@@ -204,12 +204,15 @@ async function startAutoFaceScan() {
         let livenessStep = 'HEAD_TURN'; 
         let isWaiting = false; 
         let isFinished = false; 
-        const HOLD_DURATION = 800; // အချိန်အနည်းငယ်လျှော့ချပြီး ပိုသွက်အောင်လုပ်ထားသည်
+        
+        // ⚡ မျက်နှာတည်ငြိမ်စွာ စိုက်ကြည့်ရန် Hold Duration ကို ၁.၅ စက္ကန့်သို့ တိုးမြှင့်ထားပါသည်
+        const HOLD_DURATION = 1500; 
 
-        instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ အနည်းငယ် လှည့်ပေးပါ...";
+        instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ ဖြည်းညှင်းစွာ လှည့်ပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
 
+        // ⚡ ချက်ချင်းကောက်မဖတ်စေရန် စစ်ဆေးမှုသက်တမ်း Interval ကို 600ms သို့ လျှော့ချညှိပေးထားပါသည်
         detectionTimer = setInterval(async () => {
             if (video.paused || video.ended || isWaiting || isFinished) return;
 
@@ -226,14 +229,16 @@ async function startAutoFaceScan() {
                 const rightJaw = landmarks.getJawOutline()[16]; 
                 const topJaw = landmarks.getJawOutline()[8]; 
 
+                // ⚡ Mirror ပြောင်းလဲမှုကြောင့် Point Range အချိုးကို တိကျစွာ ပြန်လည်စစ်ဆေးပါသည်
                 const distanceToLeft = Math.abs(nose.x - leftJaw.x);
                 const distanceToRight = Math.abs(nose.x - rightJaw.x);
                 const turnRatio = distanceToLeft / distanceToRight;
                 const distanceNoseToChin = Math.abs(topJaw.y - noseBridge.y);
 
                 if (livenessStep === 'HEAD_TURN') {
-                    if (turnRatio < 0.55 || turnRatio > 1.85) {
+                    if (turnRatio < 0.50 || turnRatio > 1.90) {
                         isWaiting = true; 
+                        instruction.innerText = "အဆင်ပြေပါသည်၊ ခဏလေး ငြိမ်ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "[အဆင့် ၂/၃] ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
@@ -242,8 +247,9 @@ async function startAutoFaceScan() {
                     }
                 } 
                 else if (livenessStep === 'HEAD_NOD') {
-                    if (distanceNoseToChin < 115 || distanceNoseToChin > 170) {
+                    if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
                         isWaiting = true;
+                        instruction.innerText = "အဆင်ပြေပါသည်၊ ခဏလေး ငြိမ်ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
                             instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာတည့်တည့်သို့ အသာအယာ စိုက်ကြည့်ပါ...";
@@ -252,8 +258,8 @@ async function startAutoFaceScan() {
                     }
                 }
                 else if (livenessStep === 'CAMERA_FOCUS') {
-                    // အဆင့် ၃ အချက်အလက်ဖတ်ရလွယ်ကူစေရန် Detection Bounds Range ကို ပိုမိုချဲ့ထွင်ပေးလိုက်ပါသည်
-                    if (turnRatio >= 0.60 && turnRatio <= 1.50) { 
+                    // အဆင့် (၃) တွင် မျက်နှာလုံးဝဗဟိုချက်ကျပြီး ငြိမ်သက်သွားမှသာ စစ်ဆေးမှုအတည်ပြုပါသည်
+                    if (turnRatio >= 0.70 && turnRatio <= 1.40) { 
                         isFinished = true; 
                         clearInterval(detectionTimer); 
                         instruction.innerText = "အချက်အလက်များအား စစ်ဆေးနေပါသည်...";
@@ -279,7 +285,7 @@ async function startAutoFaceScan() {
                     }
                 }
             }
-        }, 300); 
+        }, 600); 
 
     } catch (err) {
         closeScanModal();
@@ -344,9 +350,9 @@ async function startFaceScan(role) {
         let livenessStep = 'HEAD_TURN'; 
         let isWaiting = false; 
         let isFinished = false; 
-        const HOLD_DURATION = 800; 
+        const HOLD_DURATION = 1500; 
 
-        instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ အနည်းငယ် လှည့်ပေးပါ...";
+        instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ ဖြည်းညှင်းစွာ လှည့်ပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
 
@@ -369,8 +375,9 @@ async function startFaceScan(role) {
                 const distanceNoseToChin = Math.abs(topJaw.y - noseBridge.y);
 
                 if (livenessStep === 'HEAD_TURN') {
-                    if (turnRatio < 0.55 || turnRatio > 1.85) {
+                    if (turnRatio < 0.50 || turnRatio > 1.90) {
                         isWaiting = true; 
+                        instruction.innerText = "အဆင်ပြေပါသည်၊ ခဏလေး Ngim ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "[အဆင့် ၂/၃] ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
@@ -379,8 +386,9 @@ async function startFaceScan(role) {
                     }
                 } 
                 else if (livenessStep === 'HEAD_NOD') {
-                    if (distanceNoseToChin < 115 || distanceNoseToChin > 170) {
+                    if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
                         isWaiting = true;
+                        instruction.innerText = "အဆင်ပြေပါသည်၊ ခဏလေး ငြိမ်ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
                             instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာတည့်တည့်သို့ အသာအယာ စိုက်ကြည့်ပါ...";
@@ -389,7 +397,7 @@ async function startFaceScan(role) {
                     }
                 }
                 else if (livenessStep === 'CAMERA_FOCUS') {
-                    if (turnRatio >= 0.60 && turnRatio <= 1.50) { 
+                    if (turnRatio >= 0.70 && turnRatio <= 1.40) { 
                         isFinished = true; 
                         clearInterval(detectionTimer); 
                         instruction.innerText = "လုပ်ငန်းစဉ် ပြီးမြောက်ပါပြီ...";
@@ -407,7 +415,7 @@ async function startFaceScan(role) {
                     }
                 }
             }
-        }, 300); 
+        }, 600); 
     } catch (err) { 
         closeAdminScanModal();
         showStatus('error', 'အမှားအယွင်း', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name); 
