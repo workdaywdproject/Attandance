@@ -1,23 +1,22 @@
-// ==================== ၁။ SUPABASE CLIENT SETUP ====================
+// ==================== ၁။ SUPABASE CONFIGURATION ====================
+// သင်ပေးပို့ထားသော API URL နှင့် Key အစစ်အမှန်များအား နေရာချထားပြီးဖြစ်ပါသည်
 const API_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
 const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
 
-
-
-// Identifier 'supabase' has already been declared အမှားကိုကျော်လွှားရန် နာမည်ကို 'appSupabase' ဟု ပြောင်းလိုက်ပါသည်
+// Global Variable နာမည်ငြိ၍ JavaScript Crash ခြင်းမှ ကာကွယ်ရန် 'appSupabase' ဟု သုံးထားပါသည်
 const appSupabase = supabase.createClient(API_URL, API_KEY);
 
 // ==================== ၂။ AI MODELS LOADING ====================
 async function loadFaceModels() {
     try {
-        // Models များကို စုံလင်စွာ ခေါ်ယူခြင်း
+        // GitHub Pages ပေါ်တွင် Model များ သေချာပေါက် Read နိုင်ရန် Loading စနစ်
         await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
         await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
         await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
         await faceapi.nets.faceExpressionNet.loadFromUri('/models');
         console.log("Face-API Liveness Models Loaded successfully!");
     } catch (e) {
-        alert("AI Models တင်ရသည်မှာ အဆင်မပြေပါ- " + e.message);
+        alert("AI Models တင်ရသည်မှာ အဆင်မပြေပါ (Folder တည်နေရာ ပြန်စစ်ပါ)- " + e.message);
     }
 }
 loadFaceModels();
@@ -29,7 +28,6 @@ let detectionTimer = null;
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
-    // User Mode (index.html) အတွက် ဖြည့်စွက်ချက် စစ်ဆေးခြင်း
     if(!isAdmin) {
         const id = document.getElementById('emp-id').value.trim();
         const name = document.getElementById('emp-name').value.trim();
@@ -43,24 +41,42 @@ async function startFaceScan(role) {
     const video = document.getElementById(isAdmin ? 'admin-video' : 'video');
     const instruction = document.getElementById(isAdmin ? 'admin-instruction' : 'instruction');
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+    // 🤖 Android နှင့် 🍏 iOS (iPhone Safari) နှစ်ခုလုံးတွင် ရာနှုန်းပြည့် ကင်မရာပွင့်စေမည့် Mobile Constraints
+    const constraints = {
+        video: {
+            facingMode: "user", // ရှေ့ကင်မရာကို အတင်းစနစ်ဖြင့် တောင်းဆိုခြင်း
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+        },
+        audio: false
+    };
+
+    navigator.mediaDevices.getUserMedia(constraints)
         .then(stream => {
             localStream = stream;
             video.srcObject = stream;
+            
+            // 🚨 CRITICAL FOR IOS: iPhone ပေါ်တွင် ဗီဒီယို Full Screen မပွင့်ဘဲ Inline အလုပ်လုပ်ရန် မဖြစ်မနေ လိုအပ်ပါသည်
+            video.setAttribute('playsinline', true);
+            video.setAttribute('webkit-playsinline', true);
+            video.muted = true;
+            video.play().catch(e => console.log("Video play error: ", e));
 
-            // Binance Flow Steps: မျက်တောင်ခတ်ခိုင်းမည် -> ပြုံးခိုင်းမည်
             let actionSteps = ['BLINK', 'SMILE'];
             let stepPointer = 0;
             instruction.innerText = "😉 ကျေးဇူးပြု၍ မျက်တောင် ခတ်ပေးပါ...";
 
+            // စကန်ဖတ်နှုန်းကို ဖုန်းများ လေးမသွားစေရန် 500ms (တစ်စက္ကန့် နှစ်ကြိမ်) သို့ ညှိထားပါသည်
             detectionTimer = setInterval(async () => {
+                if (video.paused || video.ended) return;
+
                 const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
                                             .withFaceLandmarks()
                                             .withFaceExpressions()
                                             .withFaceDescriptor();
 
                 if (result) {
-                    // ၁။ မျက်တောင်ခတ်ခြင်း တိုက်စစ်သည့်အပိုင်း (Eye Aspect Ratio logic အသေးစား)
+                    // အဆင့် ၁ - မျက်တောင်ခတ်ခြင်း တိုက်စစ်ခြင်း
                     if (actionSteps[stepPointer] === 'BLINK') {
                         const landmarks = result.landmarks;
                         const leftEye = landmarks.getLeftEye();
@@ -69,39 +85,42 @@ async function startFaceScan(role) {
                         const leftEyeHeight = Math.abs(leftEye[1].y - leftEye[5].y);
                         const rightEyeHeight = Math.abs(rightEye[1].y - rightEye[5].y);
                         
-                        // မျက်တောင်မှိတ်/ခတ်လိုက်လျှင် အမြင့်တန်ဖိုး သိသိသာသာ လျော့နည်းသွားခြင်းကို ဖမ်းခြင်း
+                        // မျက်တောင်မှိတ်လိုက်သည့်အခါ အမြင့် ၃.၈ အောက် လျော့နည်းသွားမှုကို ဖမ်းယူခြင်း
                         if (leftEyeHeight < 3.8 || rightEyeHeight < 3.8) {
                             stepPointer++;
                             instruction.innerText = "😃 ကျေးဇူးပြု၍ ပြုံးပြပေးပါ...";
                         }
                     } 
-                    // ၂။ ပြုံးခြင်း ရှိ၊ မရှိ စစ်ဆေးသည့်အပိုင်း
+                    // အဆင့် ၂ - ပြုံးပြခြင်း တိုက်စစ်ခြင်း (Kbz, Binance Style)
                     else if (actionSteps[stepPointer] === 'SMILE') {
-                        if (result.expressions.happy > 0.65) { // ၆၅ ရာခိုင်နှုန်းထက်ပို၍ ပြုံးလျှင်
+                        if (result.expressions.happy > 0.65) { 
                             
                             if (isAdmin) {
-                                // Admin Register ဖြစ်ပါက Vector data အား JSON String အဖြစ် Form ထဲထည့်သွင်းခြင်း
+                                // မျက်နှာ၏ Vector array 128 တန်ဖိုးအား Text အဖြစ် ပြောင်းလဲသိမ်းဆည်းခြင်း
                                 document.getElementById('admin-face-data').value = JSON.stringify(Array.from(result.descriptor));
                                 const faceStatus = document.getElementById('face-status');
                                 faceStatus.innerText = "✓ Face Data: စကန်ဖတ်ပြီးပါပြီ (အဆင်သင့်ဖြစ်သည်)";
                                 faceStatus.style.color = "#10b981";
                                 document.getElementById('admin-cam-box').classList.add('hidden');
                             } else {
-                                // User Attendance ဖြစ်ပါက နောက်တစ်ဆင့် ရွေးချယ်မှုပေးခြင်း
                                 document.getElementById('step-2').classList.add('hidden');
                                 document.getElementById('step-3').classList.remove('hidden');
                             }
 
-                            // အောင်မြင်သွားသဖြင့် ကင်မရာနှင့် တိုင်မာအား အပြီးပိတ်ခြင်း
+                            // အောင်မြင်ပြီးဆုံးပါက နောက်ကွယ်မှ လုပ်ငန်းစဉ်များအားလုံးအား ရပ်နားပြီး ကင်မရာပိတ်ခြင်း
                             clearInterval(detectionTimer);
-                            localStream.getTracks().forEach(track => track.stop());
+                            if(localStream) {
+                                localStream.getTracks().forEach(track => track.stop());
+                            }
                             alert("✓ မျက်နှာ စစ်ဆေးမှု (Liveness Check) အောင်မြင်ပါသည်။");
                         }
                     }
                 }
-            }, 500); // မဂ္ဂစက္ကန့် ၅၀၀ လျှင် တစ်ကြိမ် မျက်နှာလှုပ်ရှားမှု စစ်မည်
+            }, 500); 
         })
-        .catch(err => alert("ကင်မရာ ဖွင့်၍မရပါ- " + err.message));
+        .catch(err => {
+            alert("ကင်မရာ ဖွင့်မရခြင်း အကြောင်းရင်း: " + err.name + "\nကျေးဇူးပြု၍ Browser Setting တွင် Camera Permission ခွင့်ပြုထားကြောင်း ထပ်မံစစ်ဆေးပေးပါ။");
+        });
 }
 
 // ==================== ၄။ ADMIN OPERATIONS (CRUD) ====================
@@ -232,6 +251,7 @@ async function initCalendar() {
         const empName = log.employees ? log.employees.name : "Unknown";
         const timeStr = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
+        // Google Maps String Syntax အမှားအား စနစ်တကျ ပြန်ပြင်ထားပါသည်
         return {
             title: `${empName} (${log.type})`, 
             start: log.timestamp.split('T')[0], 
@@ -240,7 +260,7 @@ async function initCalendar() {
                 type: log.type === 'IN' ? 'အဝင် (Check-In)' : 'အထွက် (Check-Out)',
                 time: timeStr, remark: log.remark || "မှတ်ချက်မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
-                mapsLink: `http://googleusercontent.com/maps.google.com/2{log.latitude},${log.longitude}`
+                mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}`
             },
             backgroundColor: log.type === 'IN' ? '#22c55e' : '#ef4444',
             borderColor: log.type === 'IN' ? '#16a34a' : '#dc2626'
