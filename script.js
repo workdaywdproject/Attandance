@@ -92,7 +92,8 @@ async function loadFaceModels() {
         await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
         console.log("Biometric Models Loaded.");
         
-        if (typeof fetchEmployees === 'function' && sessionStorage.getItem('admin_authenticated') === 'true') {
+        // Admin Dashboard စာမျက်နှာဖြစ်ပါက ဝန်ထမ်းစာရင်းကို တန်းဆွဲထုတ်မည်
+        if (document.getElementById('employee-table-body') && sessionStorage.getItem('admin_authenticated') === 'true') {
             fetchEmployees();
         }
     } catch (e) {
@@ -107,7 +108,7 @@ window.onload = () => {
     }
 };
 
-// ==================== ၄။ BIOMETRIC AUTO-RECOGNITION VERIFICATION ====================
+// ==================== ၄။ BIOMETRIC AUTO-RECOGNITION VERIFICATION (INDEX) ====================
 let matchedEmployeeId = null;
 let matchedEmployeeName = null;
 
@@ -340,7 +341,7 @@ async function startFaceScan(role) {
                 }
             }
         }, 300); 
-    } catch (err) { alert("ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: " + err.name); }
+    } catch (err) { alert("ဗီဒီယိုစနစ် ချက်ဆက်မှု မအောင်မြင်ပါ: " + err.name); }
 }
 
 // ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD) ====================
@@ -446,6 +447,7 @@ function resetAdminForm() {
         faceStatus.innerText = "ဇီဝအချက်အလက် မရှိသေးပါ";
         faceStatus.style.color = "var(--danger)";
     }
+    document.getElementById('form-title').innerText = "👤 ဝန်ထမ်းအချက်အလက် စာရင်းသွင်းခြင်း";
     isEditing = false;
 }
 
