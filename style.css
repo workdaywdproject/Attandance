@@ -1,7 +1,10 @@
-/* ==================== PREMIUM UI STYLING SHEET ==================== */
+/* ==========================================================================
+   ၁။ CORE VARIABLES & SYSTEM FONTS (စနစ်တစ်ခုလုံး၏ အခြေခံသတ်မှတ်ချက်များ)
+   ========================================================================== */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
+    /* Color Palette */
     --bg-main: #f8fafc;
     --surface: #ffffff;
     --text-main: #0f172a;
@@ -15,11 +18,14 @@
     --warning: #f59e0b;
     --warning-bg: #fffbeb;
     --border: #e2e8f0;
+    
+    /* Layout & Components Spec */
     --radius-lg: 16px;
     --radius-md: 12px;
     --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 }
 
+/* Global Reset */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -35,7 +41,11 @@ body {
     line-height: 1.5;
 }
 
-/* Container Layout */
+
+/* ==========================================================================
+   ၂။ LAYOUT CONTAINERS & CARDS (ပင်မ ဘောင်ဖွဲ့စည်းပုံများနှင့် ကတ်ပြားများ)
+   ========================================================================== */
+/* ဝန်ထမ်းသုံး မျက်နှာပြင်အတွက် ကျစ်လျစ်သော ဘောင် */
 .container {
     max-width: 540px;
     margin: 0 auto;
@@ -46,11 +56,25 @@ body {
     border: 1px solid rgba(15, 23, 42, 0.05);
 }
 
+/* Admin နှင့် Dashboard သုံးရန် ကျယ်ပြန့်သော ဘောင် */
 .container.wide {
     max-width: 1200px;
 }
 
-/* Typography */
+/* Premium Component Card */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+}
+
+
+/* ==========================================================================
+   ၃။ TYPOGRAPHY & HEADER STYLES (စာသားအချိတ်အဆက်နှင့် ခေါင်းစဉ်ပုံစံများ)
+   ========================================================================== */
 h2 {
     font-size: 1.75rem;
     font-weight: 700;
@@ -67,13 +91,6 @@ h2 {
     margin-bottom: 24px;
 }
 
-hr {
-    border: 0;
-    height: 1px;
-    background: var(--border);
-    margin: 24px 0;
-}
-
 h3 {
     font-size: 1.2rem;
     font-weight: 600;
@@ -81,17 +98,17 @@ h3 {
     color: var(--text-main);
 }
 
-/* Premium Component Cards */
-.card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 24px;
-    border-radius: var(--radius-md);
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+hr {
+    border: 0;
+    height: 1px;
+    background: var(--border);
+    margin: 24px 0;
 }
 
-/* Form Controls */
+
+/* ==========================================================================
+   ၄။ FORM INPUTS & RADIO CARDS (အချက်အလက်ဖြည့် သွင်းမှုပုံစံများ)
+   ========================================================================== */
 .form-group {
     margin-bottom: 20px;
 }
@@ -104,7 +121,8 @@ label {
     color: #334155;
 }
 
-input[type="text"] {
+input[type="text"],
+input[type="password"] {
     width: 100%;
     padding: 14px 16px;
     border: 1px solid var(--border);
@@ -115,14 +133,15 @@ input[type="text"] {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus,
+input[type="password"]:focus {
     outline: none;
     border-color: var(--primary);
     background: var(--surface);
     box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
 }
 
-/* Premium Radio Buttons */
+/* Premium Check-In/Out Radio Cards */
 .radio-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -156,7 +175,10 @@ input[type="text"]:focus {
     background: rgba(79, 70, 229, 0.02);
 }
 
-/* Luxury Interactive Buttons */
+
+/* ==========================================================================
+   ၅။ BUTTONS & INTERACTIVE ELEMENTS (ခလုတ်များနှင့် အပြန်အလှန်သက်ရောက်မှုများ)
+   ========================================================================== */
 button {
     width: 100%;
     padding: 14px;
@@ -173,7 +195,7 @@ button {
 }
 
 button:active {
-    transform: scale(0.98);
+    transform: scale(0.98); /* နှိပ်လိုက်လျှင် ချုံ့သွားမည့် ခံစားချက်ပေးသည် */
 }
 
 .btn-blue { background: var(--primary); color: white; }
@@ -191,9 +213,20 @@ button:active {
 .btn-gray { background: #f1f5f9; color: #475569; }
 .btn-gray:hover { background: #e2e8f0; }
 
+.nav-link {
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.nav-link:hover { text-decoration: underline; }
+
 .hidden { display: none !important; }
 
-/* Camera View Box UI */
+
+/* ==========================================================================
+   ၆။ BIOMETRIC CAMERA CAMERA VIEWBOX (ကင်မရာနှင့် ညွှန်ကြားချက်ပြ ကွက်လပ်)
+   ========================================================================== */
 .video-container {
     width: 100%;
     max-width: 440px;
@@ -213,7 +246,7 @@ video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1);
+    transform: scaleX(-1); /* မှန်ကြည့်သကဲ့သို့ Flip လုပ်ပေးထားသည် */
 }
 
 .instruction-box {
@@ -239,23 +272,30 @@ video {
     border: 1px solid rgba(16, 185, 129, 0.15);
 }
 
-/* Master Admin Responsive Grid */
+
+/* ==========================================================================
+   ၇။ DATA TABLES & GRID SYSTEM (ဒေတာဇယားများနှင့် ကွက်လပ်စီမံမှု)
+   ========================================================================== */
 .admin-grid {
     display: grid;
     grid-template-columns: 1fr 1.3fr;
     gap: 32px;
 }
 
-@media (max-width: 968px) {
-    body { padding: 16px 8px; }
-    .container { padding: 24px 16px; border-radius: var(--radius-md); }
-    .admin-grid { grid-template-columns: 1fr; gap: 20px; }
-    .radio-group { grid-template-columns: 1fr; }
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
 }
 
-/* Modern Datatables UI */
-.table-responsive { width: 100%; overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
 th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
 th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 0.85rem; letter-spacing: 0.03em; text-transform: uppercase; }
 tr:last-child td { border-bottom: none; }
@@ -263,7 +303,10 @@ tr:hover td { background-color: #f8fafc; }
 
 .button-row { display: flex; gap: 12px; }
 
-/* Dashboard Calendar Styling Adjustments */
+
+/* ==========================================================================
+   ၈။ CALENDAR & DASHBOARD DETAILS (ဒက်ရှ်ဘုတ်ပြက္ခဒိန်နှင့် အသေးစိတ်ပြကွက်)
+   ========================================================================== */
 #calendar {
     font-size: 0.9rem;
     --fc-border-color: #e2e8f0;
@@ -272,6 +315,7 @@ tr:hover td { background-color: #f8fafc; }
     --fc-button-border-color: #4f46e5;
     --fc-button-hover-bg-color: #4338ca;
 }
+
 .fc .fc-button-primary:disabled { background-color: #94a3b8; border-color: #94a3b8; }
 
 .detail-box {
@@ -281,7 +325,9 @@ tr:hover td { background-color: #f8fafc; }
     margin-bottom: 20px;
     border-left: 4px solid var(--primary);
 }
+
 .detail-text p { margin-bottom: 12px; font-size: 0.95rem; color: #334155; }
+
 .maps-link {
     display: inline-flex;
     align-items: center;
@@ -297,10 +343,13 @@ tr:hover td { background-color: #f8fafc; }
 }
 .maps-link:hover { background: #d1fae5; }
 
-.nav-link {
-    color: var(--primary);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
+
+/* ==========================================================================
+   ၉။ MOBILE RESPONSIVE QUERIES (ဖုန်းများနှင့် Tablet များအတွက် အလိုအလျောက်ညှိမှု)
+   ========================================================================== */
+@media (max-width: 968px) {
+    body { padding: 16px 8px; }
+    .container { padding: 24px 16px; border-radius: var(--radius-md); }
+    .admin-grid { grid-template-columns: 1fr; gap: 20px; }
+    .radio-group { grid-template-columns: 1fr; }
 }
-.nav-link:hover { text-decoration: underline; }

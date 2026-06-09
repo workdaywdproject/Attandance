@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Gateway Portal</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="container" style="max-width: 460px; margin-top: 10vh;">
+        <h2>🔐 System Gateway Portal</h2>
+        <p class="sub-title">ကျေးဇူးပြု၍ လုပ်ဆောင်လိုသည့် လုပ်ငန်းစဉ်ကို ရွေးချယ်ပါ</p>
+        <hr>
+
+        <div style="display: grid; gap: 16px;">
+            <button onclick="location.href='index.html'" class="btn-green" style="height: 60px; font-size: 1.1rem;">
+                📝 Attendance (နေ့စဉ်တက်ရောက်မှု ပေးရန်)
+            </button>
+            
+            <button onclick="openLoginModal()" class="btn-blue" style="height: 60px; font-size: 1.1rem;">
+                ⚙️ Admin & Dashboard Panel
+            </button>
+        </div>
+    </div>
+
+    <div id="login-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999;">
+        <div class="card" style="width: 100%; max-width: 400px; margin: 16px; box-shadow: var(--shadow);">
+            <h3 style="text-align: center; margin-bottom: 20px;">အုပ်ချုပ်သူ လော့ဂ်အင်</h3>
+            
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="login-user" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="login-pass" placeholder="Enter password">
+            </div>
+
+            <div class="button-row" style="margin-top: 24px;">
+                <button onclick="verifyAdminLogin()" class="btn-blue">အတည်ပြုမည်</button>
+                <button onclick="closeLoginModal()" class="btn-gray">ပယ်ဖျက်</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

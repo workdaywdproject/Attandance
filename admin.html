@@ -7,11 +7,20 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+    
+    <script>
+        if(sessionStorage.getItem('admin_authenticated') !== 'true') {
+            window.location.replace('portal.html');
+        }
+    </script>
 </head>
 <body>
 
     <div class="container wide">
-        <h2>⚙️ Admin Control Panel</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <h2>⚙️ Admin Control Panel</h2>
+            <button onclick="handleLogout()" class="btn-red" style="width: auto; padding: 8px 16px; font-size: 0.85rem;">🔒 Logout ထွက်မည်</button>
+        </div>
         <p class="sub-title">ဝန်ထမ်းများ၏ ဇီဝအချက်အလက် စီမံခန့်ခွဲမှုစနစ်</p>
         <hr>
 
@@ -47,6 +56,15 @@
                     <button id="btn-save" onclick="saveEmployee()" class="btn-green">💾 အချက်အလက် သိမ်းဆည်းမည်</button>
                     <button onclick="resetAdminForm()" class="btn-gray">ပြန်စမည်</button>
                 </div>
+
+                <hr style="margin: 30px 0 20px 0;">
+                
+                <h3>🔑 အုပ်ချုပ်သူ Password ပြောင်းလဲရန်</h3>
+                <div class="form-group">
+                    <label>စကားဝှက်အသစ် (New Password):</label>
+                    <input type="password" id="new-admin-pass" placeholder="စကားဝှက်အသစ် ရိုက်ထည့်ပါ">
+                </div>
+                <button onclick="changeAdminPassword()" class="btn-blue" style="background: var(--text-main);">🔄 Password အသစ်သိမ်းမည်</button>
             </div>
 
             <div class="card">
@@ -68,8 +86,8 @@
         </div>
 
         <div style="text-align: center; margin-top: 24px; font-size: 0.9rem;">
-            <a href="index.html" class="nav-link">➔ ဝန်ထမ်း Attendance ပေးရန်</a> &nbsp;•&nbsp; 
-            <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
+            <a href="portal.html" class="nav-link">🚪 Portal Main Gateway</a>  •  
+            <a href="dashboard.html" class="nav-link">📊 Dashboard သို့ သွားရန်</a>
         </div>
     </div>
 

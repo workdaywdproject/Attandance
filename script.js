@@ -16,7 +16,72 @@ try {
 window.globalCamStream = null;
 let detectionTimer = null;
 
-// ==================== ၂။ AI MODELS LOADING ====================
+// ==================== ၂။ ADMIN SECURITY & ACCESS CONTROL ====================
+function openLoginModal() {
+    document.getElementById('login-modal').classList.remove('hidden');
+}
+
+function closeLoginModal() {
+    document.getElementById('login-modal').classList.add('hidden');
+    document.getElementById('login-user').value = "";
+    document.getElementById('login-pass').value = "";
+}
+
+async function verifyAdminLogin() {
+    const userInp = document.getElementById('login-user').value.trim();
+    const passInp = document.getElementById('login-pass').value.trim();
+
+    if(!userInp || !passInp) { alert("Username နှင့် Password ကို ဖြည့်သွင်းပါ။"); return; }
+    if(!appSupabase) return;
+
+    // Database ထဲမှ သက်ဆိုင်ရာ စကားဝှက်အား စစ်ဆေးခြင်း
+    const { data, error } = await appSupabase
+        .from('admin_settings')
+        .select('*')
+        .eq('username', userInp)
+        .eq('password', passInp);
+
+    if (error) {
+        alert("စနစ်အတွင်း အမှားအယွင်းရှိပါသည်- " + error.message);
+        return;
+    }
+
+    if(data && data.length > 0) {
+        // သက်တမ်းတစ်ခုအတွက် ဝင်ခွင့် Token ပေးခြင်း
+        sessionStorage.setItem('admin_authenticated', 'true');
+        alert("✓ ဝင်ရောက်ခွင့် အောင်မြင်ပါသည်။");
+        window.location.href = 'dashboard.html';
+    } else {
+        alert("❌ Username သို့မဟုတ် Password မှားယွင်းနေပါသည်။");
+    }
+}
+
+function handleLogout() {
+    sessionStorage.removeItem('admin_authenticated');
+    window.location.replace('portal.html');
+}
+
+async function changeAdminPassword() {
+    const newPass = document.getElementById('new-admin-pass').value.trim();
+    if(!newPass) { alert("စကားဝှက်အသစ်ကို ရိုက်ထည့်ပါဦး။"); return; }
+    if(newPass.length < 6) { alert("လုံခြုံရေးအတွက် စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။"); return; }
+
+    if(!appSupabase) return;
+
+    const { error } = await appSupabase
+        .from('admin_settings')
+        .update({ password: newPass })
+        .eq('username', 'admin');
+
+    if(error) {
+        alert("Password ပြောင်းလဲမှု မအောင်မြင်ပါ- " + error.message);
+    } else {
+        alert("✓ Admin Password အား အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။");
+        document.getElementById('new-admin-pass').value = "";
+    }
+}
+
+// ==================== ၃။ AI MODELS LOADING ====================
 async function loadFaceModels() {
     try {
         if (typeof faceapi === 'undefined') return;
@@ -29,11 +94,11 @@ async function loadFaceModels() {
         await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
         console.log("Biometric Models Loaded Successfully.");
         
-        if (typeof fetchEmployees === 'function') {
+        if (typeof fetchEmployees === 'function' && sessionStorage.getItem('admin_authenticated') === 'true') {
             fetchEmployees();
         }
     } catch (e) {
-        alert("AI Models တင်ရသည်မှာ အဆင်မပြေပါ- " + e.message);
+        console.log("AI Models status: " + e.message);
     }
 }
 
@@ -44,7 +109,7 @@ window.onload = () => {
     }
 };
 
-// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION ====================
+// ==================== ၄။ 3-STEP BIOMETRIC VERIFICATION ====================
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -164,7 +229,7 @@ async function startFaceScan(role) {
     }
 }
 
-// ==================== ၄။ ADMIN OPERATIONS ====================
+// ==================== ၅။ ADMIN EMPLOYEES CRUD CONTROL ====================
 let isEditing = false;
 
 async function checkDuplicateID() {
@@ -250,7 +315,7 @@ function editEmployee(id, name, face) {
 }
 
 async function deleteEmployee(empId) {
-    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေချာပါသလား?") && appSupabase) {
+    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေჩာပါသလား?") && appSupabase) {
         await appSupabase.from('employees').delete().eq('employee_id', empId);
         fetchEmployees();
     }
@@ -259,7 +324,7 @@ async function deleteEmployee(empId) {
 function resetAdminForm() {
     document.getElementById('admin-emp-id').value = "";
     document.getElementById('admin-emp-id').disabled = false;
-    document.getElementById('admin-emp-id').style.borderColor = "var(--border)"; // 🔒 FIXED: Added Quotes
+    document.getElementById('admin-emp-id').style.borderColor = "var(--border)";
     document.getElementById('admin-emp-name').value = "";
     document.getElementById('admin-face-data').value = "";
     const faceStatus = document.getElementById('face-status');
@@ -270,7 +335,7 @@ function resetAdminForm() {
     isEditing = false;
 }
 
-// ==================== ၅။ ATTENDANCE LOG SUBMIT ====================
+// ==================== ၆။ ATTENDANCE LOG SUBMIT ====================
 function submitAttendance() {
     const id = document.getElementById('emp-id').value.trim();
     const type = document.querySelector('input[name="attendance-type"]:checked').value;
@@ -290,7 +355,7 @@ function submitAttendance() {
     } else { alert("GPS စနစ် ဖွင့်ပေးရန် လိုအပ်ပါသည်။"); }
 }
 
-// ==================== ၆။ CALENDAR OPERATE ====================
+// ==================== ၇။ FULLCALENDAR DASHBOARD GENERATOR ====================
 async function initCalendar() {
     const calendarEl = document.getElementById('calendar');
     if(!calendarEl || !appSupabase) return;
@@ -310,7 +375,7 @@ async function initCalendar() {
                 type: log.type === 'IN' ? 'အဝင် (Check-In)' : 'အထွက် (Check-Out)',
                 time: timeStr, remark: log.remark || "မှတ်ချက်မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
-                mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}` // 🔒 FIXED LINK
+                mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}`
             },
             backgroundColor: log.type === 'IN' ? '#10b981' : '#ef4444',
             borderColor: log.type === 'IN' ? '#10b981' : '#ef4444'
