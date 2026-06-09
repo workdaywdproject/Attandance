@@ -74,25 +74,22 @@ hr {
 .video-container {
     position: relative;
     width: 100%;
-    max-width: 530px; /* Video View ကို အလွန်ကျယ်ဝန်းအောင် ချဲ့ထားသည် */
+    max-width: 530px; 
     margin: 0 auto;
     aspect-ratio: 4/3;
     overflow: hidden;
     border-radius: var(--radius-md);
-    background: transparent; /* နောက်ခံအမဲရောင် လုံးဝမပါဝင်ပါ */
+    background: transparent; 
 }
 
 #video, #admin-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* ကင်မရာ ဘယ်/ညာ မှန်လိုမျိုး အမှန်အတိုင်းဖြစ်စေရန် Mirror ပြုလုပ်ခြင်း */
     transform: scaleX(-1); 
-    /* မျက်နှာပုံစံ အရှည်လိုက် လှပသော ဘဲဥပုံစံ ညှပ်ထုတ်ခြင်း */
     clip-path: ellipse(38% 48% at 50% 50%);
 }
 
-/* မျက်နှာပေါက် နေရာချရန် လမ်းညွှန် အနားသတ်လိုင်း */
 .video-container::after {
     content: '';
     position: absolute;
@@ -103,7 +100,7 @@ hr {
     border: 3px dashed var(--primary);
     border-radius: 50%;
     pointer-events: none;
-    box-shadow: 0 0 0 9999px rgba(255, 255, 255, 0); /* ရှင်းလင်းပြတ်သားသောနောက်ခံ */
+    box-shadow: 0 0 0 9999px rgba(255, 255, 255, 0); 
     z-index: 10;
 }
 

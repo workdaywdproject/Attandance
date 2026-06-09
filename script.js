@@ -78,6 +78,7 @@ function openAdminScanModal() {
     startFaceScan('ADMIN');
 }
 
+// ဖြူသွားသောပြဿနာမဖြစ်စေရန် Alert Box များအားလုံးကို ဖယ်ရှားပြင်ဆင်ထားပါသည်
 function closeAdminScanModal() {
     if (detectionTimer) clearInterval(detectionTimer);
     if (window.globalCamStream) {
@@ -205,14 +206,12 @@ async function startAutoFaceScan() {
         let isWaiting = false; 
         let isFinished = false; 
         
-        // ⚡ မျက်နှာတည်ငြိမ်စွာ စိုက်ကြည့်ရန် Hold Duration ကို ၁.၅ စက္ကန့်သို့ တိုးမြှင့်ထားပါသည်
         const HOLD_DURATION = 1500; 
 
         instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ ဖြည်းညှင်းစွာ လှည့်ပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
 
-        // ⚡ ချက်ချင်းကောက်မဖတ်စေရန် စစ်ဆေးမှုသက်တမ်း Interval ကို 600ms သို့ လျှော့ချညှိပေးထားပါသည်
         detectionTimer = setInterval(async () => {
             if (video.paused || video.ended || isWaiting || isFinished) return;
 
@@ -229,7 +228,6 @@ async function startAutoFaceScan() {
                 const rightJaw = landmarks.getJawOutline()[16]; 
                 const topJaw = landmarks.getJawOutline()[8]; 
 
-                // ⚡ Mirror ပြောင်းလဲမှုကြောင့် Point Range အချိုးကို တိကျစွာ ပြန်လည်စစ်ဆေးပါသည်
                 const distanceToLeft = Math.abs(nose.x - leftJaw.x);
                 const distanceToRight = Math.abs(nose.x - rightJaw.x);
                 const turnRatio = distanceToLeft / distanceToRight;
@@ -258,7 +256,6 @@ async function startAutoFaceScan() {
                     }
                 }
                 else if (livenessStep === 'CAMERA_FOCUS') {
-                    // အဆင့် (၃) တွင် မျက်နှာလုံးဝဗဟိုချက်ကျပြီး ငြိမ်သက်သွားမှသာ စစ်ဆေးမှုအတည်ပြုပါသည်
                     if (turnRatio >= 0.70 && turnRatio <= 1.40) { 
                         isFinished = true; 
                         clearInterval(detectionTimer); 
@@ -377,7 +374,7 @@ async function startFaceScan(role) {
                 if (livenessStep === 'HEAD_TURN') {
                     if (turnRatio < 0.50 || turnRatio > 1.90) {
                         isWaiting = true; 
-                        instruction.innerText = "အဆင်ပြေပါသည်၊ ခဏလေး Ngim ပေးပါ...";
+                        instruction.innerText = "အဆင်ပြေပါသည်၊ ခဏလေး ငြိမ်ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "[အဆင့် ၂/၃] ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
@@ -422,7 +419,7 @@ async function startFaceScan(role) {
     }
 }
 
-// ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD WITH POSITION) ====================
+// ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD) ====================
 let isEditing = false;
 let targetDeleteId = null;
 
