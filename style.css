@@ -263,3 +263,37 @@ th {
     background-color: var(--secondary) !important;
     border-color: var(--secondary) !important;
 }
+/* Camera Oval Shape Mask styling */
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: #000;
+}
+
+#video, #admin-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* မျက်နှာကို ဘဲဥပုံစံဖြစ်အောင် ညှပ်ထုတ်ပေးသည့်နည်းစနစ် */
+    clip-path: ellipse(35% 45% at 50% 50%);
+}
+
+/* ဘဲဥပုံစံ ဧရိယာဘေးပတ်လည်ကို လမ်းညွှန်အနားသတ်လိုင်း ထည့်ပေးခြင်း */
+.video-container::after {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 15%;
+    width: 70%;
+    height: 90%;
+    border: 3px dashed var(--primary);
+    border-radius: 50%;
+    pointer-events: none;
+    box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.5); /* ပတ်ပတ်လည်ကို မှောင်ချထားမည် */
+    z-index: 10;
+}

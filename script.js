@@ -182,6 +182,7 @@ window.onload = () => {
 // ==================== ၄။ BIOMETRIC AUTO-RECOGNITION VERIFICATION ====================
 let matchedEmployeeId = null;
 let matchedEmployeeName = null;
+let matchedEmployeePos = null;
 
 async function startAutoFaceScan() {
     const video = document.getElementById('video');
@@ -203,7 +204,7 @@ async function startAutoFaceScan() {
         let livenessStep = 'HEAD_TURN'; 
         let isWaiting = false; 
         let isFinished = false; 
-        const HOLD_DURATION = 1000; 
+        const HOLD_DURATION = 800; // အချိန်အနည်းငယ်လျှော့ချပြီး ပိုသွက်အောင်လုပ်ထားသည်
 
         instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ အနည်းငယ် လှည့်ပေးပါ...";
 
@@ -245,13 +246,14 @@ async function startAutoFaceScan() {
                         isWaiting = true;
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
-                            instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာတည့်တည့်သို့ ဂရုပြုစိုက်ကြည့်ပါ...";
+                            instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာတည့်တည့်သို့ အသာအယာ စိုက်ကြည့်ပါ...";
                             isWaiting = false; 
                         }, HOLD_DURATION);
                     }
                 }
                 else if (livenessStep === 'CAMERA_FOCUS') {
-                    if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
+                    // အဆင့် ၃ အချက်အလက်ဖတ်ရလွယ်ကူစေရန် Detection Bounds Range ကို ပိုမိုချဲ့ထွင်ပေးလိုက်ပါသည်
+                    if (turnRatio >= 0.60 && turnRatio <= 1.50) { 
                         isFinished = true; 
                         clearInterval(detectionTimer); 
                         instruction.innerText = "အချက်အလက်များအား စစ်ဆေးနေပါသည်...";
@@ -259,12 +261,13 @@ async function startAutoFaceScan() {
                         const currentDescriptor = result.descriptor;
                         const isRecognized = await matchFaceWithDatabase(currentDescriptor);
 
-                        closeScanModal(); // Close the scan panel
+                        closeScanModal(); 
 
                         if(isRecognized) {
                             showStatus('success', 'စစ်ဆေးမှုအောင်မြင်ပါသည်', 'ဝန်ထမ်းအထောက်အထား ကိုက်ညီမှုရှိပါသည်။', () => {
                                 document.getElementById('step-1').classList.add('hidden');
                                 document.getElementById('recognized-name').innerText = matchedEmployeeName;
+                                document.getElementById('recognized-pos').innerText = matchedEmployeePos;
                                 document.getElementById('recognized-id').innerText = matchedEmployeeId;
                                 document.getElementById('step-2').classList.remove('hidden');
                             });
@@ -287,7 +290,7 @@ async function startAutoFaceScan() {
 async function matchFaceWithDatabase(currentDescriptor) {
     if (!appSupabase) return false;
 
-    const { data: employees, error } = await appSupabase.from('employees').select('employee_id, name, face_embedding');
+    const { data: employees, error } = await appSupabase.from('employees').select('employee_id, name, position, face_embedding');
     if (error || !employees) return false;
 
     let bestMatch = null;
@@ -317,6 +320,7 @@ async function matchFaceWithDatabase(currentDescriptor) {
     if (bestMatch) {
         matchedEmployeeId = bestMatch.employee_id;
         matchedEmployeeName = bestMatch.name;
+        matchedEmployeePos = bestMatch.position || "Staff";
         return true;
     }
     return false;
@@ -340,7 +344,7 @@ async function startFaceScan(role) {
         let livenessStep = 'HEAD_TURN'; 
         let isWaiting = false; 
         let isFinished = false; 
-        const HOLD_DURATION = 1000; 
+        const HOLD_DURATION = 800; 
 
         instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ အနည်းငယ် လှည့်ပေးပါ...";
 
@@ -379,13 +383,13 @@ async function startFaceScan(role) {
                         isWaiting = true;
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
-                            instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာတည့်တည့်သို့ ဂရုပြုစိုက်ကြည့်ပါ...";
+                            instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာတည့်တည့်သို့ အသာအယာ စိုက်ကြည့်ပါ...";
                             isWaiting = false; 
                         }, HOLD_DURATION);
                     }
                 }
                 else if (livenessStep === 'CAMERA_FOCUS') {
-                    if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
+                    if (turnRatio >= 0.60 && turnRatio <= 1.50) { 
                         isFinished = true; 
                         clearInterval(detectionTimer); 
                         instruction.innerText = "လုပ်ငန်းစဉ် ပြီးမြောက်ပါပြီ...";
@@ -410,7 +414,7 @@ async function startFaceScan(role) {
     }
 }
 
-// ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD) ====================
+// ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD WITH POSITION) ====================
 let isEditing = false;
 let targetDeleteId = null;
 
@@ -435,6 +439,7 @@ async function checkDuplicateID() {
 async function saveEmployee() {
     const empId = document.getElementById('admin-emp-id').value.trim();
     const name = document.getElementById('admin-emp-name').value.trim();
+    const position = document.getElementById('admin-emp-pos').value.trim() || "Staff";
     const faceData = document.getElementById('admin-face-data').value;
 
     if (!empId || !name || !faceData || !appSupabase) { 
@@ -444,9 +449,9 @@ async function saveEmployee() {
 
     let query;
     if (isEditing) {
-        query = await appSupabase.from('employees').update({ name: name, face_embedding: faceData }).eq('employee_id', empId);
+        query = await appSupabase.from('employees').update({ name: name, position: position, face_embedding: faceData }).eq('employee_id', empId);
     } else {
-        query = await appSupabase.from('employees').insert([{ employee_id: empId, name: name, face_embedding: faceData }]);
+        query = await appSupabase.from('employees').insert([{ employee_id: empId, name: name, position: position, face_embedding: faceData }]);
     }
 
     if (query.error) { 
@@ -472,10 +477,10 @@ async function fetchEmployees() {
             <tr>
                 <td><b>${emp.employee_id}</b></td>
                 <td>${emp.name}</td>
-                <td style="color:var(--success); font-weight:600;">✓ အဆင်သင့်</td>
+                <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:4px; font-size:0.85rem;">${emp.position || 'Staff'}</span></td>
                 <td>
                     <div class="button-row">
-                        <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.face_embedding}')" class="btn-yellow" style="padding:6px 12px; font-size:0.8rem;">ပြင်ဆင်ရန်</button>
+                        <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.position || 'Staff'}', '${emp.face_embedding}')" class="btn-yellow" style="padding:6px 12px; font-size:0.8rem;">ပြင်ဆင်ရန်</button>
                         <button onclick="triggerDelete('${emp.employee_id}')" class="btn-red" style="padding:6px 12px; font-size:0.8rem;">ပယ်ဖျက်ရန်</button>
                     </div>
                 </td>
@@ -483,10 +488,11 @@ async function fetchEmployees() {
     });
 }
 
-function editEmployee(id, name, face) {
+function editEmployee(id, name, position, face) {
     document.getElementById('admin-emp-id').value = id;
     document.getElementById('admin-emp-id').disabled = true;
     document.getElementById('admin-emp-name').value = name;
+    document.getElementById('admin-emp-pos').value = position;
     document.getElementById('admin-face-data').value = face;
     const faceStatus = document.getElementById('face-status');
     if(faceStatus) {
@@ -497,7 +503,6 @@ function editEmployee(id, name, face) {
     isEditing = true;
 }
 
-// Custom Delete Modal Trigger
 function triggerDelete(empId) {
     targetDeleteId = empId;
     const delModal = document.getElementById('delete-modal');
@@ -532,6 +537,7 @@ function resetAdminForm() {
     document.getElementById('admin-emp-id').disabled = false;
     document.getElementById('admin-emp-id').style.borderColor = "var(--border)";
     document.getElementById('admin-emp-name').value = "";
+    document.getElementById('admin-emp-pos').value = "";
     document.getElementById('admin-face-data').value = "";
     const faceStatus = document.getElementById('face-status');
     if(faceStatus) {
@@ -550,6 +556,7 @@ function showConfirmModal() {
 
     document.getElementById('conf-id').innerText = matchedEmployeeId;
     document.getElementById('conf-name').innerText = matchedEmployeeName;
+    document.getElementById('conf-pos').innerText = matchedEmployeePos;
     document.getElementById('conf-type').innerText = typeText;
     document.getElementById('conf-remark').innerText = remarkText;
 
@@ -600,18 +607,19 @@ async function initCalendar() {
     const calendarEl = document.getElementById('calendar');
     if(!calendarEl || !appSupabase) return;
 
-    const { data: logs, error } = await appSupabase.from('attendance_logs').select(`*, employees ( name )`);
+    const { data: logs, error } = await appSupabase.from('attendance_logs').select(`*, employees ( name, position )`);
     if (error) return;
 
     const calendarEvents = logs.map(log => {
         const empName = log.employees ? log.employees.name : "Unknown";
+        const empPos = log.employees ? (log.employees.position || "Staff") : "Staff";
         const timeStr = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
         return {
             title: `${empName} (${log.type})`, 
             start: log.timestamp.split('T')[0], 
             extendedProps: {
-                empId: log.employee_id, empName: empName,
+                empId: log.employee_id, empName: empName, empPos: empPos,
                 type: log.type === 'IN' ? 'အဝင် (Check-In)' : 'အထွက် (Check-Out)',
                 time: timeStr, remark: log.remark || "မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
@@ -631,9 +639,10 @@ async function initCalendar() {
             document.getElementById('attendance-details').innerHTML = `
                 <div class="detail-box">
                     <p><b>ဝန်ထမ်းအမည်:</b> <span style="color: var(--primary); font-weight:600;">${props.empName}</span></p>
-                    <p style="font-size:0.85rem; color:var(--text-muted);">ဝန်ထမ်းကုဒ်: ${props.empId}</p>
+                    <p style="font-size:0.85rem; color:var(--text-muted);">ရာထူး: ${props.empPos}</p>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">ဝန်ထမ်းကုဒ်: ${props.empId}</p>
                 </div>
-                <div class="detail-text">
+                <div class="detail-text" style="margin-top:10px;">
                     <p><b>အမျိုးအစား:</b> ${props.type}</p>
                     <p><b>အချိန်:</b> ${props.time}</p>
                     <p><b>မှတ်ချက်:</b> ${props.remark}</p>

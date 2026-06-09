@@ -45,6 +45,11 @@
                 </div>
 
                 <div class="form-group">
+                    <label>ရာထူး (Position):</label>
+                    <input type="text" id="admin-emp-pos" placeholder="ဥပမာ - Manager, Staff">
+                </div>
+
+                <div class="form-group">
                     <label>ဇီဝအချက်အလက် အခြေအနေ (Biometric Status):</label>
                     <p id="face-status" style="font-weight: 600; color: var(--danger); margin-top: 4px; font-size: 0.9rem;">ဇီဝအချက်အလက် မရှိသေးပါ</p>
                     <input type="hidden" id="admin-face-data">
@@ -65,7 +70,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>အမည်</th>
-                                <th>ဇီဝဒေတာ</th>
+                                <th>ရာထူး</th>
                                 <th>လုပ်ဆောင်ချက်</th>
                             </tr>
                         </thead>
@@ -113,7 +118,7 @@
             </div>
             <p id="admin-instruction" class="instruction-box" style="margin-bottom: 16px;">အချက်အလက်များအား ပြင်ဆင်နေပါသည်...</p>
             
-            <div class="video-container" style="margin-top: 0; background: #000; border-radius: var(--radius-md);">
+            <div class="video-container">
                 <video id="admin-video" autoplay muted playsinline></video>
             </div>
         </div>
