@@ -1,42 +1,45 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Dashboard - Calendar View</title>
+    <title>Attendance Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 </head>
 <body>
 
-    <div class="dashboard-container">
-        <div class="admin-header">
-            <h2>Attendance Dashboard (ပြက္ခဒိန် ဇယား)</h2>
-            <div style="display: flex; gap: 8px;">
-                <a href="index.html" class="btn btn-green" style="width: auto; padding: 10px 20px;">Scan ဖတ်ရန်</a>
-                <a href="admin.html" class="btn btn-blue" style="width: auto; padding: 10px 20px;">Admin Page သို့</a>
-            </div>
-        </div>
+    <div class="container wide">
+        <h2>📊 Attendance Dashboard</h2>
+        <p class="sub-title">ဝန်ထမ်းများ၏ နေ့စဉ် ရောက်ရှိမှု မှတ်တမ်းပြက္ခဒိန်</p>
+        <hr>
 
-        <div class="dashboard-grid">
+        <div class="admin-grid">
             <div class="card">
                 <div id="calendar"></div>
             </div>
 
-            <div class="card" style="display: flex; flex-direction: column;">
-                <h3 id="selected-date-title" style="border-b: 1px solid #e5e7eb; padding-bottom: 8px;">ရက်စွဲမှတ်တမ်း</h3>
-                <div id="attendance-details" class="detail-text" style="flex: 1; color: #6b7280;">
-                    <p style="font-style: italic;">ပြက္ခဒိန်ပေါ်ရှိ ဝန်ထမ်းမှတ်တမ်းတစ်ခုခုကို ထောက်ကြည့်လျှင် ထိုနေ့၏ အဝင်/အထွက် အချက်အလက်များကို ဤနေရာတွင် ပြပေးပါမည်။</p>
+            <div class="card">
+                <h3 id="selected-date-title">မှတ်တမ်းအသေးစိတ်</h3>
+                <div id="attendance-details">
+                    <p style="color: #64748b; text-align: center; margin-top: 40px;">
+                        အသေးစိတ် အချက်အလက်များကို ကြည့်ရှုရန် ကလင်ဒါပြက္ခဒိန်ပေါ်ရှိ ဝန်ထမ်းအမည်/မှတ်တမ်းတစ်ခုခုကို ကလစ်နှိပ်ပါ။
+                    </p>
                 </div>
             </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="index.html" class="nav-link">➔ ဝန်ထမ်း Attendance ပေးရန်</a> | 
+            <a href="admin.html" class="nav-link">⚙️ Admin Control Panel</a>
         </div>
     </div>
 
     <script src="script.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() { initCalendar(); });
-    </script>
 </body>
 </html>

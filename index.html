@@ -1,41 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance - Face Verify</title>
+    <title>Biometric Attendance System</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="script.js"></script>
 </head>
 <body>
 
     <div class="container">
-        <h2>Attendance Face Scan</h2>
-        
-        <div id="step-1">
-            <input type="text" id="emp-id" placeholder="ဝန်ထမ်း ID ရိုက်ထည့်ပါ">
-            <input type="text" id="emp-name" placeholder="ဝန်ထမ်း နာမည် ရိုက်ထည့်ပါ">
-            <button onclick="startFaceScan('USER')" class="btn-blue">Next (Face Scan ဖတ်မည်)</button>
+        <h2>📊 ဝန်ထမ်း Attendance စနစ်</h2>
+        <p class="sub-title">Biometric Liveness Verification</p>
+        <hr>
+
+        <div id="step-1" class="card">
+            <h3>အဆင့် ၁ - အချက်အလက် ဖြည့်ပါ</h3>
+            <div class="form-group">
+                <label>ဝန်ထမ်းကုဒ် (Employee ID):</label>
+                <input type="text" id="emp-id" placeholder="ဥပမာ - EMP001">
+            </div>
+            <div class="form-group">
+                <label>ဝန်ထမ်းအမည် (Name):</label>
+                <input type="text" id="emp-name" placeholder="ဥပမာ - ဦးမောင်မောင်">
+            </div>
+            <button onclick="startFaceScan('USER')" class="btn-blue">ရှေ့သို့ ဆက်သွားမည် ➔</button>
         </div>
 
-        <div id="step-2" class="hidden">
-            <div id="instruction" class="instruction-box">ခဏစောင့်ပါ... AI စနစ်ပြင်ဆင်နေပါသည်</div>
-            <div class="camera-wrapper">
+        <div id="step-2" class="card hidden">
+            <h3>အဆင့် ၂ - မျက်နှာသွင်ပြင် စစ်ဆေးခြင်း</h3>
+            <p id="instruction" class="instruction-box">ကင်မရာ ဖွင့်နေပါသည်...</p>
+            <div class="video-container">
                 <video id="video" autoplay muted playsinline></video>
-                <div class="camera-overlay"></div>
             </div>
         </div>
 
-        <div id="step-3" class="hidden">
-            <div class="instruction-box" style="background:#dcfce7; border-color:#22c55e; color:#15803d;">✓ အထောက်အထား စစ်ဆေးမှု အောင်မြင်ပါသည်</div>
-            <div style="display:flex; justify-content:center; gap:24px; margin-bottom:16px;">
-                <label style="cursor:pointer; font-weight:600;"><input type="radio" name="attendance-type" value="IN" checked> အဝင် (In)</label>
-                <label style="cursor:pointer; font-weight:600;"><input type="radio" name="attendance-type" value="OUT"> အထွက် (Out)</label>
+        <div id="step-3" class="card hidden">
+            <h3>အဆင့် ၃ - မှတ်တမ်းတင်ရန် အဆင်သင့်ဖြစ်ပါပြီ</h3>
+            <p class="success-text">✓ ဇီဝအချက်အထား စစ်ဆေးမှု အောင်မြင်ပါသည်။</p>
+            
+            <div class="form-group">
+                <label>တက်ရောက်မှု အမျိုးအစား:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="attendance-type" value="IN" checked> အဝင် (Check-In)</label>
+                    <label><input type="radio" name="attendance-type" value="OUT"> အထွက် (Check-Out)</label>
+                </div>
             </div>
-            <textarea id="remark" placeholder="မှတ်ချက် (ရှိလျှင် ထည့်ရန်)"></textarea>
-            <button onclick="submitAttendance()" class="btn-green">Submit</button>
+
+            <div class="form-group">
+                <label>မှတ်ချက် (Remark):</label>
+                <input type="text" id="remark" placeholder="မရှိလျှင် အလွတ်ထားနိုင်ပါသည်">
+            </div>
+
+            <button onclick="submitAttendance()" class="btn-green">📍 တက်ရောက်မှု မှတ်တမ်းတင်မည်</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="dashboard.html" class="nav-link">📊 Dashboard သို့ သွားရန်</a> | 
+            <a href="admin.html" class="nav-link">⚙️ Admin Control Panel</a>
         </div>
     </div>
 

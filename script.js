@@ -7,7 +7,7 @@ try {
     if (typeof supabase !== 'undefined' && supabase.createClient) {
         appSupabase = supabase.createClient(API_URL, API_KEY);
     } else {
-        console.error("Supabase Library is missing.");
+        console.error("Supabase Library is missing from HTML.");
     }
 } catch (err) {
     console.log("Supabase initialization caught: ", err.message);
@@ -16,11 +16,11 @@ try {
 window.globalCamStream = null;
 let detectionTimer = null;
 
-// ==================== ၂။ AI MODELS LOADING ====================
+// ==================== ၂။ AI MODELS LOADING (GITHUB PAGES PATH FIX) ====================
 async function loadFaceModels() {
     try {
         if (typeof faceapi === 'undefined') {
-            console.error("FaceAPI is not loaded yet.");
+            console.error("FaceAPI Library is not loaded yet.");
             return;
         }
         const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
@@ -82,7 +82,7 @@ async function startFaceScan(role) {
 
         let livenessStep = 'HEAD_TURN'; 
         let isWaiting = false; 
-        let isFinished = false; // 🔒 Alert နှစ်ခါမပေါ်စေရန် ထိန်းချုပ်မည့် Security Gate Variable
+        let isFinished = false; // 🔒 Alert အကြိမ်ကြိမ်ပေါ်ခြင်းကို တားဆီးမည့် Security Gate
         const HOLD_DURATION = 1000; // စောင့်ဆိုင်းချိန် (၁) စက္ကန့်
 
         instruction.innerText = "[အဆင့် ၁/၃] အထောက်အထား စစ်ဆေးရန် ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
@@ -90,7 +90,6 @@ async function startFaceScan(role) {
         if (detectionTimer) clearInterval(detectionTimer);
 
         detectionTimer = setInterval(async () => {
-            // အကယ်၍ အဆင့်အားလုံး ပြီးဆုံးသွားပြီဆိုလျှင် Loop ထဲကုဒ်များကို လုံးဝ အလုပ်လုပ်ခွင့်မပြုတော့ပါ
             if (video.paused || video.ended || isWaiting || isFinished) return;
 
             const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
@@ -139,8 +138,8 @@ async function startFaceScan(role) {
                 else if (livenessStep === 'CAMERA_FOCUS') {
                     if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
                         
-                        isFinished = true; // 🛑 ကုဒ် ထပ်မံပွားခြင်းမရှိစေရန် ဂိတ်ကို ချက်ချင်း ပိတ်လိုက်ပါသည်
-                        clearInterval(detectionTimer); // Timer ကို ချက်ချင်း ဖျက်ပစ်သည်
+                        isFinished = true; 
+                        clearInterval(detectionTimer); // Interval ကို ချက်ချင်း ဖျက်ဆီးပစ်သည်
                         
                         instruction.innerText = "လုပ်ငန်းစဉ် ပြီးမြောက်သွားပါပြီ...";
 
@@ -158,13 +157,12 @@ async function startFaceScan(role) {
                                 document.getElementById('step-3').classList.remove('hidden');
                             }
 
-                            // ကင်မရာ စနစ်အား အပြီးတိုင်ပိတ်သိမ်းခြင်း
                             if (window.globalCamStream) {
                                 window.globalCamStream.getTracks().forEach(track => track.stop());
                                 window.globalCamStream = null;
                             }
 
-                            // 🔔 ယခုအခါ လုံးဝ (၁) ကြိမ်တည်းသာ တိကျစွာ ပေါ်ပါတော့မည်
+                            // 🔔 တစ်ကြိမ်တည်းသာ တိကျစွာ ပြသမည်
                             alert("✓ အထောက်အထား စစ်ဆေးခြင်း လုပ်ငန်းစဉ် အောင်မြင်ပါသည်။");
                         }, HOLD_DURATION);
                     }
@@ -321,7 +319,7 @@ async function initCalendar() {
                 type: log.type === 'IN' ? 'အဝင် (Check-In)' : 'အထွက် (Check-Out)',
                 time: timeStr, remark: log.remark || "မှတ်ချက်မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
-                mapsLink: `http://maps.google.com/?q=${log.latitude},${log.longitude}`
+                mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}`
             },
             backgroundColor: log.type === 'IN' ? '#22c55e' : '#ef4444',
             borderColor: log.type === 'IN' ? '#16a34a' : '#dc2626'

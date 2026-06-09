@@ -1,63 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="my">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Registration</title>
+    <title>Admin - Employee Management</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <script src="script.js"></script>
+</head>
 <body>
 
-    <div class="admin-container">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="margin:0;">Admin Dashboard (ဝန်ထမ်းစီမံခြင်း)</h2>
-            <a href="dashboard.html" class="btn-blue" style="width:auto; padding:10px 20px; text-decoration:none;">ပြက္ခဒိန်ကြည့်ရန်</a>
-        </div>
+    <div class="container wide">
+        <h2>⚙️ Admin Dashboard</h2>
+        <p class="sub-title">ဝန်ထမ်းများ၏ ဇီဝအချက်အလက် စီမံခန့်ခွဲမှုစနစ်</p>
+        <hr>
 
-        <div class="card">
-            <h3 id="form-title" style="margin-bottom:16px;">ဝန်ထမ်းအသစ် စာရင်းသွင်းရန်</h3>
-            <input type="text" id="admin-emp-id" placeholder="ဝန်ထမ်း ID (ဥပမာ - EMP001)" onchange="checkDuplicateID()">
-            <input type="text" id="admin-emp-name" placeholder="ဝန်ထမ်း နာမည်">
-            
-            <button onclick="startFaceScan('ADMIN')" class="btn-yellow" style="margin-bottom:12px;">📸 မျက်နှာစကန်ဖတ်မည် (Liveness Check)</button>
-            <p id="face-status" style="text-align:center; font-weight:600; color:#ef4444; margin-bottom:16px;">Face Data: မရှိသေးပါ</p>
-            
-            <input type="hidden" id="admin-face-data">
-            <button onclick="saveEmployee()" id="btn-save" class="btn-blue">စာရင်းသိမ်းမည်</button>
-        </div>
+        <div class="admin-grid">
+            <div class="card">
+                <h3 id="form-title">ဝန်ထမ်းအသစ် ထည့်သွင်းရန်</h3>
+                
+                <div class="form-group">
+                    <label>ဝန်ထမ်းကုဒ် (ID):</label>
+                    <input type="text" id="admin-emp-id" onblur="checkDuplicateID()" placeholder="ဥပမာ - EMP001">
+                </div>
 
-        <div id="admin-cam-box" class="hidden card" style="margin-top:16px;">
-            <div id="admin-instruction" class="instruction-box">ခဏစောင့်ပါ... AI စနစ်ပြင်ဆင်နေပါသည်</div>
-            <div class="camera-wrapper">
-                <video id="admin-video" autoplay muted playsinline></video>
-                <div class="camera-overlay"></div>
+                <div class="form-group">
+                    <label>ဝန်ထမ်းအမည်:</label>
+                    <input type="text" id="admin-emp-name" placeholder="ဥပမာ - ဦးမောင်မောင်">
+                </div>
+
+                <div class="form-group">
+                    <label>မျက်နှာ ဇီဝအချက်အလက် (Biometric):</label>
+                    <p id="face-status" style="color: #ef4444; font-weight: 600;">ဇီဝအချက်အလက် မရှိသေးပါ</p>
+                    <button onclick="startFaceScan('ADMIN')" class="btn-blue">📸 မျက်နှာမှတ်တမ်းယူရန်</button>
+                    <input type="hidden" id="admin-face-data">
+                </div>
+
+                <div id="admin-cam-box" class="hidden" style="margin-top: 15px;">
+                    <p id="admin-instruction" class="instruction-box">ကင်မရာ ပြင်ဆင်နေပါသည်...</p>
+                    <div class="video-container small">
+                        <video id="admin-video" autoplay muted playsinline></video>
+                    </div>
+                </div>
+
+                <div class="button-row" style="margin-top: 20px;">
+                    <button id="btn-save" onclick="saveEmployee()" class="btn-green">💾 အချက်အလက် သိမ်းဆည်းမည်</button>
+                    <button onclick="resetAdminForm()" class="btn-gray">ပြန်စမည်</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>👥 လက်ရှိဝန်ထမ်းစာရင်း</h3>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ဝန်ထမ်းကုဒ်</th>
+                                <th>အမည်</th>
+                                <th>ဇီဝဒေတာ</th>
+                                <th>လုပ်ဆောင်ချက်</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employee-table-body">
+                            </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div class="card" style="margin-top:20px;">
-            <h3>ဝန်ထမ်းများ စာရင်း</h3>
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ဝန်ထမ်း ID</th>
-                            <th>နာမည်</th>
-                            <th>Face Status</th>
-                            <th>လုပ်ဆောင်ချက်</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employee-table-body"></tbody>
-                </table>
-            </div>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="index.html" class="nav-link">➔ ဝန်ထမ်း Attendance ပေးရန်စာမျက်နှာ</a> | 
+            <a href="dashboard.html" class="nav-link">📊 Dashboard ကြည့်ရန်</a>
         </div>
     </div>
 
     <script src="script.js"></script>
-    <script>
-        // စာမျက်နှာပွင့်လာသည်နှင့် Table အား ဆွဲတင်ခြင်း
-        window.onload = function() { fetchEmployees(); };
-    </script>
 </body>
 </html>
