@@ -11,36 +11,35 @@
 <body>
 
     <div class="container">
-        <h2>📊 ဝန်ထမ်းတက်ရောက်မှုစနစ်</h2>
+        <h2>ဝန်ထမ်းတက်ရောက်မှုစနစ်</h2>
         <p class="sub-title">Biometric Auto-Recognition</p>
         <hr>
 
-        <div id="step-1" class="card" style="text-align: center; padding: 32px 20px;">
-            <div style="font-size: 3.5rem; margin-bottom: 16px;">🤖</div>
-            <h3>ဇီဝအချက်အလက် စစ်ဆေးခြင်း</h3>
-            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 6px; margin-bottom: 24px;">တက်ရောက်မှု မှတ်တမ်းတင်ရန် အောက်ပါခလုတ်ကို နှိပ်၍ မျက်နှာစစ်ဆေးမှု ပြုလုပ်ပါ...</p>
-            <button onclick="openScanModal()" class="btn-blue" style="padding: 14px; font-size: 1.05rem;">📸 မျက်နှာစစ်ဆေးမှု စတင်မည်</button>
+        <div id="step-1" class="card" style="text-align: center; padding: 24px 16px;">
+            <h3 style="white-space: nowrap;">ဇီဝအချက်အလက် စစ်ဆေးခြင်း</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; margin-bottom: 20px; white-space: nowrap;">တက်ရောက်မှု မှတ်တမ်းတင်ရန် မျက်နှာစစ်ဆေးမှု ပြုလုပ်ပါ</p>
+            <button onclick="openScanModal()" class="btn-blue" style="padding: 12px; font-size: 0.95rem;">မျက်နှာစစ်ဆေးမှု စတင်မည်</button>
         </div>
 
         <div id="step-2" class="card hidden">
-            <h3>📝 တက်ရောက်မှု တင်ပြခြင်း</h3>
+            <h3 style="white-space: nowrap;">တက်ရောက်မှု တင်ပြခြင်း</h3>
             
             <div class="detail-box" style="background: rgba(16, 185, 129, 0.05); border-left-color: var(--success);">
-                <p><b>ဝန်ထမ်းအမည်:</b> <span id="recognized-name" style="color: var(--success); font-weight:700; font-size:1.1rem;">-</span></p>
-                <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 4px;">ရာထူး: <span id="recognized-pos" style="font-weight: 600; color: var(--text);">-</span></p>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-top: 2px;">ဝန်ထမ်းကုဒ် (ID): <span id="recognized-id">-</span></p>
+                <p><b>ဝန်ထမ်းအမည်:</b> <span id="recognized-name" style="color: var(--success); font-weight:700; font-size:1rem;">-</span></p>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-top: 2px;">ရာထူး: <span id="recognized-pos" style="font-weight: 600; color: var(--text);">-</span></p>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top: 2px;">ဝန်ထမ်းကုဒ် (ID): <span id="recognized-id">-</span></p>
             </div>
             
-            <div class="form-group" style="margin-top: 15px;">
+            <div class="form-group" style="margin-top: 12px;">
                 <label>တက်ရောက်မှုအမျိုးအစား:</label>
                 <div class="radio-group">
                     <label class="radio-card">
                         <input type="radio" name="attendance-type" value="IN" checked> 
-                        <span>အဝင် (Check-In)</span>
+                        <span>Check-In</span>
                     </label>
                     <label class="radio-card">
                         <input type="radio" name="attendance-type" value="OUT"> 
-                        <span>အထွက် (Check-Out)</span>
+                        <span>Check-Out</span>
                     </label>
                 </div>
             </div>
@@ -50,21 +49,21 @@
                 <input type="text" id="remark" placeholder="ဖြည့်သွင်းရန်ရှိက ရေးသားပါ">
             </div>
 
-            <button onclick="showConfirmModal()" class="btn-green">📍 တက်ရောက်မှု တင်ပြမည်</button>
+            <button onclick="showConfirmModal()" class="btn-green">တက်ရောက်မှု တင်ပြမည်</button>
         </div>
 
-        <div style="text-align: center; margin-top: 24px; font-size: 0.9rem;">
-            <a href="portal.html" class="nav-link">➔ ပင်မစာမျက်နှာ (Portal Gateway) သို့</a>
+        <div style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
+            <a href="portal.html" class="nav-link">ပင်မစာမျက်နှာ (Portal Gateway) သို့</a>
         </div>
     </div>
 
     <div id="scan-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 999;">
-        <div class="card" style="width: 100%; max-width: 580px; margin: 16px; box-shadow: var(--shadow); overflow: hidden; padding: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="color: var(--primary);">📸 Biometric Scan Panel</h3>
-                <button onclick="closeScanModal()" class="btn-gray" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin: 0;">ပိတ်မည်</button>
+        <div class="card" style="width: 100%; max-width: 580px; margin: 12px; box-shadow: var(--shadow); overflow: hidden; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h3 style="color: var(--primary); white-space: nowrap;">Biometric Scan Panel</h3>
+                <button onclick="closeScanModal()" class="btn-gray" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0;">ပိတ်မည်</button>
             </div>
-            <p id="instruction" class="instruction-box" style="margin-bottom: 16px;">အချက်အလက်များအား ပြင်ဆင်နေပါသည်...</p>
+            <p id="instruction" class="instruction-box" style="margin-bottom: 14px;">အချက်အလက်များအား ပြင်ဆင်နေပါသည်...</p>
             
             <div class="video-container">
                 <video id="video" autoplay muted playsinline></video>
@@ -73,11 +72,11 @@
     </div>
 
     <div id="confirm-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999;">
-        <div class="card" style="width: 100%; max-width: 420px; margin: 16px; box-shadow: var(--shadow); border: 2px solid var(--success);">
-            <h3 style="text-align: center; margin-bottom: 16px; color: var(--success);">🛒 တင်ပြမှု အတည်ပြုခြင်း</h3>
-            <hr style="margin: 10px 0 20px 0;">
+        <div class="card" style="width: 100%; max-width: 420px; margin: 12px; box-shadow: var(--shadow); border: 2px solid var(--success);">
+            <h3 style="text-align: center; margin-bottom: 12px; color: var(--success); white-space: nowrap;">တင်ပြမှု အတည်ပြုခြင်း</h3>
+            <hr style="margin: 8px 0 16px 0;">
             
-            <div class="detail-text" style="background: #f8fafc; padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+            <div class="detail-text" style="background: #f8fafc; padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
                 <p><b>ဝန်ထမ်း ID:</b> <span id="conf-id" style="font-weight: 600;"></span></p>
                 <p><b>ဝန်ထမ်းအမည်:</b> <span id="conf-name" style="font-weight: 600; color: var(--primary);"></span></p>
                 <p><b>ရာထူး:</b> <span id="conf-pos" style="font-weight: 600;"></span></p>
@@ -86,18 +85,17 @@
             </div>
 
             <div class="button-row">
-                <button onclick="submitAttendance()" class="btn-green">✓ အတည်ပြုသည်</button>
+                <button onclick="submitAttendance()" class="btn-green">အတည်ပြုသည်</button>
                 <button onclick="closeConfirmModal()" class="btn-gray">ပြန်လည်ပြင်ဆင်မည်</button>
             </div>
         </div>
     </div>
 
     <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-        <div class="card" style="width: 100%; max-width: 380px; margin: 16px; box-shadow: var(--shadow); text-align: center; padding: 24px;">
-            <div id="status-icon" style="font-size: 3rem; margin-bottom: 12px;"></div>
-            <h3 id="status-title" style="margin-bottom: 8px;"></h3>
-            <p id="status-message" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5;"></p>
-            <button id="status-btn" onclick="closeStatusModal()" class="btn-blue" style="width: 60%; margin: 0 auto;">အိုကေ (OK)</button>
+        <div class="card" style="width: 100%; max-width: 380px; margin: 12px; box-shadow: var(--shadow); text-align: center; padding: 20px;">
+            <h3 id="status-title" style="margin-bottom: 6px; white-space: nowrap;"></h3>
+            <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; white-space: nowrap;"></p>
+            <button id="status-btn" onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
         </div>
     </div>
 

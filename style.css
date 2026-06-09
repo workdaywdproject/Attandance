@@ -27,8 +27,8 @@
 body {
     background-color: var(--background);
     color: var(--text);
-    padding: 20px;
-    line-height: 1.5;
+    padding: 16px;
+    line-height: 1.4;
 }
 
 .container {
@@ -37,23 +37,25 @@ body {
 }
 
 h2 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     color: var(--text);
     text-align: center;
     margin-bottom: 4px;
+    white-space: nowrap; /* စာကြောင်းအောက်မဆင်းစေရန် */
 }
 
 .sub-title {
     text-align: center;
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-bottom: 16px;
+    white-space: nowrap;
 }
 
 hr {
     border: 0;
     border-top: 1px solid var(--border);
-    margin: 16px 0;
+    margin: 14px 0;
 }
 
 /* ==================== COMPONENTS & CARDS ==================== */
@@ -61,16 +63,16 @@ hr {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 24px;
+    padding: 20px;
     box-shadow: var(--shadow);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .hidden {
     display: none !important;
 }
 
-/* ==================== 📸 WEBCAM VIEW & OVAL MASK ==================== */
+/* ==================== WEBCAM VIEW & OVAL MASK ==================== */
 .video-container {
     position: relative;
     width: 100%;
@@ -100,41 +102,43 @@ hr {
     border: 3px dashed var(--primary);
     border-radius: 50%;
     pointer-events: none;
-    box-shadow: 0 0 0 9999px rgba(255, 255, 255, 0); 
     z-index: 10;
 }
 
 .instruction-box {
     background: #eff6ff;
     color: #1e40af;
-    padding: 12px;
+    padding: 10px;
     border-radius: var(--radius-md);
     text-align: center;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.85rem;
     border: 1px solid #bfdbfe;
+    white-space: nowrap; /* စာကြောင်းအောက်မဆင်းစေရန် */
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ==================== FORMS & BUTTONS ==================== */
 .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .form-group label {
     display: block;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-bottom: 6px;
+    white-space: nowrap;
 }
 
 input[type="text"], input[type="password"] {
     width: 100%;
-    padding: 10px 14px;
+    padding: 10px 12px;
     border: 1px solid var(--border);
     border-radius: 8px;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     outline: none;
-    transition: border 0.2s;
 }
 
 input[type="text"]:focus, input[type="password"]:focus {
@@ -143,7 +147,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 
 .radio-group {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     margin-top: 6px;
 }
 
@@ -151,71 +155,69 @@ input[type="text"]:focus, input[type="password"]:focus {
     flex: 1;
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 12px;
+    padding: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     cursor: pointer;
     background: #fafafa;
+    white-space: nowrap;
 }
 
 .radio-card input {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
 }
 
 button {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: none;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    white-space: nowrap; /* စာကြောင်းအောက်မဆင်းစေရန် */
 }
 
 .btn-blue { background: var(--primary); color: #fff; }
-.btn-blue:hover { background: var(--primary-hover); }
 .btn-green { background: var(--success); color: #fff; }
-.btn-green:hover { background: var(--success-hover); }
 .btn-yellow { background: var(--warning); color: #fff; }
-.btn-yellow:hover { background: var(--warning-hover); }
 .btn-red { background: var(--danger); color: #fff; }
-.btn-red:hover { background: var(--danger-hover); }
 .btn-gray { background: var(--border); color: var(--text); }
-.btn-gray:hover { background: #cbd5e1; }
 
 .button-row {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 }
 
 /* ==================== TABLES & LOGS ==================== */
 .detail-box {
     border-left: 4px solid var(--primary);
     background: #f8fafc;
-    padding: 12px;
+    padding: 10px;
     border-radius: 4px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .detail-text p {
-    margin-bottom: 6px;
-    font-size: 0.95rem;
+    margin-bottom: 4px;
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 th, td {
-    padding: 10px 12px;
+    padding: 8px 10px;
     text-align: left;
     border-bottom: 1px solid var(--border);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 th {
@@ -227,13 +229,15 @@ th {
     color: var(--primary);
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 /* ==================== DASHBOARD GRID SYSTEM ==================== */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 16px;
 }
 
 @media (max-width: 768px) {
@@ -244,9 +248,10 @@ th {
 
 .maps-link {
     display: inline-block;
-    margin-top: 8px;
+    margin-top: 6px;
     color: var(--primary);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     text-decoration: none;
     font-weight: 600;
+    white-space: nowrap;
 }
