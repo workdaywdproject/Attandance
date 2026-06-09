@@ -1,6 +1,6 @@
 // ==================== ၁။ SUPABASE CLIENT SETUP ====================
-const SUPABASE_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
-const SUPABASE_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
+const API_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
+const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
 
 
 
