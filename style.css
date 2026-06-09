@@ -1,152 +1,152 @@
-/* ==========================================================================
-   ၁။ CORE VARIABLES & SYSTEM FONTS (စနစ်တစ်ခုလုံး၏ အခြေခံသတ်မှတ်ချက်များ)
-   ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-
+/* ==================== GLOBAL VARIABLES & THEME ==================== */
 :root {
-    /* Color Palette */
-    --bg-main: #f8fafc;
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary: #475569;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --background: #f8fafc;
     --surface: #ffffff;
+    --border: #e2e8f0;
     --text-main: #0f172a;
     --text-muted: #64748b;
-    --primary: #4f46e5;
-    --primary-hover: #4338ca;
-    --success: #10b981;
-    --success-bg: #ecfdf5;
-    --danger: #ef4444;
-    --danger-bg: #fef2f2;
-    --warning: #f59e0b;
-    --warning-bg: #fffbeb;
-    --border: #e2e8f0;
-    
-    /* Layout & Components Spec */
+    --radius-md: 10px;
     --radius-lg: 16px;
-    --radius-md: 12px;
-    --shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.04), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
-/* Global Reset */
+/* ==================== BASE STYLES ==================== */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    -webkit-tap-highlight-color: transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 body {
-    background-color: var(--bg-main);
+    background-color: var(--background);
     color: var(--text-main);
-    padding: 40px 16px;
-    line-height: 1.5;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
 }
 
-
-/* ==========================================================================
-   ၂။ LAYOUT CONTAINERS & CARDS (ပင်မ ဘောင်ဖွဲ့စည်းပုံများနှင့် ကတ်ပြားများ)
-   ========================================================================== */
-/* ဝန်ထမ်းသုံး မျက်နှာပြင်အတွက် ကျစ်လျစ်သော ဘောင် */
 .container {
-    max-width: 540px;
-    margin: 0 auto;
-    background: var(--surface);
-    padding: 32px 24px;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-    border: 1px solid rgba(15, 23, 42, 0.05);
+    width: 100%;
+    max-width: 600px;
+    background: transparent;
 }
 
-/* Admin နှင့် Dashboard သုံးရန် ကျယ်ပြန့်သော ဘောင် */
-.container.wide {
-    max-width: 1200px;
-}
-
-/* Premium Component Card */
-.card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 24px;
-    border-radius: var(--radius-md);
-    margin-bottom: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-}
-
-
-/* ==========================================================================
-   ၃။ TYPOGRAPHY & HEADER STYLES (စာသားအချိတ်အဆက်နှင့် ခေါင်းစဉ်ပုံစံများ)
-   ========================================================================== */
 h2 {
-    font-size: 1.75rem;
+    font-size: 1.6rem;
     font-weight: 700;
     color: var(--text-main);
-    text-align: center;
-    letter-spacing: -0.02em;
-}
-
-.sub-title {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.95rem;
-    margin-top: 6px;
-    margin-bottom: 24px;
+    margin-bottom: 4px;
 }
 
 h3 {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 600;
-    margin-bottom: 18px;
     color: var(--text-main);
+}
+
+.sub-title {
+    font-size: 0.9rem;
+    color: var(--text-muted);
 }
 
 hr {
     border: 0;
     height: 1px;
     background: var(--border);
-    margin: 24px 0;
+    margin: 16px 0;
 }
 
-
-/* ==========================================================================
-   ၄။ FORM INPUTS & RADIO CARDS (အချက်အလက်ဖြည့် သွင်းမှုပုံစံများ)
-   ========================================================================== */
-.form-group {
-    margin-bottom: 20px;
+/* ==================== LAYOUT & COMPONENTS ==================== */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
 }
 
-label {
-    display: block;
-    font-weight: 600;
+@media (max-width: 900px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+}
+
+.instruction-box {
+    background: #f1f5f9;
+    padding: 12px;
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    color: var(--secondary);
+    border-left: 4px solid var(--primary);
+    font-weight: 500;
+}
+
+.detail-box {
+    padding: 14px;
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--primary);
+    background: #f8fafc;
+    margin-bottom: 12px;
+}
+
+.detail-text p {
+    font-size: 0.95rem;
     margin-bottom: 8px;
-    font-size: 0.88rem;
-    color: #334155;
+    color: var(--text-main);
 }
 
-input[type="text"],
-input[type="password"] {
+/* ==================== FORM ELEMENTS ==================== */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--secondary);
+}
+
+input[type="text"], input[type="password"] {
     width: 100%;
-    padding: 14px 16px;
+    padding: 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     font-size: 0.95rem;
-    background: #f8fafc;
     color: var(--text-main);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-input[type="text"]:focus,
-input[type="password"]:focus {
+    background-color: #fff;
     outline: none;
-    border-color: var(--primary);
-    background: var(--surface);
-    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    transition: border-color 0.2s ease;
 }
 
-/* Premium Check-In/Out Radio Cards */
+input[type="text"]:focus, input[type="password"]:focus {
+    border-color: var(--primary);
+}
+
+/* Radio Cards Style */
 .radio-group {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
-    margin-top: 6px;
+    margin-top: 4px;
 }
 
 .radio-card {
@@ -155,201 +155,111 @@ input[type="password"]:focus {
     border-radius: var(--radius-md);
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
+    background: #fff;
     font-weight: 500;
-    font-size: 0.95rem;
-    transition: all 0.2s;
-    background: #f8fafc;
-}
-
-.radio-card input {
-    accent-color: var(--primary);
-    width: 16px;
-    height: 16px;
+    transition: background 0.2s ease;
 }
 
 .radio-card:hover {
-    border-color: var(--primary);
-    background: rgba(79, 70, 229, 0.02);
+    background: #f8fafc;
 }
 
+.radio-card input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary);
+}
 
-/* ==========================================================================
-   ၅။ BUTTONS & INTERACTIVE ELEMENTS (ခလုတ်များနှင့် အပြန်အလှန်သက်ရောက်မှုများ)
-   ========================================================================== */
-button {
+/* ==================== BUTTONS ==================== */
+button, .btn-blue, .btn-green, .btn-red, .btn-gray, .btn-yellow {
     width: 100%;
-    padding: 14px;
+    padding: 12px;
     border: none;
     border-radius: var(--radius-md);
     font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 8px;
+    align-items: center;
+    transition: opacity 0.2s ease;
 }
 
-button:active {
-    transform: scale(0.98); /* နှိပ်လိုက်လျှင် ချုံ့သွားမည့် ခံစားချက်ပေးသည် */
-}
+button:hover { opacity: 0.9; }
 
-.btn-blue { background: var(--primary); color: white; }
-.btn-blue:hover { background: var(--primary-hover); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2); }
+.btn-blue { background-color: var(--primary); color: #fff; }
+.btn-green { background-color: var(--success); color: #fff; }
+.btn-red { background-color: var(--danger); color: #fff; }
+.btn-gray { background-color: var(--secondary); color: #fff; }
+.btn-yellow { background-color: var(--warning); color: #fff; }
 
-.btn-green { background: var(--success); color: white; }
-.btn-green:hover { background: #059669; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
-
-.btn-yellow { background: #fef08a; color: #854d0e; }
-.btn-yellow:hover { background: #fde047; }
-
-.btn-red { background: #fee2e2; color: var(--danger); }
-.btn-red:hover { background: #fca5a5; color: #7f1d1d; }
-
-.btn-gray { background: #f1f5f9; color: #475569; }
-.btn-gray:hover { background: #e2e8f0; }
-
-.nav-link {
-    color: var(--primary);
-    text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-.nav-link:hover { text-decoration: underline; }
-
-.hidden { display: none !important; }
-
-
-/* ==========================================================================
-   ၆။ BIOMETRIC CAMERA CAMERA VIEWBOX (ကင်မရာနှင့် ညွှန်ကြားချက်ပြ ကွက်လပ်)
-   ========================================================================== */
+/* ==================== WEBCAM & VIDEO ==================== */
 .video-container {
-    width: 100%;
-    max-width: 440px;
-    margin: 20px auto 0;
+    margin-top: 16px;
+    background: #000;
     border-radius: var(--radius-md);
     overflow: hidden;
-    background: #1e293b;
-    aspect-ratio: 4/3;
-    border: 4px solid var(--surface);
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
     position: relative;
+    aspect-ratio: 4/3;
 }
-
-.video-container.small { max-width: 340px; }
 
 video {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1); /* မှန်ကြည့်သကဲ့သို့ Flip လုပ်ပေးထားသည် */
 }
 
-.instruction-box {
-    background: rgba(79, 70, 229, 0.06);
+/* ==================== UTILITIES ==================== */
+.hidden { display: none !important; }
+
+.button-row {
+    display: flex;
+    gap: 12px;
+}
+
+.nav-link {
     color: var(--primary);
-    padding: 14px;
-    border-radius: var(--radius-md);
-    text-align: center;
+    text-decoration: none;
+    font-weight: 500;
+}
+.nav-link:hover { text-decoration: underline; }
+
+.maps-link {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--primary);
+    text-decoration: none;
     font-weight: 600;
-    font-size: 0.92rem;
-    border: 1px solid rgba(79, 70, 229, 0.15);
-    backdrop-filter: blur(4px);
 }
 
-.success-text {
-    color: var(--success);
-    background: var(--success-bg);
-    padding: 12px;
-    border-radius: var(--radius-md);
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 20px;
-    border: 1px solid rgba(16, 185, 129, 0.15);
-}
-
-
-/* ==========================================================================
-   ၇။ DATA TABLES & GRID SYSTEM (ဒေတာဇယားများနှင့် ကွက်လပ်စီမံမှု)
-   ========================================================================== */
-.admin-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.3fr;
-    gap: 32px;
-}
-
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-}
-
+/* ==================== DATA TABLES ==================== */
 table {
     width: 100%;
     border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 0.9rem;
+}
+
+th, td {
+    padding: 12px;
     text-align: left;
-    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
 }
 
-th, td { padding: 14px 16px; border-bottom: 1px solid var(--border); }
-th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 0.85rem; letter-spacing: 0.03em; text-transform: uppercase; }
-tr:last-child td { border-bottom: none; }
-tr:hover td { background-color: #f8fafc; }
-
-.button-row { display: flex; gap: 12px; }
-
-
-/* ==========================================================================
-   ၈။ CALENDAR & DASHBOARD DETAILS (ဒက်ရှ်ဘုတ်ပြက္ခဒိန်နှင့် အသေးစိတ်ပြကွက်)
-   ========================================================================== */
-#calendar {
-    font-size: 0.9rem;
-    --fc-border-color: #e2e8f0;
-    --fc-today-bg-color: rgba(79, 70, 229, 0.05);
-    --fc-button-bg-color: #4f46e5;
-    --fc-button-border-color: #4f46e5;
-    --fc-button-hover-bg-color: #4338ca;
-}
-
-.fc .fc-button-primary:disabled { background-color: #94a3b8; border-color: #94a3b8; }
-
-.detail-box {
-    background: #f8fafc;
-    padding: 16px;
-    border-radius: var(--radius-md);
-    margin-bottom: 20px;
-    border-left: 4px solid var(--primary);
-}
-
-.detail-text p { margin-bottom: 12px; font-size: 0.95rem; color: #334155; }
-
-.maps-link {
-    display: inline-flex;
-    align-items: center;
-    margin-top: 10px;
-    color: var(--success);
+th {
+    background-color: #f1f5f9;
     font-weight: 600;
-    text-decoration: none;
-    background: var(--success-bg);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 0.88rem;
-    transition: all 0.2s;
+    color: var(--secondary);
 }
-.maps-link:hover { background: #d1fae5; }
 
-
-/* ==========================================================================
-   ၉။ MOBILE RESPONSIVE QUERIES (ဖုန်းများနှင့် Tablet များအတွက် အလိုအလျောက်ညှိမှု)
-   ========================================================================== */
-@media (max-width: 968px) {
-    body { padding: 16px 8px; }
-    .container { padding: 24px 16px; border-radius: var(--radius-md); }
-    .admin-grid { grid-template-columns: 1fr; gap: 20px; }
-    .radio-group { grid-template-columns: 1fr; }
+/* FullCalendar Custom Mini Fix */
+.fc {
+    font-size: 0.85rem !important;
+}
+.fc .fc-button-primary {
+    background-color: var(--secondary) !important;
+    border-color: var(--secondary) !important;
 }

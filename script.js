@@ -7,7 +7,7 @@ try {
     if (typeof supabase !== 'undefined' && supabase.createClient) {
         appSupabase = supabase.createClient(API_URL, API_KEY);
     } else {
-        console.error("Supabase Library is missing from HTML.");
+        console.error("Supabase Library Reference Error.");
     }
 } catch (err) {
     console.log("Supabase initialization caught: ", err.message);
@@ -31,7 +31,7 @@ async function verifyAdminLogin() {
     const userInp = document.getElementById('login-user').value.trim();
     const passInp = document.getElementById('login-pass').value.trim();
 
-    if(!userInp || !passInp) { alert("Username နှင့် Password ကို ဖြည့်သွင်းပါ။"); return; }
+    if(!userInp || !passInp) { alert("အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်သွင်းပါ။"); return; }
     if(!appSupabase) return;
 
     const { data, error } = await appSupabase
@@ -41,16 +41,16 @@ async function verifyAdminLogin() {
         .eq('password', passInp);
 
     if (error) {
-        alert("စနစ်အတွင်း အမှားအယွင်းရှိပါသည်- " + error.message);
+        alert("စနစ်အတွင်း အမှားအယွင်းရှိပါသည်: " + error.message);
         return;
     }
 
     if(data && data.length > 0) {
         sessionStorage.setItem('admin_authenticated', 'true');
-        alert("✓ ဝင်ရောက်ခွင့် အောင်မြင်ပါသည်။");
+        alert("✓ စစ်ဆေးမှု အောင်မြင်ပါသည်။");
         window.location.href = 'dashboard.html';
     } else {
-        alert("❌ Username သို့မဟုတ် Password မှားယွင်းနေပါသည်။");
+        alert("❌ အချက်အလက် မှားယွင်းနေပါသည်။");
     }
 }
 
@@ -61,8 +61,8 @@ function handleLogout() {
 
 async function changeAdminPassword() {
     const newPass = document.getElementById('new-admin-pass').value.trim();
-    if(!newPass) { alert("စကားဝှက်အသစ်ကို ရိုက်ထည့်ပါဦး။"); return; }
-    if(newPass.length < 6) { alert("လုံခြုံရေးအတွက် စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။"); return; }
+    if(!newPass) { alert("စကားဝှက်အသစ် ဖြည့်သွင်းပါ။"); return; }
+    if(newPass.length < 6) { alert("စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။"); return; }
 
     if(!appSupabase) return;
 
@@ -72,9 +72,9 @@ async function changeAdminPassword() {
         .eq('username', 'admin');
 
     if(error) {
-        alert("Password ပြောင်းလဲမှု မအောင်မြင်ပါ- " + error.message);
+        alert("လုပ်ဆောင်မှု မအောင်မြင်ပါ: " + error.message);
     } else {
-        alert("✓ Admin Password အား အောင်မြင်စွာ ပြောင်းလဲပြီးပါပြီ။");
+        alert("✓ စကားဝှက် ပြောင်းလဲမှု အောင်မြင်ပါသည်။");
         document.getElementById('new-admin-pass').value = "";
     }
 }
@@ -90,7 +90,7 @@ async function loadFaceModels() {
         await faceapi.nets.faceLandmark68Net.loadFromUri(modelsPath);
         await faceapi.nets.faceRecognitionNet.loadFromUri(modelsPath);
         await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
-        console.log("Biometric Models Loaded Successfully.");
+        console.log("Biometric Models Loaded.");
         
         if (typeof fetchEmployees === 'function' && sessionStorage.getItem('admin_authenticated') === 'true') {
             fetchEmployees();
@@ -107,7 +107,7 @@ window.onload = () => {
     }
 };
 
-// ==================== ၄။ 3-STEP BIOMETRIC AUTO-RECOGNITION VERIFICATION ====================
+// ==================== ၄။ BIOMETRIC AUTO-RECOGNITION VERIFICATION ====================
 let matchedEmployeeId = null;
 let matchedEmployeeName = null;
 
@@ -135,7 +135,7 @@ async function startAutoFaceScan() {
         let isFinished = false; 
         const HOLD_DURATION = 1000; 
 
-        instruction.innerText = "[အဆင့် ၁/၃] ခေါင်းကို บယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
+        instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ အနည်းငယ် လှည့်ပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
 
@@ -165,7 +165,7 @@ async function startAutoFaceScan() {
                         isWaiting = true; 
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
-                            instruction.innerText = "[အဆင့် ၂/၃] ခေါင်းကို အပေါ်သို့မော့ပါ (သို့မဟုတ်) အောက်သို့ညှိမ့်ပေးပါ...";
+                            instruction.innerText = "[အဆင့် ၂/၃] ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
                             isWaiting = false; 
                         }, HOLD_DURATION);
                     }
@@ -175,7 +175,7 @@ async function startAutoFaceScan() {
                         isWaiting = true;
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
-                            instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာကို ဗဟိုတည့်တည့် စိုက်ကြည့်ပြီး ခေတ္တငြိမ်ပေးပါ...";
+                            instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာတည့်တည့်သို့ ဂရုပြုစိုက်ကြည့်ပါ...";
                             isWaiting = false; 
                         }, HOLD_DURATION);
                     }
@@ -184,7 +184,7 @@ async function startAutoFaceScan() {
                     if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
                         isFinished = true; 
                         clearInterval(detectionTimer); 
-                        instruction.innerText = "ဇီဝဒေတာကို Database နှင့် ချိတ်ဆက်စစ်ဆေးနေပါသည်...";
+                        instruction.innerText = "အချက်အလက်များအား စစ်ဆေးနေပါသည်...";
 
                         const currentDescriptor = result.descriptor;
                         const isRecognized = await matchFaceWithDatabase(currentDescriptor);
@@ -195,14 +195,14 @@ async function startAutoFaceScan() {
                         }
 
                         if(isRecognized) {
-                            alert(`✓ မင်္ဂလာပါ ${matchedEmployeeName}။ ဝန်ထမ်းအထောက်အထား ကိုက်ညီမှုရှိပါသည်။`);
+                            alert(`✓ အထောက်အထား ကိုက်ညီမှုရှိပါသည်။`);
                             document.getElementById('step-1').classList.add('hidden');
                             
                             document.getElementById('recognized-name').innerText = matchedEmployeeName;
                             document.getElementById('recognized-id').innerText = matchedEmployeeId;
                             document.getElementById('step-2').classList.remove('hidden');
                         } else {
-                            alert("❌ ဝန်ထမ်းအချက်အလက် ရှာမတွေ့ပါ။ ကျေးဇူးပြု၍ Admin Panel တွင် Register အရင်လုပ်ပေးပါ။");
+                            alert("❌ ဝန်ထမ်းမှတ်တမ်း ရှာမတွေ့ပါ။");
                             location.reload();
                         }
                     }
@@ -211,7 +211,7 @@ async function startAutoFaceScan() {
         }, 300); 
 
     } catch (err) {
-        alert("ဗီဒီယိုစနစ် အလုပ်လုပ်ရန် အခက်အခဲရှိပါသည်- " + err.name);
+        alert("ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: " + err.name);
     }
 }
 
@@ -253,14 +253,13 @@ async function matchFaceWithDatabase(currentDescriptor) {
     return false;
 }
 
-// ==================== ၄။(ခ) ADMIN SIDE FACE REGISTER SCAN (FOR ADMIN PANEL) ====================
+// ==================== ၄။(ခ) BIOMETRIC ENROLLMENT SCAN (ADMIN) ====================
 async function startFaceScan(role) {
     if(role !== 'ADMIN') return;
     document.getElementById('admin-cam-box').classList.remove('hidden');
 
     const video = document.getElementById('admin-video');
     const instruction = document.getElementById('admin-instruction');
-
     const constraints = { video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false };
 
     try {
@@ -274,7 +273,7 @@ async function startFaceScan(role) {
         let isFinished = false; 
         const HOLD_DURATION = 1000; 
 
-        instruction.innerText = "[အဆင့် ၁/၃] ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
+        instruction.innerText = "[အဆင့် ၁/၃] ဦးခေါင်းကို ဘယ်/ညာသို့ အနည်းငယ် လှည့်ပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
 
@@ -301,7 +300,7 @@ async function startFaceScan(role) {
                         isWaiting = true; 
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
-                            instruction.innerText = "[အဆင့် ၂/၃] ခေါင်းကို အပေါ်သို့မော့ပါ (သို့မဟုတ်) အောက်သို့ညှိမ့်ပေးပါ...";
+                            instruction.innerText = "[အဆင့် ၂/၃] ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
                             isWaiting = false; 
                         }, HOLD_DURATION);
                     }
@@ -311,7 +310,7 @@ async function startFaceScan(role) {
                         isWaiting = true;
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
-                            instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာကို ဗဟိုတည့်တည့် စိုက်ကြည့်ပေးပါ...";
+                            instruction.innerText = "[အဆင့် ၃/၃] ကင်မရာတည့်တည့်သို့ ဂရုပြုစိုက်ကြည့်ပါ...";
                             isWaiting = false; 
                         }, HOLD_DURATION);
                     }
@@ -320,7 +319,7 @@ async function startFaceScan(role) {
                     if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
                         isFinished = true; 
                         clearInterval(detectionTimer); 
-                        instruction.innerText = "လုပ်ငန်းစဉ် ပြီးမြောက်သွားပါပြီ...";
+                        instruction.innerText = "လုပ်ငန်းစဉ် ပြီးမြောက်ပါပြီ...";
 
                         setTimeout(() => {
                             document.getElementById('admin-face-data').value = JSON.stringify(Array.from(result.descriptor));
@@ -335,16 +334,16 @@ async function startFaceScan(role) {
                                 window.globalCamStream.getTracks().forEach(track => track.stop());
                                 window.globalCamStream = null;
                             }
-                            alert("✓ ဝန်ထမ်းအသစ်အတွက် ဇီဝအချက်အထား မှတ်တမ်းယူခြင်း အောင်မြင်ပါသည်။");
+                            alert("✓ ဇီဝအချက်အလက် မှတ်တမ်းယူခြင်း အောင်မြင်ပါသည်။");
                         }, HOLD_DURATION);
                     }
                 }
             }
         }, 300); 
-    } catch (err) { alert("ဗီဒီယိုစနစ် အလုပ်လုပ်ရန် အခက်အခဲရှိပါသည်- " + err.name); }
+    } catch (err) { alert("ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: " + err.name); }
 }
 
-// ==================== ၅။ ADMIN EMPLOYEES CRUD CONTROL ====================
+// ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD) ====================
 let isEditing = false;
 
 async function checkDuplicateID() {
@@ -356,7 +355,7 @@ async function checkDuplicateID() {
 
     const btnSave = document.getElementById('btn-save');
     if (data.length > 0 && !isEditing) {
-        alert("❌ ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးသား ဖြစ်သည်။");
+        alert("❌ ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးဖြစ်သည်။");
         document.getElementById('admin-emp-id').style.borderColor = "var(--danger)";
         if(btnSave) { btnSave.disabled = true; btnSave.style.opacity = "0.5"; }
     } else {
@@ -371,7 +370,7 @@ async function saveEmployee() {
     const faceData = document.getElementById('admin-face-data').value;
 
     if (!empId || !name || !faceData || !appSupabase) { 
-        alert("သတ်မှတ်ချက် အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။"); 
+        alert("လိုအပ်သော အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။"); 
         return; 
     }
 
@@ -383,9 +382,9 @@ async function saveEmployee() {
     }
 
     if (query.error) { 
-        alert("သိမ်းဆည်းမှု မအောင်မြင်ပါ- " + query.error.message); 
+        alert("သိမ်းဆည်းမှု မအောင်မြင်ပါ: " + query.error.message); 
     } else { 
-        alert("ဝန်ထမ်းအချက်အလက် သိမ်းဆည်းခြင်း အောင်မြင်ပါသည်။"); 
+        alert("✓ ဝန်ထမ်းအချက်အလက် သိမ်းဆည်းမှု အောင်မြင်ပါသည်။"); 
         resetAdminForm(); 
         fetchEmployees(); 
     }
@@ -407,8 +406,8 @@ async function fetchEmployees() {
                 <td style="color:var(--success); font-weight:600;">✓ အဆင်သင့်</td>
                 <td>
                     <div class="button-row">
-                        <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.face_embedding}')" class="btn-yellow" style="padding:6px 12px; font-size:0.8rem;">ပြင်ရန်</button>
-                        <button onclick="deleteEmployee('${emp.employee_id}')" class="btn-red" style="padding:6px 12px; font-size:0.8rem;">Фျက်ရန်</button>
+                        <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.face_embedding}')" class="btn-yellow" style="padding:6px 12px; font-size:0.8rem;">ပြင်ဆင်ရန်</button>
+                        <button onclick="deleteEmployee('${emp.employee_id}')" class="btn-red" style="padding:6px 12px; font-size:0.8rem;">ပယ်ဖျက်ရန်</button>
                     </div>
                 </td>
             </tr>`;
@@ -430,7 +429,7 @@ function editEmployee(id, name, face) {
 }
 
 async function deleteEmployee(empId) {
-    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေချာပါသလား?") && appSupabase) {
+    if (confirm("ဤမှတ်တမ်းအား ပယ်ဖျက်ရန် သေချာပါသလား?") && appSupabase) {
         await appSupabase.from('employees').delete().eq('employee_id', empId);
         fetchEmployees();
     }
@@ -450,11 +449,11 @@ function resetAdminForm() {
     isEditing = false;
 }
 
-// ==================== ၆။ ATTENDANCE CART BOX & SUBMIT LOGIC ====================
+// ==================== ၆။ ATTENDANCE TRANSACTION LOGIC ====================
 function showConfirmModal() {
     const typeRadio = document.querySelector('input[name="attendance-type"]:checked').value;
     const typeText = (typeRadio === 'IN') ? "အဝင် (Check-In)" : "အထွက် (Check-Out)";
-    const remarkText = document.getElementById('remark').value.trim() || "မှတ်ချက်မရှိပါ";
+    const remarkText = document.getElementById('remark').value.trim() || "မရှိပါ";
 
     document.getElementById('conf-id').innerText = matchedEmployeeId;
     document.getElementById('conf-name').innerText = matchedEmployeeName;
@@ -487,16 +486,16 @@ function submitAttendance() {
             ]);
 
             if (error) {
-                alert("မှတ်တမ်းတင်မှု မအောင်မြင်ပါ- " + error.message);
+                alert("လုပ်ဆောင်မှု မအောင်မြင်ပါ: " + error.message);
             } else { 
-                alert("✓ တက်ရောက်မှု မှတ်တမ်းကို Cart Box မှတစ်ဆင့် အောင်မြင်စွာ သိမ်းဆည်းပြီးပါပြီ။"); 
+                alert("✓ တက်ရောက်မှုမှတ်တမ်း တင်ပြခြင်း အောင်မြင်ပါသည်။"); 
                 location.reload(); 
             }
         }, (geoErr) => {
-            alert("GPS တည်နေရာ ရှာမတွေ့ပါသဖြင့် မှတ်တမ်းမတင်နိုင်ပါ။ GPS ဖွင့်ပေးပါ။");
+            alert("GPS စနစ် အသုံးပြုခွင့် ပေးရန် လိုအပ်ပါသည်။");
         });
     } else { 
-        alert("သင့် Browser သည် GPS စနစ်ကို Support မလုပ်ပါ။"); 
+        alert("တည်နေရာပြစနစ်အား အသုံးပြု၍မရပါ။"); 
     }
 }
 
@@ -518,7 +517,7 @@ async function initCalendar() {
             extendedProps: {
                 empId: log.employee_id, empName: empName,
                 type: log.type === 'IN' ? 'အဝင် (Check-In)' : 'အထွက် (Check-Out)',
-                time: timeStr, remark: log.remark || "မှတ်ချက်မရှိပါ",
+                time: timeStr, remark: log.remark || "မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
                 mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}`
             },
@@ -532,10 +531,10 @@ async function initCalendar() {
         events: calendarEvents,
         eventClick: function(info) {
             const props = info.event.extendedProps;
-            document.getElementById('selected-date-title').innerText = `${info.event.startStr} ရက်စွဲမှတ်တမ်း`;
+            document.getElementById('selected-date-title').innerText = `${info.event.startStr} မှတ်တမ်းအသေးစိတ်`;
             document.getElementById('attendance-details').innerHTML = `
                 <div class="detail-box">
-                    <p><b>ဝန်ထမ်း အမည်:</b> <span style="color: var(--primary); font-weight:600;">${props.empName}</span></p>
+                    <p><b>ဝန်ထမ်းအမည်:</b> <span style="color: var(--primary); font-weight:600;">${props.empName}</span></p>
                     <p style="font-size:0.85rem; color:var(--text-muted);">ဝန်ထမ်းကုဒ်: ${props.empId}</p>
                 </div>
                 <div class="detail-text">
@@ -543,7 +542,7 @@ async function initCalendar() {
                     <p><b>အချိန်:</b> ${props.time}</p>
                     <p><b>မှတ်ချက်:</b> ${props.remark}</p>
                     <p><b>တည်နေရာ:</b> ${props.location}</p>
-                    <a href="${props.mapsLink}" target="_blank" class="maps-link">📍 Google Maps တွင် ကြည့်ရန်</a>
+                    <a href="${props.mapsLink}" target="_blank" class="maps-link">📍 Google Maps တွင် ကြည့်ရှုရန်</a>
                 </div>`;
         }
     });

@@ -3,47 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Attendance Dashboard</title>
+    <title>Admin Dashboard - Biometric Attendance</title>
     <link rel="stylesheet" href="style.css">
+    
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
     
     <script>
-        if(sessionStorage.getItem('admin_authenticated') !== 'true') {
+        if (sessionStorage.getItem('admin_authenticated') !== 'true') {
             window.location.replace('portal.html');
         }
     </script>
 </head>
 <body>
 
-    <div class="container wide">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-            <h2>📊 Attendance Dashboard</h2>
-            <button onclick="handleLogout()" class="btn-red" style="width: auto; padding: 8px 16px; font-size: 0.85rem;">🔒 Logout ထွက်မည်</button>
-        </div>
-        <p class="sub-title">ဝန်ထမ်းများ၏ နေ့စဉ် ရောက်ရှိမှု မှတ်တမ်းပြက္ခဒိန်</p>
-        <hr>
-
-        <div class="admin-grid">
-            <div class="card">
-                <div id="calendar"></div>
+    <div class="container" style="max-width: 1200px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 16px;">
+            <div>
+                <h2>⚙️ စနစ်စီမံခန့်ခွဲမှုစာမျက်နှာ</h2>
+                <p class="sub-title">Admin Dashboard Control Panel</p>
             </div>
+            <button onclick="handleLogout()" class="btn-red" style="padding: 10px 20px; width: auto;">ထွက်ခွာမည် ➔</button>
+        </div>
+        <hr style="margin-bottom: 24px;">
 
+        <div class="dashboard-grid">
             <div class="card">
-                <h3 id="selected-date-title">မှတ်တမ်းအသေးစိတ်</h3>
-                <div id="attendance-details">
-                    <p style="color: var(--text-muted); text-align: center; margin-top: 40px; font-size: 0.95rem;">
-                        အသေးစိတ် အချက်အလက်များကို ကြည့်ရှုရန် ပြက္ခဒိန်ပေါ်ရှိ မှတ်တမ်းတစ်ခုခုကို နှိပ်ပါ။
-                    </p>
+                <h3 id="form-title">👤 ဝန်ထမ်းအချက်အလက် စာရင်းသွင်းခြင်း</h3>
+                <hr style="margin: 12px 0;">
+                
+                <div class="form-group">
+                    <label>ဝန်ထမ်းကုဒ် (Employee ID):</label>
+                    <input type="text" id="admin-emp-id" oninput="checkDuplicateID()" placeholder="ဥပမာ - EMP-001">
+                </div>
+
+                <div class="form-group">
+                    <label>ဝန်ထမ်းအမည် (Full Name):</label>
+                    <input type="text" id="admin-emp-name" placeholder="အမည် အပြည့်အစုံ ရိုက်ထည့်ပါ">
+                </div>
+
+                <div class="form-group">
+                    <label>ဇီဝအချက်အလက် အခြေအနေ (Biometric Status):</label>
+                    <p id="face-status" style="font-weight: 600; color: var(--danger); margin-top: 4px; font-size: 0.9rem;">ဇီဝအချက်အလက် မရှိသေးပါ</p>
+                    <input type="hidden" id="admin-face-data">
+                </div>
+
+                <button onclick="startFaceScan('ADMIN')" class="btn-blue" style="margin-bottom: 12px;">📸 ဇီဝအချက်အလက် မှတ်တမ်းယူမည်</button>
+                
+                <div id="admin-cam-box" class="video-container hidden" style="margin-bottom: 12px;">
+                    <p id="admin-instruction" class="instruction-box" style="margin-bottom: 8px; font-size:0.85rem;"></p>
+                    <video id="admin-video" autoplay muted playsinline style="width: 100%; border-radius: var(--radius-md);"></video>
+                </div>
+
+                <div class="button-row">
+                    <button onclick="saveEmployee()" id="btn-save" class="btn-green">သိမ်းဆည်းမည်</button>
+                    <button onclick="resetAdminForm()" class="btn-gray">ပယ်ဖျက်မည်</button>
+                </div>
+
+                <h3 style="margin-top: 32px;">📋 စနစ်အတွင်းရှိ ဝန်ထမ်းများ</h3>
+                <hr style="margin: 12px 0;">
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>အမည်</th>
+                                <th>ဇီဝဒေတာ</th>
+                                <th>လုပ်ဆောင်ချက်</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employee-table-body">
+                            </tbody>
+                    </table>
                 </div>
             </div>
-        </div>
 
-        <div style="text-align: center; margin-top: 24px; font-size: 0.9rem;">
-            <a href="portal.html" class="nav-link">🚪 Portal Main Gateway</a>  •  
-            <a href="admin.html" class="nav-link">⚙️ Admin Control သို့ သွားရန်</a>
+            <div>
+                <div class="card" style="margin-bottom: 24px;">
+                    <h3>🔒 လုံခြုံရေး ဆက်တင်</h3>
+                    <hr style="margin: 12px 0;">
+                    <div class="form-group">
+                        <label>စီမံခန့်ခွဲသူ စကားဝှက်အသစ် (New Admin Password):</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="password" id="new-admin-pass" placeholder="အနည်းဆုံး ၆ လုံး" style="margin:0;">
+                            <button onclick="changeAdminPassword()" class="btn-blue" style="width: auto; white-space: nowrap;">ပြောင်းလဲမည်</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>📅 တက်ရောက်မှု ပြက္ခဒိန်စောင့်ကြည့်မှု</h3>
+                    <hr style="margin: 12px 0 20px 0;">
+                    <div id="calendar"></div>
+                </div>
+
+                <div class="card" style="margin-top: 24px; border-left: 4px solid var(--primary);">
+                    <h3 id="selected-date-title">မှတ်တမ်းအသေးစိတ်</h3>
+                    <hr style="margin: 12px 0;">
+                    <div id="attendance-details">
+                        <p style="color: var(--text-muted); font-style: italic; text-align: center;">ပြက္ခဒိန်ပေါ်ရှိ မှတ်တမ်းတစ်ခုကို နှိပ်၍ အသေးစိတ် ကြည့်ရှုနိုင်ပါသည်။</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
