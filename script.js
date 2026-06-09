@@ -10,7 +10,7 @@ let detectionTimer = null;
 // ==================== ၂။ AI MODELS LOADING (GITHUB PAGES PATH FIX) ====================
 async function loadFaceModels() {
     try {
-        // 🛠️ GitHub Pages လမ်းကြောင်းအမှား (404) ကို ကျော်လွှားရန် လက်ရှိ တည်နေရာအခြေခံဖြင့် ရည်ညွှန်းခြင်း
+        // GitHub Pages လမ်းကြောင်းအမှား (404) မတက်စေရန် လက်ရှိ URL အခြေခံဖြင့် ရှာဖွေခြင်း
         const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
         const modelsPath = `${window.location.origin}${basePath}/models`;
 
@@ -18,14 +18,14 @@ async function loadFaceModels() {
         await faceapi.nets.faceLandmark68Net.loadFromUri(modelsPath);
         await faceapi.nets.faceRecognitionNet.loadFromUri(modelsPath);
         await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
-        console.log("Face-API Liveness Models Loaded successfully!");
+        console.log("Biometric Models Loaded Successfully.");
     } catch (e) {
         alert("စနစ်အတွင်းပိုင်း နည်းပညာဆိုင်ရာ အမှားအယွင်းရှိပါသည်- " + e.message);
     }
 }
 loadFaceModels();
 
-// ==================== ၃။ PROFESSIONAL LIVENESS SCORING SYSTEM ====================
+// ==================== ၃။ BIOMETRIC LIVENESS VERIFICATION ====================
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -56,13 +56,14 @@ async function startFaceScan(role) {
         window.globalCamStream = stream; 
         video.srcObject = stream;
         
+        // Mobile & iOS Compatibility Settings
         video.setAttribute('playsinline', true);
         video.setAttribute('webkit-playsinline', true);
         video.muted = true;
         
         await video.play();
 
-        let livenessStep = 'EYE_BLINK_CHECK'; // ပထမအဆင့် - မျက်တောင်ခတ်မှု စစ်ဆေးခြင်း
+        let livenessStep = 'EYE_BLINK_CHECK'; 
         instruction.innerText = "စစ်မှန်မှု အတည်ပြုရန်အတွက် ကျေးဇူးပြု၍ မျက်တောင်ခတ်ပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
@@ -76,7 +77,7 @@ async function startFaceScan(role) {
                                         .withFaceDescriptor();
 
             if (result) {
-                // အဆင့် ၁ - Eye Blink Verification (Liveness Feature)
+                // အဆင့် ၁ - Eye Blink Verification (သက်ရှိထင်ရှားဟုတ်မဟုတ် စစ်ဆေးခြင်း)
                 if (livenessStep === 'EYE_BLINK_CHECK') {
                     const landmarks = result.landmarks;
                     const leftEye = landmarks.getLeftEye();
@@ -86,13 +87,12 @@ async function startFaceScan(role) {
                     const rightEyeHeight = Math.abs(rightEye[1].y - rightEye[5].y);
                     
                     if (leftEyeHeight < 3.8 || rightEyeHeight < 3.8) {
-                        livenessStep = 'STABILITY_CHECK'; // ဒုတိယအဆင့် - တည်ငြိမ်မှု စစ်ဆေးခြင်း
+                        livenessStep = 'STABILITY_CHECK'; 
                         instruction.innerText = "လုပ်ငန်းစဉ် ပြီးဆုံးရန်အတွက် ကင်မရာကို တည့်တည့်ကြည့်ပြီး ခေတ္တငြိမ်ပေးပါ...";
                     }
                 } 
-                // အဆင့် ၂ - Static Stability Check (Biometric Standard)
+                // အဆင့် ၂ - Static Biometric Stability Check (ပုံရိပ် တည်ငြိမ်မှု စစ်ဆေးခြင်း)
                 else if (livenessStep === 'STABILITY_CHECK') {
-                    // ပုံရိပ်သည် ဓာတ်ပုံမဟုတ်ဘဲ သက်ရှိလူသားဖြစ်ကြောင်း အတည်ပြုရန် Neutral Matrix ကို တိုင်းတာခြင်း
                     if (result.expressions.neutral > 0.60 || result.expressions.happy > 0.30) { 
                         
                         clearInterval(detectionTimer);
@@ -108,6 +108,7 @@ async function startFaceScan(role) {
                             document.getElementById('step-3').classList.remove('hidden');
                         }
 
+                        // ကင်မရာ စနစ်တကျ ပြန်ပိတ်ခြင်း
                         if (window.globalCamStream) {
                             window.globalCamStream.getTracks().forEach(track => track.stop());
                             window.globalCamStream = null;
