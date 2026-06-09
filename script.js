@@ -7,10 +7,9 @@ const appSupabase = supabase.createClient(API_URL, API_KEY);
 window.globalCamStream = null;
 let detectionTimer = null;
 
-// ==================== ၂။ AI MODELS LOADING (GITHUB PAGES PATH FIX) ====================
+// ==================== ၂။ AI MODELS LOADING ====================
 async function loadFaceModels() {
     try {
-        // GitHub Pages လမ်းကြောင်းအမှား (404) မတက်စေရန် လက်ရှိ URL အခြေခံဖြင့် ရှာဖွေခြင်း
         const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
         const modelsPath = `${window.location.origin}${basePath}/models`;
 
@@ -25,7 +24,7 @@ async function loadFaceModels() {
 }
 loadFaceModels();
 
-// ==================== ၃။ BIOMETRIC LIVENESS VERIFICATION ====================
+// ==================== ၃။ BINANCE STYLE HEAD-TURN LIVENESS DETECTION ====================
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -56,15 +55,15 @@ async function startFaceScan(role) {
         window.globalCamStream = stream; 
         video.srcObject = stream;
         
-        // Mobile & iOS Compatibility Settings
         video.setAttribute('playsinline', true);
         video.setAttribute('webkit-playsinline', true);
         video.muted = true;
         
         await video.play();
 
-        let livenessStep = 'EYE_BLINK_CHECK'; 
-        instruction.innerText = "စစ်မှန်မှု အတည်ပြုရန်အတွက် ကျေးဇူးပြု၍ မျက်တောင်ခတ်ပေးပါ...";
+        // 🔄 Binance စံနှုန်းအတိုင်း ခေါင်းလှည့်ခိုင်းသည့် အဆင့်သတ်မှတ်ခြင်း
+        let livenessStep = 'HEAD_TURN_CHECK'; 
+        instruction.innerText = "စစ်မှန်မှု အတည်ပြုရန်အတွက် ကျေးဇူးပြု၍ ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
 
         if (detectionTimer) clearInterval(detectionTimer);
 
@@ -77,23 +76,30 @@ async function startFaceScan(role) {
                                         .withFaceDescriptor();
 
             if (result) {
-                // အဆင့် ၁ - Eye Blink Verification (သက်ရှိထင်ရှားဟုတ်မဟုတ် စစ်ဆေးခြင်း)
-                if (livenessStep === 'EYE_BLINK_CHECK') {
-                    const landmarks = result.landmarks;
-                    const leftEye = landmarks.getLeftEye();
-                    const rightEye = landmarks.getRightEye();
-                    
-                    const leftEyeHeight = Math.abs(leftEye[1].y - leftEye[5].y);
-                    const rightEyeHeight = Math.abs(rightEye[1].y - rightEye[5].y);
-                    
-                    if (leftEyeHeight < 3.8 || rightEyeHeight < 3.8) {
+                const landmarks = result.landmarks;
+                
+                // 📐 နှာခေါင်း၊ မျက်နှာ ဘယ်ဘက်အစွန်းနှင့် ညာဘက်အစွန်း Point များကို ရယူခြင်း
+                const nose = landmarks.getNose()[0]; 
+                const leftJaw = landmarks.getJawOutline()[0]; 
+                const rightJaw = landmarks.getJawOutline()[16]; 
+
+                // နှာခေါင်းနှင့် မျက်နှာဘေးဘောင်နှစ်ဖက်၏ အကွာအဝေးအချိုးကို တွက်ချက်ခြင်း (X-Axis Ratio)
+                const distanceToLeft = Math.abs(nose.x - leftJaw.x);
+                const distanceToRight = Math.abs(nose.x - rightJaw.x);
+                const turnRatio = distanceToLeft / distanceToRight;
+
+                // အဆင့် ၁ - Head Turn Verification (ဘယ်လှည့်လှည့်၊ ညာလှည့်လှည့် စစ်ဆေးမှု ဖြတ်သန်းခြင်း)
+                if (livenessStep === 'HEAD_TURN_CHECK') {
+                    // turnRatio < 0.5 (ညာဘက်သို့လှည့်ခြင်း) သို့မဟုတ် turnRatio > 2.0 (ဘယ်ဘက်သို့လှည့်ခြင်း)
+                    if (turnRatio < 0.50 || turnRatio > 2.00) {
                         livenessStep = 'STABILITY_CHECK'; 
                         instruction.innerText = "လုပ်ငန်းစဉ် ပြီးဆုံးရန်အတွက် ကင်မရာကို တည့်တည့်ကြည့်ပြီး ခေတ္တငြိမ်ပေးပါ...";
                     }
                 } 
-                // အဆင့် ၂ - Static Biometric Stability Check (ပုံရိပ် တည်ငြိမ်မှု စစ်ဆေးခြင်း)
+                // အဆင့် ၂ - Static Biometric Stability Check (မျက်နှာပြန်တည့်ပြီး တည်ငြိမ်မှုကို တိုင်းတာခြင်း)
                 else if (livenessStep === 'STABILITY_CHECK') {
-                    if (result.expressions.neutral > 0.60 || result.expressions.happy > 0.30) { 
+                    // မျက်နှာ ပြန်လည်တည့်မတ်ပြီး တည်ငြိမ်သွားသည့် အခြေအနေ (Ratio 0.7 မှ 1.4 အတွင်း ပုံမှန်အနေအထား)
+                    if (turnRatio >= 0.70 && turnRatio <= 1.40) { 
                         
                         clearInterval(detectionTimer);
 
@@ -108,7 +114,7 @@ async function startFaceScan(role) {
                             document.getElementById('step-3').classList.remove('hidden');
                         }
 
-                        // ကင်မရာ စနစ်တကျ ပြန်ပိတ်ခြင်း
+                        // ကင်မရာ ပိတ်သိမ်းခြင်း
                         if (window.globalCamStream) {
                             window.globalCamStream.getTracks().forEach(track => track.stop());
                             window.globalCamStream = null;
@@ -118,7 +124,7 @@ async function startFaceScan(role) {
                     }
                 }
             }
-        }, 500);
+        }, 400); // ပိုမိုမြန်ဆန်စွာ ဖမ်းယူနိုင်ရန် 400ms သို့ လျှော့ချထားပါသည်
 
     } catch (err) {
         alert("ဗီဒီယိုစနစ် အလုပ်လုပ်ရန် အခက်အခဲရှိပါသည်- " + err.name);
@@ -206,7 +212,7 @@ function editEmployee(id, name, face) {
 }
 
 async function deleteEmployee(empId) {
-    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေချာပါသလား?")) {
+    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ปယ်ဖျက်ရန် သေချာပါသလား?")) {
         await appSupabase.from('employees').delete().eq('employee_id', empId);
         fetchEmployees();
     }
