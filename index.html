@@ -2,10 +2,9 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Biometric Attendance System</title>
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 </head>
@@ -44,8 +43,14 @@
             <div class="form-group">
                 <label>တက်ရောက်မှု အမျိုးအစား:</label>
                 <div class="radio-group">
-                    <label><input type="radio" name="attendance-type" value="IN" checked> အဝင် (Check-In)</label>
-                    <label><input type="radio" name="attendance-type" value="OUT"> အထွက် (Check-Out)</label>
+                    <label class="radio-card">
+                        <input type="radio" name="attendance-type" value="IN" checked> 
+                        <span>အဝင် (Check-In)</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="attendance-type" value="OUT"> 
+                        <span>အထွက် (Check-Out)</span>
+                    </label>
                 </div>
             </div>
 
@@ -57,9 +62,9 @@
             <button onclick="submitAttendance()" class="btn-green">📍 တက်ရောက်မှု မှတ်တမ်းတင်မည်</button>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="dashboard.html" class="nav-link">📊 Dashboard သို့ သွားရန်</a> | 
-            <a href="admin.html" class="nav-link">⚙️ Admin Control Panel</a>
+        <div style="text-align: center; margin-top: 24px; font-size: 0.9rem;">
+            <a href="dashboard.html" class="nav-link">📊 Dashboard</a> &nbsp;•&nbsp; 
+            <a href="admin.html" class="nav-link">⚙️ Admin Control</a>
         </div>
     </div>
 

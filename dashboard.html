@@ -2,13 +2,11 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance Dashboard</title>
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 </head>
@@ -27,16 +25,16 @@
             <div class="card">
                 <h3 id="selected-date-title">မှတ်တမ်းအသေးစိတ်</h3>
                 <div id="attendance-details">
-                    <p style="color: #64748b; text-align: center; margin-top: 40px;">
-                        အသေးစိတ် အချက်အလက်များကို ကြည့်ရှုရန် ကလင်ဒါပြက္ခဒိန်ပေါ်ရှိ ဝန်ထမ်းအမည်/မှတ်တမ်းတစ်ခုခုကို ကလစ်နှိပ်ပါ။
+                    <p style="color: var(--text-muted); text-align: center; margin-top: 40px; font-size: 0.95rem;">
+                        အသေးစိတ် အချက်အလက်များကို ကြည့်ရှုရန် ပြက္ခဒိန်ပေါ်ရှိ မှတ်တမ်းတစ်ခုခုကို နှိပ်ပါ။
                     </p>
                 </div>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="index.html" class="nav-link">➔ ဝန်ထမ်း Attendance ပေးရန်</a> | 
-            <a href="admin.html" class="nav-link">⚙️ Admin Control Panel</a>
+        <div style="text-align: center; margin-top: 24px; font-size: 0.9rem;">
+            <a href="index.html" class="nav-link">➔ ဝန်ထမ်း Attendance ပေးရန်</a> &nbsp;•&nbsp; 
+            <a href="admin.html" class="nav-link">⚙️ Admin Control</a>
         </div>
     </div>
 

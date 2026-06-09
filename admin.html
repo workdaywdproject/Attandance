@@ -2,17 +2,16 @@
 <html lang="my">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Admin - Employee Management</title>
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 </head>
 <body>
 
     <div class="container wide">
-        <h2>⚙️ Admin Dashboard</h2>
+        <h2>⚙️ Admin Control Panel</h2>
         <p class="sub-title">ဝန်ထမ်းများ၏ ဇီဝအချက်အလက် စီမံခန့်ခွဲမှုစနစ်</p>
         <hr>
 
@@ -32,7 +31,7 @@
 
                 <div class="form-group">
                     <label>မျက်နှာ ဇီဝအချက်အလက် (Biometric):</label>
-                    <p id="face-status" style="color: #ef4444; font-weight: 600;">ဇီဝအချက်အလက် မရှိသေးပါ</p>
+                    <p id="face-status" style="color: var(--danger); font-weight: 600; margin-bottom: 10px; font-size: 0.9rem;">ဇီဝအချက်အလက် မရှိသေးပါ</p>
                     <button onclick="startFaceScan('ADMIN')" class="btn-blue">📸 မျက်နှာမှတ်တမ်းယူရန်</button>
                     <input type="hidden" id="admin-face-data">
                 </div>
@@ -44,7 +43,7 @@
                     </div>
                 </div>
 
-                <div class="button-row" style="margin-top: 20px;">
+                <div class="button-row" style="margin-top: 24px;">
                     <button id="btn-save" onclick="saveEmployee()" class="btn-green">💾 အချက်အလက် သိမ်းဆည်းမည်</button>
                     <button onclick="resetAdminForm()" class="btn-gray">ပြန်စမည်</button>
                 </div>
@@ -62,16 +61,15 @@
                                 <th>လုပ်ဆောင်ချက်</th>
                             </tr>
                         </thead>
-                        <tbody id="employee-table-body">
-                            </tbody>
+                        <tbody id="employee-table-body"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <div style="text-align: center; margin-top: 20px;">
-            <a href="index.html" class="nav-link">➔ ဝန်ထမ်း Attendance ပေးရန်စာမျက်နှာ</a> | 
-            <a href="dashboard.html" class="nav-link">📊 Dashboard ကြည့်ရန်</a>
+        <div style="text-align: center; margin-top: 24px; font-size: 0.9rem;">
+            <a href="index.html" class="nav-link">➔ ဝန်ထမ်း Attendance ပေးရန်</a> &nbsp;•&nbsp; 
+            <a href="dashboard.html" class="nav-link">📊 Dashboard</a>
         </div>
     </div>
 
