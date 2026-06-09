@@ -1,15 +1,30 @@
 // ==================== ၁။ SUPABASE CONFIGURATION ====================
+// HTML ဘက်မှ ပါလာပြီးသား Supabase Client ကို ထပ်ခါတလဲလဲ Declare မဖြစ်စေရန် စစ်ဆေးခြင်း
 const API_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
 const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
 
-const appSupabase = supabase.createClient(API_URL, API_KEY);
+let appSupabase;
+try {
+    if (typeof supabase !== 'undefined' && supabase.createClient) {
+        appSupabase = supabase.createClient(API_URL, API_KEY);
+    } else {
+        console.error("Supabase Library library standard is missing.");
+    }
+} catch (err) {
+    console.log("Supabase initialization caught: ", err.message);
+}
 
 window.globalCamStream = null;
 let detectionTimer = null;
 
-// ==================== ၂။ AI MODELS LOADING ====================
+// ==================== ၂။ AI MODELS LOADING (GITHUB PAGES PATH FIX) ====================
 async function loadFaceModels() {
     try {
+        if (typeof faceapi === 'undefined') {
+            console.error("FaceAPI is not loaded yet.");
+            return;
+        }
+        // GitHub Pages တက်ခေါက်ပါက Base Path ကို တိုက်ရိုက်ရှာဖွေရန်
         const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
         const modelsPath = `${window.location.origin}${basePath}/models`;
 
@@ -18,13 +33,25 @@ async function loadFaceModels() {
         await faceapi.nets.faceRecognitionNet.loadFromUri(modelsPath);
         await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
         console.log("Biometric Models Loaded Successfully.");
+        
+        // Models တက်လာပြီးမှ ဇယားကို ဆွဲထုတ်ရန် (fetchEmployees exists check)
+        if (typeof fetchEmployees === 'function') {
+            fetchEmployees();
+        }
     } catch (e) {
-        alert("စနစ်အတွင်းပိုင်း နည်းပညာဆိုင်ရာ အမှားအယွင်းရှိပါသည်- " + e.message);
+        alert("AI Models တင်ရသည်မှာ အဆင်မပြေပါ- " + e.message);
     }
 }
-loadFaceModels();
 
-// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (SUCCESS -> 2s DELAY) ====================
+// စာမျက်နှာပွင့်သည်နှင့် Model ကို အလိုအလျောက်တင်မည်
+window.onload = () => {
+    loadFaceModels();
+    if(document.getElementById('calendar')) {
+        initCalendar();
+    }
+};
+
+// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (SUCCESS -> 1s DELAY) ====================
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -42,11 +69,7 @@ async function startFaceScan(role) {
     const instruction = document.getElementById(isAdmin ? 'admin-instruction' : 'instruction');
 
     const constraints = {
-        video: {
-            facingMode: "user",
-            width: { ideal: 640 },
-            height: { ideal: 480 }
-        },
+        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
         audio: false
     };
 
@@ -61,9 +84,9 @@ async function startFaceScan(role) {
         
         await video.play();
 
-        // ⏱️ Flow Logic ထိန်းချုပ်မည့် State Variable များ
         let livenessStep = 'HEAD_TURN'; 
-        let isWaiting = false; // စောင့်ဆိုင်းချိန် (၂ စက္ကန့်) အတွင်း ဝင်မစစ်ရန် Lock ချမည့် Variable
+        let isWaiting = false; 
+        const HOLD_DURATION = 1000; // ⏱️ တောင်းဆိုချက်အရ စောင့်ဆိုင်းချိန်ကို (၁) စက္ကန့် သို့ ပြောင်းထားပါသည်
 
         instruction.innerText = "[အဆင့် ၁/၃] အထောက်အထား စစ်ဆေးရန် ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
 
@@ -85,47 +108,43 @@ async function startFaceScan(role) {
                 const rightJaw = landmarks.getJawOutline()[16]; 
                 const topJaw = landmarks.getJawOutline()[8]; 
 
-                // X & Y Axes calculations
                 const distanceToLeft = Math.abs(nose.x - leftJaw.x);
                 const distanceToRight = Math.abs(nose.x - rightJaw.x);
                 const turnRatio = distanceToLeft / distanceToRight;
                 const distanceNoseToChin = Math.abs(topJaw.y - noseBridge.y);
 
-                // ------------------ [အဆင့် ၁] ခေါင်း ဘယ်ညာလှည့်ခြင်း စစ်ဆေးမှု ------------------
+                // ------------------ [အဆင့် ၁] ခေါင်း ဘယ်ညာလှည့်ခြင်း ------------------
                 if (livenessStep === 'HEAD_TURN') {
-                    if (turnRatio < 0.52 || turnRatio > 1.95) {
-                        isWaiting = true; // စစ်ဆေးမှုကို ခေတ္တရပ်ဆိုင်းမည်
-                        instruction.innerText = "✓ အဆင့် ၁ အောင်မြင်ပါသည်။ ခေတ္တစောင့်ဆိုင်းပါ...";
+                    if (turnRatio < 0.55 || turnRatio > 1.85) {
+                        isWaiting = true;
+                        instruction.innerText = "✓ အဆင့် ၁ အောင်မြင်ပါသည်။ (၁) စက္ကန့် စောင့်ပါ...";
                         
-                        // အောင်မြင်ပြီး (၂) စက္ကန့် စောင့်ဆိုင်းခြင်း
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "[အဆင့် ၂/၃] ကျေးဇူးပြု၍ ခေါင်းကို အပေါ်သို့မော့ပါ (သို့မဟုတ်) အောက်သို့ညှိမ့်ပေးပါ...";
-                            isWaiting = false; // ဒုတိယအဆင့်အတွက် စစ်ဆေးမှု ပြန်စမည်
-                        }, 2000);
+                            isWaiting = false; 
+                        }, HOLD_DURATION);
                     }
                 } 
-                // ------------------ [အဆင့် ၂] ခေါင်းအပေါ်မော့/အောက်ညှိမ့် စစ်ဆေးမှု ------------------
+                // ------------------ [အဆင့် ၂] ခေါင်းအပေါ်မော့/အောက်ညှိမ့် ------------------
                 else if (livenessStep === 'HEAD_NOD') {
-                    if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
+                    if (distanceNoseToChin < 115 || distanceNoseToChin > 170) {
                         isWaiting = true;
-                        instruction.innerText = "✓ အဆင့် ၂ အောင်မြင်ပါသည်။ ခေတ္တစောင့်ဆိုင်းပါ...";
+                        instruction.innerText = "✓ အဆင့် ၂ အောင်မြင်ပါသည်။ (၁) စက္ကန့် စောင့်ပါ...";
                         
-                        // အောင်မြင်ပြီး (၂) စက္ကန့် စောင့်ဆိုင်းခြင်း
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
                             instruction.innerText = "[အဆင့် ၃/၃] လုပ်ငန်းစဉ်ပြီးဆုံးရန် ကင်မရာကို ဗဟိုတည့်တည့် စိုက်ကြည့်ပေးပါ...";
-                            isWaiting = false; // တတိယအဆင့်အတွက် စစ်ဆေးမှု ပြန်စမည်
-                        }, 2000);
+                            isWaiting = false; 
+                        }, HOLD_DURATION);
                     }
                 }
-                // ------------------ [အဆင့် ၃] ကင်မရာကို ဗဟိုတည့်တည့်ကြည့်ခြင်း စစ်ဆေးမှု ------------------
+                // ------------------ [အဆင့် ၃] ကင်မရာကို ဗဟိုတည့်တည့်ကြည့်ခြင်း ------------------
                 else if (livenessStep === 'CAMERA_FOCUS') {
                     if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
                         isWaiting = true;
-                        instruction.innerText = "✓ အဆင့် ၃ အောင်မြင်ပါသည်။ စနစ်အတွင်း မှတ်တမ်းတင်နေပါသည်...";
+                        instruction.innerText = "✓ အဆင့် ၃ အောင်မြင်ပါသည်။ သိမ်းဆည်းနေပါသည်...";
                         
-                        // အောင်မြင်ပြီး (၂) စက္ကန့် စောင့်ဆိုင်းပြီးမှ Database သို့ သိမ်းဆည်းမည်
                         setTimeout(() => {
                             clearInterval(detectionTimer);
 
@@ -140,13 +159,14 @@ async function startFaceScan(role) {
                                 document.getElementById('step-3').classList.remove('hidden');
                             }
 
+                            // ❌ Cannot access localStream bug fix -> window.globalCamStream ကို တိုက်ရိုက်သုံးပြီး ပိတ်ခြင်း
                             if (window.globalCamStream) {
                                 window.globalCamStream.getTracks().forEach(track => track.stop());
                                 window.globalCamStream = null;
                             }
 
                             alert("✓ အထောက်အထား စစ်ဆေးခြင်း လုပ်ငန်းစဉ် အောင်မြင်ပါသည်။");
-                        }, 2000);
+                        }, HOLD_DURATION);
                     }
                 }
             }
@@ -162,7 +182,7 @@ let isEditing = false;
 
 async function checkDuplicateID() {
     const empId = document.getElementById('admin-emp-id').value.trim();
-    if (!empId) return;
+    if (!empId || !appSupabase) return;
 
     const { data, error } = await appSupabase.from('employees').select('employee_id').eq('employee_id', empId);
     if (error) return;
@@ -171,12 +191,10 @@ async function checkDuplicateID() {
     if (data.length > 0 && !isEditing) {
         alert("❌ ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးသား ဖြစ်သည်။");
         document.getElementById('admin-emp-id').style.borderColor = "#ef4444";
-        btnSave.disabled = true;
-        btnSave.style.opacity = "0.5";
+        if(btnSave) { btnSave.disabled = true; btnSave.style.opacity = "0.5"; }
     } else {
         document.getElementById('admin-emp-id').style.borderColor = "#10b981";
-        btnSave.disabled = false;
-        btnSave.style.opacity = "1";
+        if(btnSave) { btnSave.disabled = false; btnSave.style.opacity = "1"; }
     }
 }
 
@@ -185,7 +203,7 @@ async function saveEmployee() {
     const name = document.getElementById('admin-emp-name').value.trim();
     const faceData = document.getElementById('admin-face-data').value;
 
-    if (!empId || !name || !faceData) { 
+    if (!empId || !name || !faceData || !appSupabase) { 
         alert("သတ်မှတ်ချက် အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။"); 
         return; 
     }
@@ -207,10 +225,12 @@ async function saveEmployee() {
 }
 
 async function fetchEmployees() {
+    const tableBody = document.getElementById('employee-table-body');
+    if (!tableBody || !appSupabase) return;
+
     const { data: employees, error } = await appSupabase.from('employees').select('*').order('created_at', { ascending: false });
     if (error) return;
 
-    const tableBody = document.getElementById('employee-table-body');
     tableBody.innerHTML = "";
     employees.forEach(emp => {
         tableBody.innerHTML += `
@@ -238,7 +258,7 @@ function editEmployee(id, name, face) {
 }
 
 async function deleteEmployee(empId) {
-    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေချာပါသလား?")) {
+    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေချာပါသလား?") && appSupabase) {
         await appSupabase.from('employees').delete().eq('employee_id', empId);
         fetchEmployees();
     }
@@ -250,8 +270,11 @@ function resetAdminForm() {
     document.getElementById('admin-emp-id').style.borderColor = "#cbd5e1";
     document.getElementById('admin-emp-name').value = "";
     document.getElementById('admin-face-data').value = "";
-    document.getElementById('face-status').innerText = "ဇီဝအချက်အလက် မရှိသေးပါ";
-    document.getElementById('face-status').style.color = "#ef4444";
+    const faceStatus = document.getElementById('face-status');
+    if(faceStatus) {
+        faceStatus.innerText = "ဇီဝအချက်အလက် မရှိသေးပါ";
+        faceStatus.style.color = "#ef4444";
+    }
     isEditing = false;
 }
 
@@ -260,6 +283,8 @@ function submitAttendance() {
     const id = document.getElementById('emp-id').value.trim();
     const type = document.querySelector('input[name="attendance-type"]:checked').value;
     const remark = document.getElementById('remark').value;
+
+    if (!appSupabase) return;
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {
@@ -276,7 +301,7 @@ function submitAttendance() {
 // ==================== ၆။ CALENDAR OPERATE ====================
 async function initCalendar() {
     const calendarEl = document.getElementById('calendar');
-    if(!calendarEl) return;
+    if(!calendarEl || !appSupabase) return;
 
     const { data: logs, error } = await appSupabase.from('attendance_logs').select(`*, employees ( name )`);
     if (error) return;
@@ -293,7 +318,7 @@ async function initCalendar() {
                 type: log.type === 'IN' ? 'အဝင် (Check-In)' : 'အထွက် (Check-Out)',
                 time: timeStr, remark: log.remark || "မှတ်ချက်မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
-                mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}`
+                mapsLink: `http://maps.google.com/?q=${log.latitude},${log.longitude}`
             },
             backgroundColor: log.type === 'IN' ? '#22c55e' : '#ef4444',
             borderColor: log.type === 'IN' ? '#16a34a' : '#dc2626'
