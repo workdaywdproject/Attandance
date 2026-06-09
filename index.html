@@ -12,35 +12,28 @@
 
     <div class="container">
         <h2>📊 ဝန်ထမ်း Attendance စနစ်</h2>
-        <p class="sub-title">Biometric Liveness Verification</p>
+        <p class="sub-title">Biometric Auto-Recognition</p>
         <hr>
 
         <div id="step-1" class="card">
-            <h3>အဆင့် ၁ - အချက်အလက် ဖြည့်ပါ</h3>
-            <div class="form-group">
-                <label>ဝန်ထမ်းကုဒ် (Employee ID):</label>
-                <input type="text" id="emp-id" placeholder="ဥပမာ - EMP001">
-            </div>
-            <div class="form-group">
-                <label>ဝန်ထမ်းအမည် (Name):</label>
-                <input type="text" id="emp-name" placeholder="ဥပမာ - ဦးမောင်မောင်">
-            </div>
-            <button onclick="startFaceScan('USER')" class="btn-blue">ရှေ့သို့ ဆက်သွားမည် ➔</button>
-        </div>
-
-        <div id="step-2" class="card hidden">
-            <h3>အဆင့် ၂ - မျက်နှာသွင်ပြင် စစ်ဆေးခြင်း</h3>
-            <p id="instruction" class="instruction-box">ကင်မရာ ဖွင့်နေပါသည်...</p>
-            <div class="video-container">
+            <h3>🤖 မျက်နှာ အလိုအလျောက် စစ်ဆေးခြင်း</h3>
+            <p id="instruction" class="instruction-box">ကင်မရာ စနစ်ကို အောက်က ခလုတ်ဖြင့် စတင်ပါ...</p>
+            <button onclick="startAutoFaceScan()" class="btn-blue" id="btn-start-scan" style="margin-top: 12px;">📸 ကင်မရာဖွင့်ပြီး မျက်နှာစစ်မည်</button>
+            
+            <div class="video-container hidden" id="webcam-box">
                 <video id="video" autoplay muted playsinline></video>
             </div>
         </div>
 
-        <div id="step-3" class="card hidden">
-            <h3>အဆင့် ၃ - မှတ်တမ်းတင်ရန် အဆင်သင့်ဖြစ်ပါပြီ</h3>
-            <p class="success-text">✓ ဇီဝအချက်အထား စစ်ဆေးမှု အောင်မြင်ပါသည်။</p>
+        <div id="step-2" class="card hidden">
+            <h3>📝 တက်ရောက်မှု မှတ်တမ်းတင်ရန်</h3>
             
-            <div class="form-group">
+            <div class="detail-box" style="background: rgba(16, 185, 129, 0.05); border-left-color: var(--success);">
+                <p><b>ဝန်ထမ်း အမည်:</b> <span id="recognized-name" style="color: var(--success); font-weight:700; font-size:1.1rem;">-</span></p>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin-top: 4px;">ဝန်ထမ်းကုဒ် (ID): <span id="recognized-id">-</span></p>
+            </div>
+            
+            <div class="form-group" style="margin-top: 15px;">
                 <label>တက်ရောက်မှု အမျိုးအစား:</label>
                 <div class="radio-group">
                     <label class="radio-card">
@@ -59,11 +52,30 @@
                 <input type="text" id="remark" placeholder="မရှိလျှင် အလွတ်ထားနိုင်ပါသည်">
             </div>
 
-            <button onclick="submitAttendance()" class="btn-green">📍 တက်ရောက်မှု မှတ်တမ်းတင်မည်</button>
+            <button onclick="showConfirmModal()" class="btn-green">📍 တက်ရောက်မှု တင်ပြမည်</button>
         </div>
 
         <div style="text-align: center; margin-top: 24px; font-size: 0.9rem;">
             <a href="portal.html" class="nav-link">➔ ပင်မစာမျက်နှာ (Portal Gateway) သို့ ပြန်သွားရန်</a>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999;">
+        <div class="card" style="width: 100%; max-width: 420px; margin: 16px; box-shadow: var(--shadow); border: 2px solid var(--success);">
+            <h3 style="text-align: center; margin-bottom: 16px; color: var(--success);">🛒 မှတ်တမ်းတင်ရန် အတည်ပြုပါ</h3>
+            <hr style="margin: 10px 0 20px 0;">
+            
+            <div class="detail-text" style="background: #f8fafc; padding: 16px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                <p><b>ဝန်ထမ်း ID:</b> <span id="conf-id" style="font-weight: 600;"></span></p>
+                <p><b>ဝန်ထမ်းအမည်:</b> <span id="conf-name" style="font-weight: 600; color: var(--primary);"></span></p>
+                <p><b>အမျိုးအစား:</b> <span id="conf-type" style="font-weight: 600;"></span></p>
+                <p><b>မှတ်ချက်:</b> <span id="conf-remark" style="font-style: italic; color: var(--text-muted);"></span></p>
+            </div>
+
+            <div class="button-row">
+                <button onclick="submitAttendance()" class="btn-green">✓ သေချာသည် (တင်မည်)</button>
+                <button onclick="closeConfirmModal()" class="btn-gray">ပြန်ပြင်မည်</button>
+            </div>
         </div>
     </div>
 
