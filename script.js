@@ -80,7 +80,7 @@ async function startFaceScan(role) {
         let livenessStep = 'HEAD_TURN'; 
         let isWaiting = false; 
         let isFinished = false; 
-        const HOLD_DURATION = 1000; // စောင့်ဆိုင်းချိန် (၁) စက္ကန့်
+        const HOLD_DURATION = 1000; 
 
         instruction.innerText = "[အဆင့် ၁/၃] ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
 
@@ -250,7 +250,7 @@ function editEmployee(id, name, face) {
 }
 
 async function deleteEmployee(empId) {
-    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေჩာပါသလား?") && appSupabase) {
+    if (confirm("ဤဝန်ထမ်းအချက်အလက်အား ပယ်ဖျက်ရန် သေချာပါသလား?") && appSupabase) {
         await appSupabase.from('employees').delete().eq('employee_id', empId);
         fetchEmployees();
     }
@@ -259,7 +259,7 @@ async function deleteEmployee(empId) {
 function resetAdminForm() {
     document.getElementById('admin-emp-id').value = "";
     document.getElementById('admin-emp-id').disabled = false;
-    document.getElementById('admin-emp-id').style.borderColor = var(--border);
+    document.getElementById('admin-emp-id').style.borderColor = "var(--border)"; // 🔒 FIXED: Added Quotes
     document.getElementById('admin-emp-name').value = "";
     document.getElementById('admin-face-data').value = "";
     const faceStatus = document.getElementById('face-status');
@@ -310,7 +310,7 @@ async function initCalendar() {
                 type: log.type === 'IN' ? 'အဝင် (Check-In)' : 'အထွက် (Check-Out)',
                 time: timeStr, remark: log.remark || "မှတ်ချက်မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
-                mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}`
+                mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}` // 🔒 FIXED LINK
             },
             backgroundColor: log.type === 'IN' ? '#10b981' : '#ef4444',
             borderColor: log.type === 'IN' ? '#10b981' : '#ef4444'
