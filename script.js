@@ -2,11 +2,10 @@
 const API_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
 const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
 
-// Global identifier ငြိမှုမရှိစေရန် တိကျစွာ သတ်မှတ်ခြင်း
 const appSupabase = supabase.createClient(API_URL, API_KEY);
 
-// Variable Scope Error (Cannot access before initialization) မဖြစ်စေရန် Global တွင် Window Object အဆင့်ဖြင့် ကြေညာထားခြင်း
-window.myLocalStream = null;
+// Error ထပ်မငြိစေရန် Window-level Global Object အဖြစ် ပြောင်းလဲသတ်မှတ်ခြင်း
+window.globalCamStream = null;
 let detectionTimer = null;
 
 // ==================== ၂။ AI MODELS LOADING ====================
@@ -40,7 +39,6 @@ async function startFaceScan(role) {
     const video = document.getElementById(isAdmin ? 'admin-video' : 'video');
     const instruction = document.getElementById(isAdmin ? 'admin-instruction' : 'instruction');
 
-    // Android/iOS Browser အားလုံးနှင့် ကိုက်ညီမည့် ကင်မရာ Settings
     const constraints = {
         video: {
             facingMode: "user",
@@ -51,24 +49,21 @@ async function startFaceScan(role) {
     };
 
     try {
-        // ကင်မရာ Stream အား စတင်တောင်းခံခြင်း
+        // 📸 ကင်မရာကို သီးသန့် အရင်ဆုံး ယူခိုင်းခြင်း
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        window.myLocalStream = stream; // Window Object ထဲသို့ သေချာစွာ ထည့်သွင်းခြင်း
+        window.globalCamStream = stream; 
         video.srcObject = stream;
         
-        // iOS (iPhone Safari) တွင် ကင်မရာ ပုံမှန်အလုပ်လုပ်ရန် လိုအပ်သော Attribute များ အတင်းထည့်ခြင်း
         video.setAttribute('playsinline', true);
         video.setAttribute('webkit-playsinline', true);
         video.muted = true;
         
-        // ဗီဒီယိုအား စတင် Run ခြင်း
         await video.play();
 
         let actionSteps = ['BLINK', 'SMILE'];
         let stepPointer = 0;
         instruction.innerText = "😉 ကျေးဇူးပြု၍ မျက်တောင် ခတ်ပေးပါ...";
 
-        // ယခင် Timer ရှိနေပါက ဖျက်ပစ်ခြင်း
         if (detectionTimer) clearInterval(detectionTimer);
 
         detectionTimer = setInterval(async () => {
@@ -80,7 +75,6 @@ async function startFaceScan(role) {
                                         .withFaceDescriptor();
 
             if (result) {
-                // အဆင့် ၁ - မျက်တောင်ခတ်ခြင်း စစ်ဆေးခြင်း
                 if (actionSteps[stepPointer] === 'BLINK') {
                     const landmarks = result.landmarks;
                     const leftEye = landmarks.getLeftEye();
@@ -94,7 +88,6 @@ async function startFaceScan(role) {
                         instruction.innerText = "😃 ကျေးဇူးပြု၍ ပြုံးပြပေးပါ...";
                     }
                 } 
-                // အဆင့် ၂ - ပြုံးပြခြင်း စစ်ဆေးခြင်း
                 else if (actionSteps[stepPointer] === 'SMILE') {
                     if (result.expressions.happy > 0.65) { 
                         
@@ -111,10 +104,10 @@ async function startFaceScan(role) {
                             document.getElementById('step-3').classList.remove('hidden');
                         }
 
-                        // ကင်မရာအား ဘေးကင်းစွာ ပိတ်သိမ်းခြင်း
-                        if (window.myLocalStream) {
-                            window.myLocalStream.getTracks().forEach(track => track.stop());
-                            window.myLocalStream = null;
+                        // ကင်မရာပိတ်သည့်အပိုင်းကို ရှင်းလင်းစွာ ပြင်ဆင်ထားခြင်း
+                        if (window.globalCamStream) {
+                            window.globalCamStream.getTracks().forEach(track => track.stop());
+                            window.globalCamStream = null;
                         }
 
                         alert("✓ မျက်နှာ စစ်ဆေးမှု (Liveness Check) အောင်မြင်ပါသည်။");
@@ -124,7 +117,7 @@ async function startFaceScan(role) {
         }, 500);
 
     } catch (err) {
-        alert("ကင်မရာစနစ် အဆင်မပြေပါ- " + err.name + " : " + err.message);
+        alert("ကင်မရာ ဖွင့်၍မရပါ- " + err.name + " -> " + err.message);
     }
 }
 
