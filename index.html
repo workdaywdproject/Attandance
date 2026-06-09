@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance System - Face Scan</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Attendance Face Scan</h2>
+        
+        <div id="step-1">
+            <input type="text" id="emp-id" placeholder="ဝန်ထမ်း ID ရိုက်ထည့်ပါ">
+            <input type="text" id="emp-name" placeholder="ဝန်ထမ်း နာမည် ရိုက်ထည့်ပါ">
+            <button onclick="startFaceScan()" class="btn-blue">Next (Face Scan တောင်းမည်)</button>
+        </div>
+
+        <div id="step-2" class="hidden">
+            <video id="video" autoplay muted></video>
+            <p class="text-center" style="color: #6b7280; font-size: 0.875rem; margin-top: 8px;">မျက်နှာကို ကင်မရာတည့်တည့် ထားပေးပါ...</p>
+        </div>
+
+        <div id="step-3" class="hidden">
+            <p class="text-green text-center" style="margin-bottom: 12px;">✓ မျက်နှာ ကိုက်ညီမှု ရှိပါသည်။</p>
+            <div class="radio-group">
+                <label class="radio-label">
+                    <input type="radio" name="attendance-type" value="IN" checked> အဝင် (Check-In)
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="attendance-type" value="OUT"> အထွက် (Check-Out)
+                </label>
+            </div>
+            <textarea id="remark" placeholder="မှတ်ချက် (ရှိလျှင် ထည့်ရန်)"></textarea>
+            <button onclick="submitAttendance()" class="btn-green">Submit</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
