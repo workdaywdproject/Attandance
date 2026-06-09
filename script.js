@@ -47,7 +47,7 @@ window.onload = () => {
     }
 };
 
-// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (FIXED DUPLICATE ALERTS) ====================
+// ==================== ၃။ 3-STEP BIOMETRIC VERIFICATION (STRICT SINGLE ALERT) ====================
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -82,6 +82,7 @@ async function startFaceScan(role) {
 
         let livenessStep = 'HEAD_TURN'; 
         let isWaiting = false; 
+        let isFinished = false; // 🔒 Alert နှစ်ခါမပေါ်စေရန် ထိန်းချုပ်မည့် Security Gate Variable
         const HOLD_DURATION = 1000; // စောင့်ဆိုင်းချိန် (၁) စက္ကန့်
 
         instruction.innerText = "[အဆင့် ၁/၃] အထောက်အထား စစ်ဆေးရန် ခေါင်းကို ဘယ်ဘက် (သို့မဟုတ်) ညာဘက်သို့ လှည့်ပေးပါ...";
@@ -89,7 +90,8 @@ async function startFaceScan(role) {
         if (detectionTimer) clearInterval(detectionTimer);
 
         detectionTimer = setInterval(async () => {
-            if (video.paused || video.ended || isWaiting) return;
+            // အကယ်၍ အဆင့်အားလုံး ပြီးဆုံးသွားပြီဆိုလျှင် Loop ထဲကုဒ်များကို လုံးဝ အလုပ်လုပ်ခွင့်မပြုတော့ပါ
+            if (video.paused || video.ended || isWaiting || isFinished) return;
 
             const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
                                         .withFaceLandmarks()
@@ -112,12 +114,12 @@ async function startFaceScan(role) {
                 // ------------------ [အဆင့် ၁] ခေါင်း ဘယ်ညာလှည့်ခြင်း ------------------
                 if (livenessStep === 'HEAD_TURN') {
                     if (turnRatio < 0.55 || turnRatio > 1.85) {
-                        isWaiting = true; // စစ်ဆေးမှုကို ခေတ္တ Lock ချမည်
+                        isWaiting = true; 
                         
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "[အဆင့် ၂/၃] ကျေးဇူးပြု၍ ခေါင်းကို အပေါ်သို့မော့ပါ (သို့မဟုတ်) အောက်သို့ညှိမ့်ပေးပါ...";
-                            isWaiting = false; // နောက်တစ်ဆင့်အတွက် Lock ဖြုတ်မည်
+                            isWaiting = false; 
                         }, HOLD_DURATION);
                     }
                 } 
@@ -136,8 +138,9 @@ async function startFaceScan(role) {
                 // ------------------ [အဆင့် ၃] ကင်မရာကို ဗဟိုတည့်တည့်ကြည့်ခြင်း ------------------
                 else if (livenessStep === 'CAMERA_FOCUS') {
                     if (turnRatio >= 0.75 && turnRatio <= 1.35 && distanceNoseToChin >= 120 && distanceNoseToChin <= 165) { 
-                        isWaiting = true; // Loop ထပ်မဝင်စေရန် ချက်ချင်း Lock ချသည်
-                        clearInterval(detectionTimer); // 🛑 Timer ကို ချက်ချင်း ရပ်ပစ်ခြင်းဖြင့် Alert ထပ်ခါတလဲလဲ ပေါ်ခြင်းကို တားဆီးသည်
+                        
+                        isFinished = true; // 🛑 ကုဒ် ထပ်မံပွားခြင်းမရှိစေရန် ဂိတ်ကို ချက်ချင်း ပိတ်လိုက်ပါသည်
+                        clearInterval(detectionTimer); // Timer ကို ချက်ချင်း ဖျက်ပစ်သည်
                         
                         instruction.innerText = "လုပ်ငန်းစဉ် ပြီးမြောက်သွားပါပြီ...";
 
@@ -155,13 +158,13 @@ async function startFaceScan(role) {
                                 document.getElementById('step-3').classList.remove('hidden');
                             }
 
-                            // ကင်မရာ ပိတ်သိမ်းခြင်း
+                            // ကင်မရာ စနစ်အား အပြီးတိုင်ပိတ်သိမ်းခြင်း
                             if (window.globalCamStream) {
                                 window.globalCamStream.getTracks().forEach(track => track.stop());
                                 window.globalCamStream = null;
                             }
 
-                            // 🔔 အဆင့်သုံးဆင့်လုံး ပြီးဆုံးမှ Alert ကို တစ်ကြိမ်တည်း တိကျစွာ ပြသမည်
+                            // 🔔 ယခုအခါ လုံးဝ (၁) ကြိမ်တည်းသာ တိကျစွာ ပေါ်ပါတော့မည်
                             alert("✓ အထောက်အထား စစ်ဆေးခြင်း လုပ်ငန်းစဉ် အောင်မြင်ပါသည်။");
                         }, HOLD_DURATION);
                     }
