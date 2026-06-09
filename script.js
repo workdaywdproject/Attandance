@@ -16,7 +16,7 @@ try {
 window.globalCamStream = null;
 let detectionTimer = null;
 
-// ==================== CUSTOM POP-UP CARD BOX CONTROLLER ====================
+// ==================== CUSTOM POP-UP GLOBAL STATUS MODAL ====================
 let postStatusAction = null;
 
 function showStatus(type, title, message, callback = null) {
@@ -27,8 +27,6 @@ function showStatus(type, title, message, callback = null) {
     const btnEl = document.getElementById('status-btn');
 
     if (!modal) {
-        // Fallback if elements not present on active page
-        alert(message);
         if (callback) callback();
         return;
     }
@@ -52,11 +50,41 @@ function showStatus(type, title, message, callback = null) {
 }
 
 function closeStatusModal() {
-    document.getElementById('status-modal').classList.add('hidden');
+    const modal = document.getElementById('status-modal');
+    if (modal) modal.classList.add('hidden');
     if (postStatusAction) {
         postStatusAction();
         postStatusAction = null;
     }
+}
+
+// ==================== 📸 WEBCAM MODAL MANAGEMENT ====================
+function openScanModal() {
+    document.getElementById('scan-modal').classList.remove('hidden');
+    startAutoFaceScan();
+}
+
+function closeScanModal() {
+    if (detectionTimer) clearInterval(detectionTimer);
+    if (window.globalCamStream) {
+        window.globalCamStream.getTracks().forEach(track => track.stop());
+        window.globalCamStream = null;
+    }
+    document.getElementById('scan-modal').classList.add('hidden');
+}
+
+function openAdminScanModal() {
+    document.getElementById('admin-scan-modal').classList.remove('hidden');
+    startFaceScan('ADMIN');
+}
+
+function closeAdminScanModal() {
+    if (detectionTimer) clearInterval(detectionTimer);
+    if (window.globalCamStream) {
+        window.globalCamStream.getTracks().forEach(track => track.stop());
+        window.globalCamStream = null;
+    }
+    document.getElementById('admin-scan-modal').classList.add('hidden');
 }
 
 // ==================== ၂။ ADMIN SECURITY & ACCESS CONTROL ====================
@@ -156,11 +184,9 @@ let matchedEmployeeId = null;
 let matchedEmployeeName = null;
 
 async function startAutoFaceScan() {
-    document.getElementById('btn-start-scan').classList.add('hidden');
-    document.getElementById('webcam-box').classList.remove('hidden');
-    
     const video = document.getElementById('video');
     const instruction = document.getElementById('instruction');
+    if(!video || !instruction) return;
 
     const constraints = {
         video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
@@ -233,10 +259,7 @@ async function startAutoFaceScan() {
                         const currentDescriptor = result.descriptor;
                         const isRecognized = await matchFaceWithDatabase(currentDescriptor);
 
-                        if (window.globalCamStream) {
-                            window.globalCamStream.getTracks().forEach(track => track.stop());
-                            window.globalCamStream = null;
-                        }
+                        closeScanModal(); // Close the scan panel
 
                         if(isRecognized) {
                             showStatus('success', 'စစ်ဆေးမှုအောင်မြင်ပါသည်', 'ဝန်ထမ်းအထောက်အထား ကိုက်ညီမှုရှိပါသည်။', () => {
@@ -256,7 +279,8 @@ async function startAutoFaceScan() {
         }, 300); 
 
     } catch (err) {
-        showStatus('error', 'ချိတ်ဆက်မှုបរာဇယ', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name);
+        closeScanModal();
+        showStatus('error', 'ချိတ်ဆက်မှုပရာဇယ', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name);
     }
 }
 
@@ -301,10 +325,10 @@ async function matchFaceWithDatabase(currentDescriptor) {
 // ==================== ၄။(ခ) BIOMETRIC ENROLLMENT SCAN (ADMIN) ====================
 async function startFaceScan(role) {
     if(role !== 'ADMIN') return;
-    document.getElementById('admin-cam-box').classList.remove('hidden');
-
     const video = document.getElementById('admin-video');
     const instruction = document.getElementById('admin-instruction');
+    if(!video || !instruction) return;
+
     const constraints = { video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false };
 
     try {
@@ -373,23 +397,22 @@ async function startFaceScan(role) {
                                 faceStatus.innerText = "✓ ဇီဝအချက်အလက် စစ်ဆေးမှု အောင်မြင်ပါသည်";
                                 faceStatus.style.color = "var(--success)";
                             }
-                            document.getElementById('admin-cam-box').classList.add('hidden');
-
-                            if (window.globalCamStream) {
-                                window.globalCamStream.getTracks().forEach(track => track.stop());
-                                window.globalCamStream = null;
-                            }
+                            closeAdminScanModal();
                             showStatus('success', 'အောင်မြင်ပါသည်', 'ဇီဝအချက်အလက် မှတ်တမ်းယူခြင်း အောင်မြင်ပါသည်။');
                         }, HOLD_DURATION);
                     }
                 }
             }
         }, 300); 
-    } catch (err) { showStatus('error', 'အမှားအယွင်း', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name); }
+    } catch (err) { 
+        closeAdminScanModal();
+        showStatus('error', 'အမှားအယွင်း', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name); 
+    }
 }
 
 // ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD) ====================
 let isEditing = false;
+let targetDeleteId = null;
 
 async function checkDuplicateID() {
     const empId = document.getElementById('admin-emp-id').value.trim();
@@ -453,7 +476,7 @@ async function fetchEmployees() {
                 <td>
                     <div class="button-row">
                         <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.face_embedding}')" class="btn-yellow" style="padding:6px 12px; font-size:0.8rem;">ပြင်ဆင်ရန်</button>
-                        <button onclick="deleteEmployee('${emp.employee_id}')" class="btn-red" style="padding:6px 12px; font-size:0.8rem;">ပယ်ဖျက်ရန်</button>
+                        <button onclick="triggerDelete('${emp.employee_id}')" class="btn-red" style="padding:6px 12px; font-size:0.8rem;">ပယ်ဖျက်ရန်</button>
                     </div>
                 </td>
             </tr>`;
@@ -474,10 +497,33 @@ function editEmployee(id, name, face) {
     isEditing = true;
 }
 
-async function deleteEmployee(empId) {
-    if (confirm("ဤမှတ်တမ်းအား ပယ်ဖျက်ရန် သေချာပါသလား?") && appSupabase) {
-        await appSupabase.from('employees').delete().eq('employee_id', empId);
-        fetchEmployees();
+// Custom Delete Modal Trigger
+function triggerDelete(empId) {
+    targetDeleteId = empId;
+    const delModal = document.getElementById('delete-modal');
+    if(delModal) {
+        delModal.classList.remove('hidden');
+        document.getElementById('delete-confirm-btn').onclick = executeDelete;
+    }
+}
+
+function closeDeleteModal() {
+    const delModal = document.getElementById('delete-modal');
+    if(delModal) delModal.classList.add('hidden');
+    targetDeleteId = null;
+}
+
+async function executeDelete() {
+    if (targetDeleteId && appSupabase) {
+        const { error } = await appSupabase.from('employees').delete().eq('employee_id', targetDeleteId);
+        closeDeleteModal();
+        if(error) {
+            showStatus('error', 'မအောင်မြင်ပါ', error.message);
+        } else {
+            showStatus('success', 'အောင်မြင်ပါသည်', 'မှတ်တမ်းအား ပယ်ဖျက်ပြီးပါပြီ။', () => {
+                fetchEmployees();
+            });
+        }
     }
 }
 
@@ -520,7 +566,7 @@ function submitAttendance() {
     const type = document.querySelector('input[name="attendance-type"]:checked').value;
     const remark = document.getElementById('remark').value;
 
-    closeConfirmModal(); // Close the first confirmation box
+    closeConfirmModal(); 
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {

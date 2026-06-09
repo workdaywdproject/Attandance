@@ -50,14 +50,9 @@
                     <input type="hidden" id="admin-face-data">
                 </div>
 
-                <button onclick="startFaceScan('ADMIN')" class="btn-blue" style="margin-bottom: 12px;">📸 ဇီဝအချက်အလက် မှတ်တမ်းယူမည်</button>
-                
-                <div id="admin-cam-box" class="video-container hidden" style="margin-bottom: 12px;">
-                    <p id="admin-instruction" class="instruction-box" style="margin-bottom: 8px; font-size:0.85rem;"></p>
-                    <video id="admin-video" autoplay muted playsinline style="width: 100%; border-radius: var(--radius-md);"></video>
-                </div>
+                <button onclick="openAdminScanModal()" class="btn-blue" style="margin-bottom: 12px;">📸 ဇီဝအချက်အလက် မှတ်တမ်းယူမည်</button>
 
-                <div class="button-row">
+                <div class="button-row" style="margin-top: 20px;">
                     <button onclick="saveEmployee()" id="btn-save" class="btn-green">သိမ်းဆည်းမည်</button>
                     <button onclick="resetAdminForm()" class="btn-gray">ပယ်ဖျက်မည်</button>
                 </div>
@@ -106,6 +101,41 @@
                         <p style="color: var(--text-muted); font-style: italic; text-align: center;">ပြက္ခဒိန်ပေါ်ရှိ မှတ်တမ်းတစ်ခုကို နှိပ်၍ အသေးစိတ် ကြည့်ရှုနိုင်ပါသည်။</p>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-scan-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 999;">
+        <div class="card" style="width: 100%; max-width: 460px; margin: 16px; box-shadow: var(--shadow); overflow: hidden; padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="color: var(--primary);">📸 Enrollment Scan Panel</h3>
+                <button onclick="closeAdminScanModal()" class="btn-gray" style="width: auto; padding: 6px 12px; font-size: 0.85rem; margin: 0;">ပိတ်မည်</button>
+            </div>
+            <p id="admin-instruction" class="instruction-box" style="margin-bottom: 16px;">အချက်အလက်များအား ပြင်ဆင်နေပါသည်...</p>
+            
+            <div class="video-container" style="margin-top: 0; background: #000; border-radius: var(--radius-md);">
+                <video id="admin-video" autoplay muted playsinline></video>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div class="card" style="width: 100%; max-width: 380px; margin: 16px; box-shadow: var(--shadow); text-align: center; padding: 24px;">
+            <div id="status-icon" style="font-size: 3rem; margin-bottom: 12px;"></div>
+            <h3 id="status-title" style="margin-bottom: 8px;"></h3>
+            <p id="status-message" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px; line-height: 1.5;"></p>
+            <button id="status-btn" onclick="closeStatusModal()" class="btn-blue" style="width: 60%; margin: 0 auto;">အိုကေ (OK)</button>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+        <div class="card" style="width: 100%; max-width: 380px; margin: 16px; box-shadow: var(--shadow); text-align: center; padding: 24px;">
+            <div style="font-size: 3rem; margin-bottom: 12px; color: var(--danger);">🗑️</div>
+            <h3 style="margin-bottom: 8px; color: var(--danger);">ပယ်ဖျက်ရန် အတည်ပြုခြင်း</h3>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ထာဝရပယ်ဖျက်ရန် သေချာပါသလား?</p>
+            <div class="button-row">
+                <button id="delete-confirm-btn" class="btn-red">ပယ်ဖျက်မည်</button>
+                <button onclick="closeDeleteModal()" class="btn-gray">မလုပ်တော့ပါ</button>
             </div>
         </div>
     </div>
