@@ -1,30 +1,29 @@
 // ==================== ၁။ SUPABASE CONFIGURATION ====================
-// သင်ပေးပို့ထားသော API URL နှင့် Key အစစ်အမှန်များအား နေရာချထားပြီးဖြစ်ပါသည်
 const API_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
 const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
 
-// Global Variable နာမည်ငြိ၍ JavaScript Crash ခြင်းမှ ကာကွယ်ရန် 'appSupabase' ဟု သုံးထားပါသည်
+// Global identifier ငြိမှုမရှိစေရန် တိကျစွာ သတ်မှတ်ခြင်း
 const appSupabase = supabase.createClient(API_URL, API_KEY);
+
+// Variable Scope Error (Cannot access before initialization) မဖြစ်စေရန် Global တွင် Window Object အဆင့်ဖြင့် ကြေညာထားခြင်း
+window.myLocalStream = null;
+let detectionTimer = null;
 
 // ==================== ၂။ AI MODELS LOADING ====================
 async function loadFaceModels() {
     try {
-        // GitHub Pages ပေါ်တွင် Model များ သေချာပေါက် Read နိုင်ရန် Loading စနစ်
         await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
         await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
         await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
         await faceapi.nets.faceExpressionNet.loadFromUri('/models');
         console.log("Face-API Liveness Models Loaded successfully!");
     } catch (e) {
-        alert("AI Models တင်ရသည်မှာ အဆင်မပြေပါ (Folder တည်နေရာ ပြန်စစ်ပါ)- " + e.message);
+        alert("AI Models တင်ရသည်မှာ အဆင်မပြေပါ- " + e.message);
     }
 }
 loadFaceModels();
 
 // ==================== ၃။ BINANCE STYLE LIVENESS CAMERA DETECTION ====================
-let localStream = null;
-let detectionTimer = null;
-
 async function startFaceScan(role) {
     const isAdmin = (role === 'ADMIN');
     
@@ -41,86 +40,92 @@ async function startFaceScan(role) {
     const video = document.getElementById(isAdmin ? 'admin-video' : 'video');
     const instruction = document.getElementById(isAdmin ? 'admin-instruction' : 'instruction');
 
-    // 🤖 Android နှင့် 🍏 iOS (iPhone Safari) နှစ်ခုလုံးတွင် ရာနှုန်းပြည့် ကင်မရာပွင့်စေမည့် Mobile Constraints
+    // Android/iOS Browser အားလုံးနှင့် ကိုက်ညီမည့် ကင်မရာ Settings
     const constraints = {
         video: {
-            facingMode: "user", // ရှေ့ကင်မရာကို အတင်းစနစ်ဖြင့် တောင်းဆိုခြင်း
+            facingMode: "user",
             width: { ideal: 640 },
             height: { ideal: 480 }
         },
         audio: false
     };
 
-    navigator.mediaDevices.getUserMedia(constraints)
-        .then(stream => {
-            localStream = stream;
-            video.srcObject = stream;
-            
-            // 🚨 CRITICAL FOR IOS: iPhone ပေါ်တွင် ဗီဒီယို Full Screen မပွင့်ဘဲ Inline အလုပ်လုပ်ရန် မဖြစ်မနေ လိုအပ်ပါသည်
-            video.setAttribute('playsinline', true);
-            video.setAttribute('webkit-playsinline', true);
-            video.muted = true;
-            video.play().catch(e => console.log("Video play error: ", e));
+    try {
+        // ကင်မရာ Stream အား စတင်တောင်းခံခြင်း
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        window.myLocalStream = stream; // Window Object ထဲသို့ သေချာစွာ ထည့်သွင်းခြင်း
+        video.srcObject = stream;
+        
+        // iOS (iPhone Safari) တွင် ကင်မရာ ပုံမှန်အလုပ်လုပ်ရန် လိုအပ်သော Attribute များ အတင်းထည့်ခြင်း
+        video.setAttribute('playsinline', true);
+        video.setAttribute('webkit-playsinline', true);
+        video.muted = true;
+        
+        // ဗီဒီယိုအား စတင် Run ခြင်း
+        await video.play();
 
-            let actionSteps = ['BLINK', 'SMILE'];
-            let stepPointer = 0;
-            instruction.innerText = "😉 ကျေးဇူးပြု၍ မျက်တောင် ခတ်ပေးပါ...";
+        let actionSteps = ['BLINK', 'SMILE'];
+        let stepPointer = 0;
+        instruction.innerText = "😉 ကျေးဇူးပြု၍ မျက်တောင် ခတ်ပေးပါ...";
 
-            // စကန်ဖတ်နှုန်းကို ဖုန်းများ လေးမသွားစေရန် 500ms (တစ်စက္ကန့် နှစ်ကြိမ်) သို့ ညှိထားပါသည်
-            detectionTimer = setInterval(async () => {
-                if (video.paused || video.ended) return;
+        // ယခင် Timer ရှိနေပါက ဖျက်ပစ်ခြင်း
+        if (detectionTimer) clearInterval(detectionTimer);
 
-                const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-                                            .withFaceLandmarks()
-                                            .withFaceExpressions()
-                                            .withFaceDescriptor();
+        detectionTimer = setInterval(async () => {
+            if (video.paused || video.ended) return;
 
-                if (result) {
-                    // အဆင့် ၁ - မျက်တောင်ခတ်ခြင်း တိုက်စစ်ခြင်း
-                    if (actionSteps[stepPointer] === 'BLINK') {
-                        const landmarks = result.landmarks;
-                        const leftEye = landmarks.getLeftEye();
-                        const rightEye = landmarks.getRightEye();
+            const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                                        .withFaceLandmarks()
+                                        .withFaceExpressions()
+                                        .withFaceDescriptor();
+
+            if (result) {
+                // အဆင့် ၁ - မျက်တောင်ခတ်ခြင်း စစ်ဆေးခြင်း
+                if (actionSteps[stepPointer] === 'BLINK') {
+                    const landmarks = result.landmarks;
+                    const leftEye = landmarks.getLeftEye();
+                    const rightEye = landmarks.getRightEye();
+                    
+                    const leftEyeHeight = Math.abs(leftEye[1].y - leftEye[5].y);
+                    const rightEyeHeight = Math.abs(rightEye[1].y - rightEye[5].y);
+                    
+                    if (leftEyeHeight < 3.8 || rightEyeHeight < 3.8) {
+                        stepPointer++;
+                        instruction.innerText = "😃 ကျေးဇူးပြု၍ ပြုံးပြပေးပါ...";
+                    }
+                } 
+                // အဆင့် ၂ - ပြုံးပြခြင်း စစ်ဆေးခြင်း
+                else if (actionSteps[stepPointer] === 'SMILE') {
+                    if (result.expressions.happy > 0.65) { 
                         
-                        const leftEyeHeight = Math.abs(leftEye[1].y - leftEye[5].y);
-                        const rightEyeHeight = Math.abs(rightEye[1].y - rightEye[5].y);
-                        
-                        // မျက်တောင်မှိတ်လိုက်သည့်အခါ အမြင့် ၃.၈ အောက် လျော့နည်းသွားမှုကို ဖမ်းယူခြင်း
-                        if (leftEyeHeight < 3.8 || rightEyeHeight < 3.8) {
-                            stepPointer++;
-                            instruction.innerText = "😃 ကျေးဇူးပြု၍ ပြုံးပြပေးပါ...";
-                        }
-                    } 
-                    // အဆင့် ၂ - ပြုံးပြခြင်း တိုက်စစ်ခြင်း (Kbz, Binance Style)
-                    else if (actionSteps[stepPointer] === 'SMILE') {
-                        if (result.expressions.happy > 0.65) { 
-                            
-                            if (isAdmin) {
-                                // မျက်နှာ၏ Vector array 128 တန်ဖိုးအား Text အဖြစ် ပြောင်းလဲသိမ်းဆည်းခြင်း
-                                document.getElementById('admin-face-data').value = JSON.stringify(Array.from(result.descriptor));
-                                const faceStatus = document.getElementById('face-status');
-                                faceStatus.innerText = "✓ Face Data: စကန်ဖတ်ပြီးပါပြီ (အဆင်သင့်ဖြစ်သည်)";
-                                faceStatus.style.color = "#10b981";
-                                document.getElementById('admin-cam-box').classList.add('hidden');
-                            } else {
-                                document.getElementById('step-2').classList.add('hidden');
-                                document.getElementById('step-3').classList.remove('hidden');
-                            }
+                        clearInterval(detectionTimer);
 
-                            // အောင်မြင်ပြီးဆုံးပါက နောက်ကွယ်မှ လုပ်ငန်းစဉ်များအားလုံးအား ရပ်နားပြီး ကင်မရာပိတ်ခြင်း
-                            clearInterval(detectionTimer);
-                            if(localStream) {
-                                localStream.getTracks().forEach(track => track.stop());
-                            }
-                            alert("✓ မျက်နှာ စစ်ဆေးမှု (Liveness Check) အောင်မြင်ပါသည်။");
+                        if (isAdmin) {
+                            document.getElementById('admin-face-data').value = JSON.stringify(Array.from(result.descriptor));
+                            const faceStatus = document.getElementById('face-status');
+                            faceStatus.innerText = "✓ Face Data: စကန်ဖတ်ပြီးပါပြီ (အဆင်သင့်ဖြစ်သည်)";
+                            faceStatus.style.color = "#10b981";
+                            document.getElementById('admin-cam-box').classList.add('hidden');
+                        } else {
+                            document.getElementById('step-2').classList.add('hidden');
+                            document.getElementById('step-3').classList.remove('hidden');
                         }
+
+                        // ကင်မရာအား ဘေးကင်းစွာ ပိတ်သိမ်းခြင်း
+                        if (window.myLocalStream) {
+                            window.myLocalStream.getTracks().forEach(track => track.stop());
+                            window.myLocalStream = null;
+                        }
+
+                        alert("✓ မျက်နှာ စစ်ဆေးမှု (Liveness Check) အောင်မြင်ပါသည်။");
                     }
                 }
-            }, 500); 
-        })
-        .catch(err => {
-            alert("ကင်မရာ ဖွင့်မရခြင်း အကြောင်းရင်း: " + err.name + "\nကျေးဇူးပြု၍ Browser Setting တွင် Camera Permission ခွင့်ပြုထားကြောင်း ထပ်မံစစ်ဆေးပေးပါ။");
-        });
+            }
+        }, 500);
+
+    } catch (err) {
+        alert("ကင်မရာစနစ် အဆင်မပြေပါ- " + err.name + " : " + err.message);
+    }
 }
 
 // ==================== ၄။ ADMIN OPERATIONS (CRUD) ====================
@@ -251,7 +256,6 @@ async function initCalendar() {
         const empName = log.employees ? log.employees.name : "Unknown";
         const timeStr = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
-        // Google Maps String Syntax အမှားအား စနစ်တကျ ပြန်ပြင်ထားပါသည်
         return {
             title: `${empName} (${log.type})`, 
             start: log.timestamp.split('T')[0], 
