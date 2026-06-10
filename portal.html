@@ -3,151 +3,119 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Portal Gateway - Biometric Attendance</title>
+    <title>Biometric Attendance Portal</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Portal တစ်ခုတည်းအတွက် သီးသန့် Layout ချိန်ညှိချက် */
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container" style="max-width: 500px; margin-top: 40px;">
-        <div style="text-align: center; margin-bottom: 24px;">
-            <h2>ပင်မလုပ်ငန်းခွင် ဝင်ပေါက်</h2>
-            <p class="sub-title">Portal Gateway Management System</p>
-        </div>
-        
-        <div class="card" style="padding: 24px;">
-            <div style="margin-bottom: 16px;">
-                <button onclick="window.location.href='index.html'" class="btn-blue" style="padding: 12px; font-size: 1rem; display: flex; align-items: center; justify-content: center;">
-                    ဝန်ထမ်းတက်ရောက်မှု စကင်ဖတ်ရန်
-                </button>
-            </div>
+    <div class="portal-container" style="margin: 0 auto; width: 100%;">
+        <div class="card" style="position: relative; width: 100%; padding: 24px;">
             
-            <hr style="margin: 20px 0;">
+            <div class="top-right-badge" style="margin-bottom: 24px;">
+                <button onclick="showAdminLoginModal()" class="btn-gray" style="width: auto; padding: 6px 12px; font-size: 0.85rem; background: transparent; color: var(--primary); border: 1px solid var(--primary);">
+                    Admin Panel →
+                </button>
+            </div>
 
-            <div>
-                <button onclick="openLoginModal()" class="btn-gray" style="padding: 12px; font-size: 1rem; display: flex; align-items: center; justify-content: center; background: #e2e8f0;">
-                    စနစ်စီမံခန့်ခွဲသူ ဝင်ရောက်ရန် (Admin)
+            <div style="text-align: center; margin-top: 10px;">
+                <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 6px;">ဝန်ထမ်းတက်ရောက်မှုစနစ်</h3>
+                <p class="sub-title" style="margin-bottom: 30px;">Biometric Verification Hub</p>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 10px;">
+                <button onclick="window.location.href='index.html'" class="btn-blue" style="padding: 14px; font-size: 1rem; width: 100%;">
+                    စနစ်စတင်အသုံးပြုမည်
                 </button>
             </div>
         </div>
-
-        <p style="text-align: center; color: var(--text-muted); font-size: 0.75rem; white-space: nowrap;">© 2026 Biometric Attendance System. All Rights Reserved.</p>
     </div>
 
-    <div id="login-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999;">
-        <div class="card" style="width: 100%; max-width: 400px; margin: 12px; box-shadow: var(--shadow);">
-            <h3 style="text-align: center; margin-bottom: 12px; color: var(--primary); white-space: nowrap;">စီမံခန့်ခွဲသူ လော့ဂ်အင်</h3>
-            <hr style="margin: 8px 0 16px 0;">
-
+    <div id="admin-login-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="card" style="width: 100%; max-width: 380px; margin: 16px; padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="margin: 0; color: var(--primary);">Admin Authentication</h3>
+                <button onclick="closeAdminLoginModal()" class="btn-gray" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #e9ecef; color: #333;">ပိတ်မည်</button>
+            </div>
+            <hr>
             <div class="form-group">
-                <label>အသုံးပြုသူအမည် (Username):</label>
-                <input type="text" id="login-user" placeholder="username ရိုက်ထည့်ပါ">
+                <label>အသုံးပြုသူအမည် (Username)</label>
+                <input type="text" id="admin-username" placeholder="Username ရိုက်ထည့်ပါ">
             </div>
-
             <div class="form-group" style="margin-bottom: 20px;">
-                <label>စကားဝှက် (Password):</label>
-                <input type="password" id="login-pass" placeholder="password ရိုက်ထည့်ပါ">
+                <label>စကားဝှက် (Password)</label>
+                <input type="password" id="admin-password" placeholder="Password ရိုက်ထည့်ပါ">
             </div>
-
-            <div class="button-row">
-                <button onclick="verifyAdminLogin()" class="btn-blue">ဝင်ရောက်မည်</button>
-                <button onclick="closeLoginModal()" class="btn-gray">ပယ်ဖျက်မည်</button>
-            </div>
+            <button onclick="loginAdmin()" class="btn-blue">လော့ဂ်အင်ဝင်မည်</button>
         </div>
     </div>
 
-    <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-        <div class="card" style="width: 100%; max-width: 380px; margin: 12px; box-shadow: var(--shadow); text-align: center; padding: 20px;">
-            <h3 id="status-title" style="margin-bottom: 6px; white-space: nowrap;"></h3>
-            <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; white-space: nowrap;"></p>
-            <button id="status-btn" onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
+    <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+        <div class="card" style="width: 100%; max-width: 340px; margin: 16px; text-align: center; padding: 24px;">
+            <h3 id="status-title" style="margin-bottom: 8px;"></h3>
+            <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;"></p>
+            <button onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
         </div>
     </div>
 
     <script>
         const API_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
         const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
-        let appSupabase = (typeof supabase !== 'undefined') ? supabase.createClient(API_URL, API_KEY) : null;
+        const appSupabase = supabase.createClient(API_URL, API_KEY);
 
-        let postStatusAction = null;
+        function showAdminLoginModal() {
+            document.getElementById('admin-login-modal').classList.remove('hidden');
+        }
 
-        function showStatus(type, title, message, callback = null) {
+        function closeAdminLoginModal() {
+            document.getElementById('admin-login-modal').classList.add('hidden');
+            document.getElementById('admin-username').value = "";
+            document.getElementById('admin-password').value = "";
+        }
+
+        function showStatus(title, message, isSuccess = false) {
             const modal = document.getElementById('status-modal');
             const titleEl = document.getElementById('status-title');
-            const msgEl = document.getElementById('status-message');
-            const btnEl = document.getElementById('status-btn');
-
-            if (!modal) return;
-
-            if (type === 'success') {
-                titleEl.style.color = "var(--success)";
-                btnEl.className = "btn-green";
-            } else {
-                titleEl.style.color = "var(--danger)";
-                btnEl.className = "btn-red";
-            }
-
+            titleEl.style.color = isSuccess ? "var(--success)" : "var(--danger)";
             titleEl.innerText = title;
-            msgEl.innerText = message;
-            postStatusAction = callback;
+            document.getElementById('status-message').innerText = message;
             modal.classList.remove('hidden');
         }
 
         function closeStatusModal() {
-            const modal = document.getElementById('status-modal');
-            if (modal) modal.classList.add('hidden');
-            if (postStatusAction) {
-                postStatusAction();
-                postStatusAction = null;
-            }
+            document.getElementById('status-modal').classList.add('hidden');
         }
 
-        function openLoginModal() {
-            document.getElementById('login-modal').classList.remove('hidden');
-        }
+        async function loginAdmin() {
+            const user = document.getElementById('admin-username').value.trim();
+            const pass = document.getElementById('admin-password').value.trim();
 
-        document.addEventListener('keydown', function(event) {
-            if (event.key === "Escape") {
-                closeLoginModal();
-                closeStatusModal();
+            if (!user || !pass) {
+                showStatus('သတိပေးချက်', 'အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။');
+                return;
             }
-        });
-
-        function closeLoginModal() {
-            document.getElementById('login-modal').classList.add('hidden');
-            document.getElementById('login-user').value = "";
-            document.getElementById('login-pass').value = "";
-        }
-
-        async function verifyAdminLogin() {
-            const userInp = document.getElementById('login-user').value.trim();
-            const passInp = document.getElementById('login-pass').value.trim();
-
-            if(!userInp || !passInp) { 
-                showStatus('error', 'သတိပေးချက်', 'အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်သွင်းပါ။'); 
-                return; 
-            }
-            if(!appSupabase) return;
 
             const { data, error } = await appSupabase
                 .from('admin_settings')
                 .select('*')
-                .eq('username', userInp)
-                .eq('password', passInp);
+                .eq('username', user)
+                .eq('password', pass);
 
-            if (error) {
-                showStatus('error', 'စနစ်ချို့ယွင်းမှု', error.message);
-                return;
-            }
-
-            if(data && data.length > 0) {
-                sessionStorage.setItem('admin_authenticated', 'true');
-                closeLoginModal();
-                showStatus('success', 'အောင်မြင်ပါသည်', 'စစ်ဆေးမှု အောင်မြင်ပါသည်။', () => {
-                    window.location.href = 'dashboard.html';
-                });
+            if (error || !data || data.length === 0) {
+                showStatus('မအောင်မြင်ပါ', 'အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
             } else {
-                showStatus('error', 'ငြင်းပယ်ပါသည်', 'အချက်အလက် မှားယွင်းနေပါသည်။');
+                sessionStorage.setItem('admin_authenticated', 'true');
+                window.location.href = 'dashboard.html';
             }
         }
     </script>

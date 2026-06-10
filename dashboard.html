@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Binance Executive Suite - Biometric Attendance</title>
+    <title>Management Dashboard</title>
     <link rel="stylesheet" href="style.css">
     
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
@@ -21,34 +21,28 @@
 
     <div class="admin-layout">
         <div class="sidebar">
-            <div class="sidebar-brand">Binance Suite</div>
-            <button onclick="switchTab('dashboard-tab', this)" class="nav-menu-btn active" data-target="dashboard">Dashboard</button>
+            <div style="height: 20px;"></div> <button onclick="switchTab('dashboard-tab', this)" class="nav-menu-btn active" data-target="dashboard">Dashboard</button>
             <button onclick="switchTab('add-employee-tab', this)" class="nav-menu-btn" data-target="add-emp">ဝန်ထမ်းအသစ်ထည့်</button>
             <button onclick="switchTab('view-employee-tab', this)" class="nav-menu-btn" data-target="view-emp">ဝန်ထမ်းများ</button>
             <button onclick="switchTab('admin-config-tab', this)" class="nav-menu-btn" data-target="security">လုံခြုံရေးအကောင့်</button>
-            <button onclick="window.location.href='portal.html'" class="nav-menu-btn" style="color: var(--primary); margin-top: auto;">မူလစာမျက်နှာ</button>
+            
+            <div class="logout-container">
+                <button onclick="handleLogout()" class="btn-outline-red">Log Out</button>
+            </div>
         </div>
 
         <div class="bottom-nav">
             <button onclick="switchTab('dashboard-tab', this)" class="bottom-nav-item active" data-target="dashboard">
-                <span style="font-size: 1.2rem; font-weight:700;">📊</span>
                 <span>Dashboard</span>
             </button>
             <button onclick="switchTab('add-employee-tab', this)" class="bottom-nav-item" data-target="add-emp">
-                <span style="font-size: 1.2rem; font-weight:700;">➕</span>
                 <span>အသစ်ထည့်</span>
             </button>
             <button onclick="switchTab('view-employee-tab', this)" class="bottom-nav-item" data-target="view-emp">
-                <span style="font-size: 1.2rem; font-weight:700;">👥</span>
                 <span>ဝန်ထမ်းများ</span>
             </button>
             <button onclick="switchTab('admin-config-tab', this)" class="bottom-nav-item" data-target="security">
-                <span style="font-size: 1.2rem; font-weight:700;">⚙️</span>
                 <span>လုံခြုံရေး</span>
-            </button>
-            <button onclick="window.location.href='portal.html'" class="bottom-nav-item">
-                <span style="font-size: 1.2rem; font-weight:700;">🏠</span>
-                <span>Home</span>
             </button>
         </div>
 
@@ -58,7 +52,10 @@
                     <h2 id="current-panel-title">Dashboard</h2>
                     <p class="sub-title">Realtime System Overview</p>
                 </div>
-                <button onclick="handleLogout()" class="btn-gray" style="width: auto; padding: 8px 14px; font-size: 0.8rem; border: 1px solid var(--border);">Log Out</button>
+            </div>
+
+            <div class="mobile-logout-wrapper">
+                <button onclick="handleLogout()" class="btn-outline-red">Log Out</button>
             </div>
 
             <div id="dashboard-tab" class="tab-content active">
@@ -163,7 +160,7 @@
         </div>
     </div>
 
-    <div id="admin-scan-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+    <div id="admin-scan-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
         <div class="card" style="width: 100%; max-width: 440px; margin: 16px; border: 1px solid var(--border); padding: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <h3 style="color: var(--primary); white-space: nowrap; margin:0;">Face Verification</h3>
@@ -176,7 +173,7 @@
         </div>
     </div>
 
-    <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+    <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px; border: 1px solid var(--border);">
             <h3 id="status-title" style="margin-bottom: 8px; white-space: nowrap;"></h3>
             <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4; white-space: nowrap;"></p>
@@ -184,7 +181,7 @@
         </div>
     </div>
 
-    <div id="delete-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+    <div id="delete-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px; border: 1px solid var(--border);">
             <h3 style="margin-bottom: 8px; color: var(--danger); white-space: nowrap;">ပယ်ဖျက်ရန် အတည်ပြုခြင်း</h3>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; white-space: nowrap;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေჩာပါသလား?</p>
@@ -197,15 +194,11 @@
 
     <script src="script.js"></script>
     <script>
-        // 🔄 BINANCE MULTI-PLATFORM SYNC TAB SWITCHER
         function switchTab(tabId, clickedElement) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
 
-            // Sync Active State on both Desktop Sidebar & Mobile Bottom Nav
             const targetType = clickedElement.getAttribute('data-target');
-            
             document.querySelectorAll('.nav-menu-btn, .bottom-nav-item').forEach(btn => {
                 if(btn.getAttribute('data-target') === targetType) {
                     btn.classList.add('active');
@@ -214,14 +207,12 @@
                 }
             });
 
-            // Sync Top Panel Header Title String
             let displayTitle = "Dashboard";
             if(tabId === 'add-employee-tab') displayTitle = "ဝန်ထမ်းအသစ်ထည့်ရန်";
             if(tabId === 'view-employee-tab') displayTitle = "ဝန်ထမ်းအချက်အလက်များ";
             if(tabId === 'admin-config-tab') displayTitle = "Admin အကောင့်စီမံရန်";
             document.getElementById('current-panel-title').innerText = displayTitle;
 
-            // Trigger Resize event to align FullCalendar component natively
             if(tabId === 'dashboard-tab') {
                 setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
             }

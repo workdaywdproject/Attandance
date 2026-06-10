@@ -3,98 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Biometric Attendance System</title>
+    <title>Biometric Scan Hub</title>
     <link rel="stylesheet" href="style.css">
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            min-height: 100vh;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>ဝန်ထမ်းတက်ရောက်မှုစနစ်</h2>
-        <p class="sub-title">Biometric Auto-Recognition</p>
-        <hr>
-
-        <div id="step-1" class="card" style="text-align: center; padding: 24px 16px;">
-            <h3 style="white-space: nowrap;">ဇီဝအချက်အလက် စစ်ဆေးခြင်း</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; margin-bottom: 20px; white-space: nowrap;">တက်ရောက်မှု မှတ်တမ်းတင်ရန် မျက်နှာစစ်ဆေးမှု ပြုလုပ်ပါ</p>
-            <button onclick="openScanModal()" class="btn-blue" style="padding: 12px; font-size: 0.95rem;">မျက်နှာစစ်ဆေးမှု စတင်မည်</button>
-        </div>
-
-        <div id="step-2" class="card hidden">
-            <h3 style="white-space: nowrap;">တက်ရောက်မှု တင်ပြခြင်း</h3>
-            
-            <div class="detail-box" style="background: rgba(16, 185, 129, 0.05); border-left-color: var(--success);">
-                <p><b>ဝန်ထမ်းအမည်:</b> <span id="recognized-name" style="color: var(--success); font-weight:700; font-size:1rem;">-</span></p>
-                <p style="font-size:0.8rem; color:var(--text-muted); margin-top: 2px;">ရာထူး: <span id="recognized-pos" style="font-weight: 600; color: var(--text);">-</span></p>
-                <p style="font-size:0.75rem; color:var(--text-muted); margin-top: 2px;">ဝန်ထမ်းကုဒ် (ID): <span id="recognized-id">-</span></p>
+    <div class="index-container" style="margin: 0 auto; width: 100%;">
+        
+        <div id="step-1" class="card" style="padding: 24px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h3>ဇီဝအချက်အလက် စစ်ဆေးခြင်း</h3>
+                <p class="sub-title">ကျေးဇူးပြု၍ ကင်မရာကို တည့်တည့်ကြည့်ပါ</p>
             </div>
             
-            <div class="form-group" style="margin-top: 12px;">
-                <label>တက်ရောက်မှုအမျိုးအစား:</label>
-                <div class="radio-group">
-                    <label class="radio-card">
-                        <input type="radio" name="attendance-type" value="IN" checked> 
-                        <span>Check-In</span>
+            <button onclick="openScanModal()" class="btn-blue" style="padding: 14px; font-size: 1rem; margin-bottom: 12px;">
+                စကင်ဖတ်စနစ် စတင်မည်
+            </button>
+            <button onclick="window.location.href='portal.html'" class="btn-gray" style="background: #e9ecef; color: #333;">
+                ဆုတ်ခွာမည်
+            </button>
+        </div>
+
+        <div id="step-2" class="card hidden" style="padding: 24px; border-top: 4px solid var(--success);">
+            <div style="text-align: center; margin-bottom: 16px;">
+                <h3 style="color: var(--success);">အထောက်အထား ကိုက်ညီပါသည်</h3>
+                <p class="sub-title">တက်ရောက်မှုအမျိုးအစား ရွေးချယ်ပေးပါ</p>
+            </div>
+            
+            <div class="detail-box" style="margin-bottom: 20px;">
+                <p><b>အမည်:</b> <span id="recognized-name" style="color: var(--primary); font-weight: 600;">-</span></p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">ရာထူး: <span id="recognized-pos">-</span></p>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">ကုဒ်နံပါတ်: <span id="recognized-id">-</span></p>
+            </div>
+
+            <div class="form-group">
+                <label>မှတ်တမ်းအမျိုးအစား</label>
+                <div style="display: flex; gap: 20px; margin-top: 8px; background: #f8f9fa; padding: 12px; border-radius: 6px; border: 1px solid var(--border);">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text); font-weight: 600;">
+                        <input type="radio" name="attendance-type" value="IN" checked style="width: 18px; height: 18px;"> Check-In (အလုပ်ဝင်)
                     </label>
-                    <label class="radio-card">
-                        <input type="radio" name="attendance-type" value="OUT"> 
-                        <span>Check-Out</span>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text); font-weight: 600;">
+                        <input type="radio" name="attendance-type" value="OUT" style="width: 18px; height: 18px;"> Check-Out (အလုပ်ဆင်း)
                     </label>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>မှတ်ချက် (Remark):</label>
-                <input type="text" id="remark" placeholder="ဖြည့်သွင်းရန်ရှိက ရေးသားပါ">
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label>မှတ်ချက် (Remark)</label>
+                <input type="text" id="remark" placeholder="ဥပမာ - နေမကောင်း၍ နောက်ကျခြင်း (မရှိက အလွတ်ထားပါ)">
             </div>
 
-            <button onclick="showConfirmModal()" class="btn-green">တက်ရောက်မှု တင်ပြမည်</button>
-        </div>
-
-        <div style="text-align: center; margin-top: 20px; font-size: 0.85rem;">
-            <a href="portal.html" class="nav-link">ပင်မစာမျက်နှာ (Portal Gateway) သို့</a>
+            <button onclick="showConfirmModal()" class="btn-green" style="padding: 14px; font-size: 1rem;">
+                မှတ်တမ်း တင်သွင်းမည်
+            </button>
         </div>
     </div>
 
-    <div id="scan-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.7); backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; z-index: 999;">
-        <div class="card" style="width: 100%; max-width: 580px; margin: 12px; box-shadow: var(--shadow); overflow: hidden; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h3 style="color: var(--primary); white-space: nowrap;">Biometric Scan Panel</h3>
-                <button onclick="closeScanModal()" class="btn-gray" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0;">ပိတ်မည်</button>
+    <div id="scan-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="card" style="width: 100%; max-width: 420px; margin: 16px; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 style="color: var(--primary); margin:0;">Face Scanning Mode</h3>
+                <button onclick="closeScanModal()" class="btn-gray" style="width: auto; padding: 4px 12px; font-size: 0.8rem; margin: 0; background: #e9ecef; color: #333;">ပိတ်မည်</button>
             </div>
             <p id="instruction" class="instruction-box" style="margin-bottom: 14px;">အချက်အလက်များအား ပြင်ဆင်နေပါသည်...</p>
-            
             <div class="video-container">
                 <video id="video" autoplay muted playsinline></video>
             </div>
         </div>
     </div>
 
-    <div id="confirm-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 999;">
-        <div class="card" style="width: 100%; max-width: 420px; margin: 12px; box-shadow: var(--shadow); border: 2px solid var(--success);">
-            <h3 style="text-align: center; margin-bottom: 12px; color: var(--success); white-space: nowrap;">တင်ပြမှု အတည်ပြုခြင်း</h3>
-            <hr style="margin: 8px 0 16px 0;">
-            
-            <div class="detail-text" style="background: #f8fafc; padding: 14px; border-radius: var(--radius-md); margin-bottom: 16px;">
-                <p><b>ဝန်ထမ်း ID:</b> <span id="conf-id" style="font-weight: 600;"></span></p>
-                <p><b>ဝန်ထမ်းအမည်:</b> <span id="conf-name" style="font-weight: 600; color: var(--primary);"></span></p>
-                <p><b>ရာထူး:</b> <span id="conf-pos" style="font-weight: 600;"></span></p>
-                <p><b>အမျိုးအစား:</b> <span id="conf-type" style="font-weight: 600;"></span></p>
-                <p><b>မှတ်ချက်:</b> <span id="conf-remark" style="font-style: italic; color: var(--text-muted);"></span></p>
+    <div id="confirm-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
+        <div class="card" style="width: 100%; max-width: 360px; margin: 16px; padding: 24px;">
+            <h3 style="margin-bottom: 12px; color: var(--primary); text-align: center;">အတည်ပြုရန် လိုအပ်ပါသည်</h3>
+            <hr>
+            <div style="font-size: 0.9rem; line-height: 1.6; margin-bottom: 20px; color: #444;">
+                <p><b>ဝန်ထမ်းကုဒ်:</b> <span id="conf-id"></span></p>
+                <p><b>အမည်:</b> <span id="conf-name"></span></p>
+                <p><b>ရာထူး:</b> <span id="conf-pos"></span></p>
+                <p><b>လုပ်ဆောင်ချက်:</b> <span id="conf-type" style="color: var(--success); font-weight:700;"></span></p>
+                <p><b>မှတ်ချက်:</b> <span id="conf-remark"></span></p>
             </div>
-
             <div class="button-row">
-                <button onclick="submitAttendance()" class="btn-green">အတည်ပြုသည်</button>
-                <button onclick="closeConfirmModal()" class="btn-gray">ပြန်လည်ပြင်ဆင်မည်</button>
+                <button onclick="submitAttendance()" class="btn-green">သေချာပါသည်</button>
+                <button onclick="closeConfirmModal()" class="btn-gray" style="background: #e9ecef; color: #333;">ပြင်ဆင်မည်</button>
             </div>
         </div>
     </div>
 
-    <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000;">
-        <div class="card" style="width: 100%; max-width: 380px; margin: 12px; box-shadow: var(--shadow); text-align: center; padding: 20px;">
-            <h3 id="status-title" style="margin-bottom: 6px; white-space: nowrap;"></h3>
-            <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; line-height: 1.4; white-space: nowrap;"></p>
+    <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10001;">
+        <div class="card" style="width: 100%; max-width: 340px; margin: 16px; text-align: center; padding: 24px;">
+            <h3 id="status-title" style="margin-bottom: 8px;"></h3>
+            <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;"></p>
             <button id="status-btn" onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
         </div>
     </div>
