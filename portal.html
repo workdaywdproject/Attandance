@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* Portal တစ်ခုတည်းအတွက် သီးသန့် Layout ချိန်ညှိချက် */
         body {
             display: flex;
             align-items: center;
@@ -15,25 +14,42 @@
             padding: 16px;
             min-height: 100vh;
         }
+        /* Portal Control Custom Button Style */
+        .portal-admin-btn {
+            background-color: #6c757d;
+            color: #ffffff;
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 10px 20px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            width: auto;
+            transition: all 0.2s ease;
+        }
+        .portal-admin-btn:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
     </style>
 </head>
 <body>
 
     <div class="portal-container" style="margin: 0 auto; width: 100%;">
-        <div class="card" style="position: relative; width: 100%; padding: 24px;">
+        <div class="card" style="position: relative; width: 100%; padding: 24px; text-align: center;">
             
-            <div class="top-right-badge" style="margin-bottom: 24px;">
-                <button onclick="showAdminLoginModal()" class="btn-gray" style="width: auto; padding: 6px 12px; font-size: 0.85rem; background: transparent; color: var(--primary); border: 1px solid var(--primary);">
+            <div class="top-right-badge" style="margin-bottom: 24px; text-align: right;">
+                <button onclick="showAdminLoginModal()" class="portal-admin-btn">
                     Admin Panel →
                 </button>
             </div>
 
-            <div style="text-align: center; margin-top: 10px;">
+            <div style="margin-top: 10px;">
                 <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 6px;">ဝန်ထမ်းတက်ရောက်မှုစနစ်</h3>
                 <p class="sub-title" style="margin-bottom: 30px;">Biometric Verification Hub</p>
             </div>
 
-            <div style="text-align: center; margin-bottom: 10px;">
+            <div style="margin-bottom: 10px;">
                 <button onclick="window.location.href='index.html'" class="btn-blue" style="padding: 14px; font-size: 1rem; width: 100%;">
                     စနစ်စတင်အသုံးပြုမည်
                 </button>
@@ -42,7 +58,7 @@
     </div>
 
     <div id="admin-login-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div class="card" style="width: 100%; max-width: 380px; margin: 16px; padding: 24px;">
+        <div class="card" style="width: 100%; max-width: 380px; margin: 16px; padding: 24px; text-align: left;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
                 <h3 style="margin: 0; color: var(--primary);">Admin Authentication</h3>
                 <button onclick="closeAdminLoginModal()" class="btn-gray" style="width: auto; padding: 4px 10px; font-size: 0.8rem; margin: 0; background: #e9ecef; color: #333;">ပိတ်မည်</button>
@@ -56,7 +72,7 @@
                 <label>စကားဝှက် (Password)</label>
                 <input type="password" id="admin-password" placeholder="Password ရိုက်ထည့်ပါ">
             </div>
-            <button onclick="loginAdmin()" class="btn-blue">လော့ဂ်အင်ဝင်မည်</button>
+            <button onclick="loginAdmin()" class="btn-blue"><span style="color:#fff;">လော့ဂ်အင်ဝင်မည်</span></button>
         </div>
     </div>
 
