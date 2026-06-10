@@ -32,7 +32,7 @@ function showStatus(type, title, message, callback = null) {
 
     if (type === 'success') {
         titleEl.style.color = "var(--success)";
-        btnEl.className = "btn-green";
+        btnEl.className = "btn-blue";
     } else {
         titleEl.style.color = "var(--danger)";
         btnEl.className = "btn-red";
@@ -93,7 +93,6 @@ document.addEventListener('keydown', function(event) {
 });
 
 // ==================== ၂။ ADMIN CREDENTIALS & ACCOUNT OPERATIONS ====================
-// (က) ရှိပြီးသား Admin ရဲ့ Username ကော Password ပါ တစ်ပြိုင်တည်း ပြောင်းလဲရန်
 async function updateAdminAccount() {
     const newUser = document.getElementById('update-admin-user').value.trim();
     const newPass = document.getElementById('update-admin-pass').value.trim();
@@ -108,7 +107,6 @@ async function updateAdminAccount() {
     }
     if(!appSupabase) return;
 
-    // အလွယ်တကူ လက်ရှိ Session ထဲက Admin တစ်ခုတည်းကို ပြောင်းလဲပေးခြင်း
     const { error } = await appSupabase
         .from('admin_settings')
         .update({ username: newUser, password: newPass })
@@ -124,7 +122,6 @@ async function updateAdminAccount() {
     }
 }
 
-// (ခ) စီမံခန့်ခွဲသူ (Admin အသစ်) ထပ်မံထည့်သွင်းရန်
 async function createNewAdminAccount() {
     const adminUser = document.getElementById('new-admin-user').value.trim();
     const adminPass = document.getElementById('new-admin-pass').value.trim();
@@ -241,7 +238,7 @@ async function startAutoFaceScan() {
                 if (livenessStep === 'HEAD_TURN') {
                     if (turnRatio < 0.50 || turnRatio > 1.90) {
                         isWaiting = true; 
-                        instruction.innerText = "ခဏလေး Ngim ပေးပါ...";
+                        instruction.innerText = "ခဏလေး ငြိမ်ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
@@ -377,7 +374,7 @@ async function startFaceScan(role) {
                 if (livenessStep === 'HEAD_TURN') {
                     if (turnRatio < 0.50 || turnRatio > 1.90) {
                         isWaiting = true; 
-                        instruction.innerText = "ခဏလေး Ngim ပေးပါ...";
+                        instruction.innerText = "ခဏလေး ငြိမ်ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
@@ -432,7 +429,7 @@ async function checkDuplicateID() {
 
     const btnSave = document.getElementById('btn-save');
     if (data.length > 0 && !isEditing) {
-        showStatus('error', 'သтириပေးချက်', 'ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးဖြစ်သည်။');
+        showStatus('error', 'သတိပေးချက်', 'ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးဖြစ်သည်။');
         document.getElementById('admin-emp-id').style.borderColor = "var(--danger)";
         if(btnSave) { btnSave.disabled = true; btnSave.style.opacity = "0.5"; }
     } else {
@@ -482,7 +479,7 @@ async function fetchEmployees() {
             <tr>
                 <td><b>${emp.employee_id}</b></td>
                 <td>${emp.name}</td>
-                <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:4px; font-size:0.85rem;">${emp.position || 'Staff'}</span></td>
+                <td><span style="background:#2b3139; padding:4px 8px; border-radius:4px; font-size:0.85rem; color:var(--text);">${emp.position || 'Staff'}</span></td>
                 <td>
                     <div class="button-row">
                         <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.position || 'Staff'}', '${emp.face_embedding}')" class="btn-yellow" style="padding:4px 8px; font-size:0.8rem; width:auto;">ပြင်ဆင်ရန်</button>
@@ -510,17 +507,18 @@ function editEmployee(id, name, position, face) {
     document.getElementById('form-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
     isEditing = true;
 
-    // အလိုအလျောက် ဝန်ထမ်းထည့်သွင်းခြင်း Tab သို့ ရွှေ့ပေးရန်
-    const menuBtns = document.querySelectorAll('.nav-menu-btn');
-    menuBtns.forEach(btn => {
-        if(btn.innerText.includes("ဝန်ထမ်းအသစ်ထည့်ရန်")) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-menu-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('add-employee-tab').classList.add('active');
+    // Cross-Platform Active Tab Redirection
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.getElementById('add-employee-tab').classList.add('active');
+
+    document.querySelectorAll('.nav-menu-btn, .bottom-nav-item').forEach(btn => {
+        if(btn.getAttribute('data-target') === 'add-emp') {
             btn.classList.add('active');
-            document.getElementById('current-panel-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
+        } else {
+            btn.classList.remove('active');
         }
     });
+    document.getElementById('current-panel-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
 }
 
 function triggerDelete(empId) {
@@ -643,10 +641,10 @@ async function initCalendar() {
                 type: log.type === 'IN' ? 'Check-In' : 'Check-Out',
                 time: timeStr, remark: log.remark || "မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
-                mapsLink: `https://maps.google.com/?q=${log.latitude},${log.longitude}`
+                mapsLink: `http://googleusercontent.com/maps.google.com/2{log.latitude},${log.longitude}`
             },
-            backgroundColor: log.type === 'IN' ? '#10b981' : '#ef4444',
-            borderColor: log.type === 'IN' ? '#10b981' : '#ef4444'
+            backgroundColor: log.type === 'IN' ? '#02c076' : '#f84960',
+            borderColor: log.type === 'IN' ? '#02c076' : '#f84960'
         };
     });
 
@@ -655,7 +653,7 @@ async function initCalendar() {
         events: calendarEvents,
         eventClick: function(info) {
             const props = info.event.extendedProps;
-            document.getElementById('selected-date-title').innerText = `${info.event.startStr} မှတ်တမ်းအသေးစိတ်`;
+            document.getElementById('selected-date-title').innerText = `${info.event.startStr} မှတ်တမ်း`;
             document.getElementById('attendance-details').innerHTML = `
                 <div class="detail-box">
                     <p><b>ဝန်ထမ်းအမည်:</b> <span style="color: var(--primary); font-weight:600;">${props.empName}</span></p>

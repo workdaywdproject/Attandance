@@ -1,24 +1,22 @@
-/* ==================== SYSTEM BASE THEME ==================== */
+/* ==================== BINANCE DARK PREMIUM THEME ==================== */
 :root {
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --primary-light: #eff6ff;
-    --success: #10b981;
-    --success-hover: #059669;
-    --warning: #f59e0b;
-    --warning-hover: #d97706;
-    --danger: #ef4444;
-    --danger-hover: #dc2626;
-    --background: #f1f5f9;
-    --card-bg: #ffffff;
-    --sidebar-bg: #0f172a;
-    --sidebar-text: #94a3b8;
-    --text: #1e293b;
-    --text-muted: #64748b;
-    --border: #e2e8f0;
-    --radius-md: 12px;
+    --primary: #f0b90b; /* Binance Yellow */
+    --primary-hover: #dfaa08;
+    --primary-light: rgba(240, 185, 11, 0.1);
+    --success: #02c076; /* Binance Green */
+    --success-hover: #01a666;
+    --warning: #e8b300;
+    --danger: #f84960; /* Binance Red */
+    --danger-hover: #d93e53;
+    --background: #0b0e11; /* Binance Dark Background */
+    --card-bg: #181a20; /* Binance Component BG */
+    --sidebar-bg: #12161a;
+    --text: #eaecef;
+    --text-muted: #848e9c;
+    --border: #2b3139;
+    --radius-md: 8px;
     --radius-lg: 16px;
-    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 * {
@@ -26,6 +24,7 @@
     padding: 0;
     box-sizing: border-box;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -34,19 +33,20 @@ body {
     line-height: 1.4;
     display: flex;
     min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* ==================== LAYOUT STRUCTURING ==================== */
+/* ==================== LAYOUT CONFIGURATION ==================== */
 .admin-layout {
     display: flex;
     width: 100%;
 }
 
-/* SIDEBAR CONTAINER */
+/* SIDEBAR - DESKTOP VIEW */
 .sidebar {
     width: 260px;
     background: var(--sidebar-bg);
-    color: #fff;
+    border-right: 1px solid var(--border);
     padding: 24px 16px;
     display: flex;
     flex-direction: column;
@@ -55,24 +55,25 @@ body {
 }
 
 .sidebar-brand {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 700;
+    color: var(--primary);
     padding: 12px;
-    margin-bottom: 16px;
-    border-bottom: 1px solid #1e293b;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
     white-space: nowrap;
 }
 
-/* MODERN SIDEBAR MENU BUTTONS */
+/* PREMIUM NAVIGATION BUTTONS (BINANCE APP METRIC) */
 .nav-menu-btn {
     width: 100%;
-    padding: 12px 16px;
+    padding: 14px 16px;
     background: transparent;
-    color: var(--sidebar-text);
+    color: var(--text);
     text-align: left;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 500;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: all 0.2s ease;
     border: none;
@@ -80,22 +81,58 @@ body {
 }
 
 .nav-menu-btn:hover {
-    background: #1e293b;
-    color: #fff;
+    background: #2b3139;
+    color: var(--primary);
 }
 
 .nav-menu-btn.active {
-    background: var(--primary);
-    color: #fff;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 600;
+    border-left: 4px solid var(--primary);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* BOTTOM NAVIGATION - MOBILE VIEW ONLY */
+.bottom-nav {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--border);
+    z-index: 999;
+    justify-content: space-around;
+    padding: 10px 0; /* ပျက်နေသော padding error အား ပြင်ဆင်ပြီး */
+}
+
+.bottom-nav-item {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    flex: 1;
+    white-space: nowrap;
+}
+
+.bottom-nav-item.active {
+    color: var(--primary);
     font-weight: 600;
 }
 
-/* MAIN CONTENT WORKSPACE */
+/* MAIN CONTENT CONTAINER */
 .main-content {
     flex-grow: 1;
     padding: 24px;
     overflow-y: auto;
-    max-width: 1300px;
+    width: 100%;
 }
 
 .content-header {
@@ -103,20 +140,20 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    background: #fff;
+    background: var(--card-bg);
     padding: 16px 24px;
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
 }
 
-/* ==================== REUSABLE CARDS & TABS ==================== */
+/* ==================== CARD COMPONENTS & TABLES ==================== */
 .card {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 24px;
+    padding: 20px;
+    margin-bottom: 20px;
     box-shadow: var(--shadow);
-    margin-bottom: 24px;
 }
 
 .tab-content {
@@ -132,21 +169,21 @@ body {
 }
 
 h2 {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--text);
     white-space: nowrap;
 }
 
 h3 {
-    font-size: 1.1rem;
-    margin-bottom: 12px;
+    font-size: 1.05rem;
+    margin-bottom: 14px;
     color: var(--text);
     white-space: nowrap;
 }
 
 .sub-title {
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     white-space: nowrap;
 }
 
@@ -160,15 +197,15 @@ hr {
 .video-container {
     position: relative;
     width: 100%;
-    max-width: 440px; 
+    max-width: 380px; 
     margin: 0 auto;
     aspect-ratio: 4/3;
     overflow: hidden;
     border-radius: var(--radius-md);
-    background: transparent; 
+    background: #000; 
 }
 
-#video, #admin-video {
+#admin-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -183,114 +220,95 @@ hr {
     left: 12%;
     width: 76%;
     height: 96%;
-    border: 3px dashed var(--primary);
+    border: 2px dashed var(--primary);
     border-radius: 50%;
     pointer-events: none;
     z-index: 10;
 }
 
 .instruction-box {
-    background: #eff6ff;
-    color: #1e40af;
-    padding: 10px;
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 12px;
     border-radius: var(--radius-md);
     text-align: center;
     font-weight: 600;
-    font-size: 0.85rem;
-    border: 1px solid #bfdbfe;
+    font-size: 0.8rem;
+    border: 1px solid rgba(240, 185, 11, 0.3);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* ==================== FORMS & PREMIUM BUTTONS ==================== */
+/* ==================== BINANCE STANDARD INPUTS & BUTTONS ==================== */
 .form-group {
     margin-bottom: 16px;
 }
 
 .form-group label {
     display: block;
-    font-weight: 600;
-    font-size: 0.85rem;
+    font-weight: 500;
+    font-size: 0.8rem;
+    color: var(--text-muted);
     margin-bottom: 6px;
     white-space: nowrap;
 }
 
 input[type="text"], input[type="password"] {
     width: 100%;
-    padding: 11px 14px;
+    padding: 12px 14px;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 0.9rem;
     outline: none;
-    background: #f8fafc;
+    background: #2b3139;
+    color: var(--text);
     transition: all 0.2s;
 }
 
 input[type="text"]:focus, input[type="password"]:focus {
     border-color: var(--primary);
-    background: #fff;
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
-}
-
-.radio-group {
-    display: flex;
-    gap: 10px;
-    margin-top: 6px;
-}
-
-.radio-card {
-    flex: 1;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    background: #fafafa;
-    white-space: nowrap;
+    box-shadow: 0 0 0 2px rgba(240, 185, 11, 0.2);
 }
 
 button {
     width: 100%;
-    padding: 11px 16px;
+    padding: 12px 16px;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: opacity 0.2s;
     white-space: nowrap;
 }
 
-.btn-blue { background: var(--primary); color: #fff; }
-.btn-blue:hover { background: var(--primary-hover); }
+button:active {
+    opacity: 0.8;
+}
+
+.btn-blue { background: var(--primary); color: #000; } 
 .btn-green { background: var(--success); color: #fff; }
-.btn-green:hover { background: var(--success-hover); }
-.btn-yellow { background: var(--warning); color: #fff; }
-.btn-yellow:hover { background: var(--warning-hover); }
+.btn-yellow { background: #f0a70b; color: #000; }
 .btn-red { background: var(--danger); color: #fff; }
-.btn-red:hover { background: var(--danger-hover); }
-.btn-gray { background: var(--border); color: var(--text); }
-.btn-gray:hover { background: #cbd5e1; }
+.btn-gray { background: #2b3139; color: var(--text); }
 
 .button-row {
     display: flex;
     gap: 10px;
 }
 
-/* ==================== TABLES & DETAILS ==================== */
+/* ==================== TABLES & REALTIME LOGS ==================== */
 .detail-box {
     border-left: 4px solid var(--primary);
-    background: #f8fafc;
+    background: #1e2329;
     padding: 12px;
     border-radius: 4px;
     margin-bottom: 12px;
 }
 
 .detail-text p {
-    margin-bottom: 4px;
+    margin-bottom: 6px;
     font-size: 0.85rem;
     white-space: nowrap;
 }
@@ -298,11 +316,10 @@ button {
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 8px;
 }
 
 th, td {
-    padding: 12px;
+    padding: 14px 12px;
     text-align: left;
     border-bottom: 1px solid var(--border);
     font-size: 0.85rem;
@@ -310,49 +327,42 @@ th, td {
 }
 
 th {
-    background: #f8fafc;
-    font-weight: 600;
+    background: #1e2329;
+    font-weight: 500;
     color: var(--text-muted);
 }
 
-/* ==================== MOBILE RESPONSIVE UI ==================== */
-@media (max-width: 992px) {
-    body {
-        flex-direction: column;
-    }
-    .sidebar {
-        width: 100%;
-        padding: 14px;
-        flex-direction: row;
-        overflow-x: auto;
-        gap: 6px;
-    }
-    .sidebar-brand {
-        display: none;
-    }
-    .nav-menu-btn {
-        width: auto;
-        padding: 8px 14px;
-        font-size: 0.85rem;
-    }
-    .main-content {
-        padding: 14px;
-    }
-    .content-header {
-        padding: 12px 16px;
-        margin-bottom: 16px;
-    }
-}
-
+/* DASHBOARD GRID SYSTEM */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
 }
 
-@media (max-width: 768px) {
+/* ==================== MOBILE COMPACT SCREEN RESPONSIVE PACKET ==================== */
+@media (max-width: 992px) {
+    body {
+        padding-bottom: 70px; 
+    }
+    .sidebar {
+        display: none; 
+    }
+    .bottom-nav {
+        display: flex; 
+    }
+    .main-content {
+        padding: 16px;
+    }
+    .content-header {
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
     .dashboard-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr; /* ဖုန်းပေါ်တွင် တစ်ခုစီ စီပေးရန် */
+    }
+    .card {
+        padding: 16px;
+        margin-bottom: 16px;
     }
 }
 
@@ -365,3 +375,9 @@ th {
     font-weight: 600;
     white-space: nowrap;
 }
+
+/* FULLCALENDAR OVERRIDE */
+.fc { background: var(--card-bg); color: var(--text); border-radius: var(--radius-md); padding: 8px; }
+.fc-theme-standard td, .fc-theme-standard th { border: 1px solid var(--border) !important; }
+.fc .fc-button-primary { background-color: #2b3139 !important; border-color: var(--border) !important; color: var(--text) !important; }
+.fc .fc-button-primary:active, .fc .fc-button-primary.fc-button-active { background-color: var(--primary) !important; color: #000 !important; }
