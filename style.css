@@ -2,19 +2,23 @@
 :root {
     --primary: #2563eb;
     --primary-hover: #1d4ed8;
+    --primary-light: #eff6ff;
     --success: #10b981;
     --success-hover: #059669;
     --warning: #f59e0b;
     --warning-hover: #d97706;
     --danger: #ef4444;
     --danger-hover: #dc2626;
-    --background: #f8fafc;
+    --background: #f1f5f9;
     --card-bg: #ffffff;
+    --sidebar-bg: #0f172a;
+    --sidebar-text: #94a3b8;
     --text: #1e293b;
     --text-muted: #64748b;
     --border: #e2e8f0;
     --radius-md: 12px;
-    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+    --radius-lg: 16px;
+    --shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
 }
 
 * {
@@ -27,56 +31,136 @@
 body {
     background-color: var(--background);
     color: var(--text);
-    padding: 16px;
     line-height: 1.4;
+    display: flex;
+    min-height: 100vh;
 }
 
-.container {
-    max-width: 650px;
-    margin: 0 auto;
+/* ==================== LAYOUT STRUCTURING ==================== */
+.admin-layout {
+    display: flex;
+    width: 100%;
 }
 
-h2 {
-    font-size: 1.5rem;
-    color: var(--text);
-    text-align: center;
-    margin-bottom: 4px;
-    white-space: nowrap; /* စာကြောင်းအောက်မဆင်းစေရန် */
+/* SIDEBAR CONTAINER */
+.sidebar {
+    width: 260px;
+    background: var(--sidebar-bg);
+    color: #fff;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
-.sub-title {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.85rem;
+.sidebar-brand {
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 12px;
     margin-bottom: 16px;
+    border-bottom: 1px solid #1e293b;
     white-space: nowrap;
 }
 
-hr {
-    border: 0;
-    border-top: 1px solid var(--border);
-    margin: 14px 0;
+/* MODERN SIDEBAR MENU BUTTONS */
+.nav-menu-btn {
+    width: 100%;
+    padding: 12px 16px;
+    background: transparent;
+    color: var(--sidebar-text);
+    text-align: left;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    white-space: nowrap;
 }
 
-/* ==================== COMPONENTS & CARDS ==================== */
+.nav-menu-btn:hover {
+    background: #1e293b;
+    color: #fff;
+}
+
+.nav-menu-btn.active {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* MAIN CONTENT WORKSPACE */
+.main-content {
+    flex-grow: 1;
+    padding: 24px;
+    overflow-y: auto;
+    max-width: 1300px;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+}
+
+/* ==================== REUSABLE CARDS & TABS ==================== */
 .card {
     background: var(--card-bg);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    padding: 20px;
+    padding: 24px;
     box-shadow: var(--shadow);
-    margin-bottom: 16px;
+    margin-bottom: 24px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
 
 .hidden {
     display: none !important;
 }
 
+h2 {
+    font-size: 1.4rem;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.sub-title {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+}
+
 /* ==================== WEBCAM VIEW & OVAL MASK ==================== */
 .video-container {
     position: relative;
     width: 100%;
-    max-width: 530px; 
+    max-width: 440px; 
     margin: 0 auto;
     aspect-ratio: 4/3;
     overflow: hidden;
@@ -114,14 +198,14 @@ hr {
     font-weight: 600;
     font-size: 0.85rem;
     border: 1px solid #bfdbfe;
-    white-space: nowrap; /* စာကြောင်းအောက်မဆင်းစေရန် */
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* ==================== FORMS & BUTTONS ==================== */
+/* ==================== FORMS & PREMIUM BUTTONS ==================== */
 .form-group {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 
 .form-group label {
@@ -134,15 +218,19 @@ hr {
 
 input[type="text"], input[type="password"] {
     width: 100%;
-    padding: 10px 12px;
+    padding: 11px 14px;
     border: 1px solid var(--border);
     border-radius: 8px;
     font-size: 0.9rem;
     outline: none;
+    background: #f8fafc;
+    transition: all 0.2s;
 }
 
 input[type="text"]:focus, input[type="password"]:focus {
     border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
 }
 
 .radio-group {
@@ -164,40 +252,41 @@ input[type="text"]:focus, input[type="password"]:focus {
     white-space: nowrap;
 }
 
-.radio-card input {
-    width: 14px;
-    height: 14px;
-}
-
 button {
     width: 100%;
-    padding: 10px;
+    padding: 11px 16px;
     border: none;
     border-radius: 8px;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    white-space: nowrap; /* စာကြောင်းအောက်မဆင်းစေရန် */
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .btn-blue { background: var(--primary); color: #fff; }
+.btn-blue:hover { background: var(--primary-hover); }
 .btn-green { background: var(--success); color: #fff; }
+.btn-green:hover { background: var(--success-hover); }
 .btn-yellow { background: var(--warning); color: #fff; }
+.btn-yellow:hover { background: var(--warning-hover); }
 .btn-red { background: var(--danger); color: #fff; }
+.btn-red:hover { background: var(--danger-hover); }
 .btn-gray { background: var(--border); color: var(--text); }
+.btn-gray:hover { background: #cbd5e1; }
 
 .button-row {
     display: flex;
-    gap: 8px;
+    gap: 10px;
 }
 
-/* ==================== TABLES & LOGS ==================== */
+/* ==================== TABLES & DETAILS ==================== */
 .detail-box {
     border-left: 4px solid var(--primary);
     background: #f8fafc;
-    padding: 10px;
+    padding: 12px;
     border-radius: 4px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .detail-text p {
@@ -213,7 +302,7 @@ table {
 }
 
 th, td {
-    padding: 8px 10px;
+    padding: 12px;
     text-align: left;
     border-bottom: 1px solid var(--border);
     font-size: 0.85rem;
@@ -221,23 +310,44 @@ th, td {
 }
 
 th {
-    background: #f1f5f9;
+    background: #f8fafc;
     font-weight: 600;
+    color: var(--text-muted);
 }
 
-.nav-link {
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 0.85rem;
-    white-space: nowrap;
+/* ==================== MOBILE RESPONSIVE UI ==================== */
+@media (max-width: 992px) {
+    body {
+        flex-direction: column;
+    }
+    .sidebar {
+        width: 100%;
+        padding: 14px;
+        flex-direction: row;
+        overflow-x: auto;
+        gap: 6px;
+    }
+    .sidebar-brand {
+        display: none;
+    }
+    .nav-menu-btn {
+        width: auto;
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+    .main-content {
+        padding: 14px;
+    }
+    .content-header {
+        padding: 12px 16px;
+        margin-bottom: 16px;
+    }
 }
 
-/* ==================== DASHBOARD GRID SYSTEM ==================== */
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    gap: 20px;
 }
 
 @media (max-width: 768px) {
@@ -248,7 +358,7 @@ th {
 
 .maps-link {
     display: inline-block;
-    margin-top: 6px;
+    margin-top: 4px;
     color: var(--primary);
     font-size: 0.8rem;
     text-decoration: none;

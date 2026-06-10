@@ -82,7 +82,6 @@ function closeAdminScanModal() {
     document.getElementById('admin-scan-modal').classList.add('hidden');
 }
 
-// Esc Key နှိပ်လျှင် Modal များအလိုအလျောက် ပိတ်ပေးရန်
 document.addEventListener('keydown', function(event) {
     if (event.key === "Escape") {
         closeScanModal();
@@ -93,24 +92,64 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// ==================== ၂။ ADMIN SECURITY & ACCESS CONTROL ====================
-async function changeAdminPassword() {
-    const newPass = document.getElementById('new-admin-pass').value.trim();
-    if(!newPass) { showStatus('error', 'သတိပေးချက်', 'စကားဝှက်အသစ် ဖြည့်သွင်းပါ။'); return; }
-    if(newPass.length < 6) { showStatus('error', 'သတိပေးချက်', 'စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။'); return; }
+// ==================== ၂။ ADMIN CREDENTIALS & ACCOUNT OPERATIONS ====================
+// (က) ရှိပြီးသား Admin ရဲ့ Username ကော Password ပါ တစ်ပြိုင်တည်း ပြောင်းလဲရန်
+async function updateAdminAccount() {
+    const newUser = document.getElementById('update-admin-user').value.trim();
+    const newPass = document.getElementById('update-admin-pass').value.trim();
 
+    if(!newUser || !newPass) { 
+        showStatus('error', 'သတိပေးချက်', 'အသုံးပြုသူအမည်သစ်နှင့် စကားဝှက်သစ် ဖြည့်သွင်းပါ။'); 
+        return; 
+    }
+    if(newPass.length < 6) { 
+        showStatus('error', 'သတိပေးချက်', 'စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။'); 
+        return; 
+    }
     if(!appSupabase) return;
 
+    // အလွယ်တကူ လက်ရှိ Session ထဲက Admin တစ်ခုတည်းကို ပြောင်းလဲပေးခြင်း
     const { error } = await appSupabase
         .from('admin_settings')
-        .update({ password: newPass })
-        .eq('username', 'admin');
+        .update({ username: newUser, password: newPass })
+        .eq('id', 1); 
 
     if(error) {
         showStatus('error', 'မအောင်မြင်ပါ', error.message);
     } else {
-        showStatus('success', 'အောင်မြင်ပါသည်', 'စကားဝှက် ပြောင်းလဲမှု အောင်မြင်ပါသည်။');
-        document.getElementById('new-admin-pass').value = "";
+        showStatus('success', 'အောင်မြင်ပါသည်', 'Admin အကောင့် အထောက်အထားများ ပြောင်းလဲပြီးပါပြီ။', () => {
+            document.getElementById('update-admin-user').value = "";
+            document.getElementById('update-admin-pass').value = "";
+        });
+    }
+}
+
+// (ခ) စီမံခန့်ခွဲသူ (Admin အသစ်) ထပ်မံထည့်သွင်းရန်
+async function createNewAdminAccount() {
+    const adminUser = document.getElementById('new-admin-user').value.trim();
+    const adminPass = document.getElementById('new-admin-pass').value.trim();
+
+    if(!adminUser || !adminPass) { 
+        showStatus('error', 'သတိပေးချက်', 'Admin အသစ်အတွက် အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်သွင်းပါ။'); 
+        return; 
+    }
+    if(adminPass.length < 6) {
+        showStatus('error', 'သတိပေးချက်', 'စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။');
+        return;
+    }
+    if(!appSupabase) return;
+
+    const { error } = await appSupabase
+        .from('admin_settings')
+        .insert([{ username: adminUser, password: adminPass }]);
+
+    if(error) {
+        showStatus('error', 'မအောင်မြင်ပါ', error.message);
+    } else {
+        showStatus('success', 'အောင်မြင်ပါသည်', 'စီမံခန့်ခွဲသူ (Admin အသစ်) အား အောင်မြင်စွာ ဖန်တီးပြီးပါပြီ။', () => {
+            document.getElementById('new-admin-user').value = "";
+            document.getElementById('new-admin-pass').value = "";
+        });
     }
 }
 
@@ -202,7 +241,7 @@ async function startAutoFaceScan() {
                 if (livenessStep === 'HEAD_TURN') {
                     if (turnRatio < 0.50 || turnRatio > 1.90) {
                         isWaiting = true; 
-                        instruction.innerText = "ခဏလေး ငြိမ်ပေးပါ...";
+                        instruction.innerText = "ခဏလေး Ngim ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
@@ -213,7 +252,7 @@ async function startAutoFaceScan() {
                 else if (livenessStep === 'HEAD_NOD') {
                     if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
                         isWaiting = true;
-                        instruction.innerText = "ခဏလေး ငြိမ်ပေးပါ...";
+                        instruction.innerText = "ခဏလေး Ngim ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
                             instruction.innerText = "ကင်မရာတည့်တည့်သို့ စိုက်ကြည့်ပါ...";
@@ -338,7 +377,7 @@ async function startFaceScan(role) {
                 if (livenessStep === 'HEAD_TURN') {
                     if (turnRatio < 0.50 || turnRatio > 1.90) {
                         isWaiting = true; 
-                        instruction.innerText = "ခဏလေး ငြိမ်ပေးပါ...";
+                        instruction.innerText = "ခဏလေး Ngim ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'HEAD_NOD';
                             instruction.innerText = "ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
@@ -349,7 +388,7 @@ async function startFaceScan(role) {
                 else if (livenessStep === 'HEAD_NOD') {
                     if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
                         isWaiting = true;
-                        instruction.innerText = "ခဏလေး ငြိမ်ပေးပါ...";
+                        instruction.innerText = "ခဏလေး Ngim ပေးပါ...";
                         setTimeout(() => {
                             livenessStep = 'CAMERA_FOCUS';
                             instruction.innerText = "ကင်မရာတည့်တည့်သို့ စိုက်ကြည့်ပါ...";
@@ -393,7 +432,7 @@ async function checkDuplicateID() {
 
     const btnSave = document.getElementById('btn-save');
     if (data.length > 0 && !isEditing) {
-        showStatus('error', 'သတိပေးချက်', 'ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးဖြစ်သည်။');
+        showStatus('error', 'သтириပေးချက်', 'ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးဖြစ်သည်။');
         document.getElementById('admin-emp-id').style.borderColor = "var(--danger)";
         if(btnSave) { btnSave.disabled = true; btnSave.style.opacity = "0.5"; }
     } else {
@@ -446,8 +485,8 @@ async function fetchEmployees() {
                 <td><span style="background:#f1f5f9; padding:4px 8px; border-radius:4px; font-size:0.85rem;">${emp.position || 'Staff'}</span></td>
                 <td>
                     <div class="button-row">
-                        <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.position || 'Staff'}', '${emp.face_embedding}')" class="btn-yellow" style="padding:4px 8px; font-size:0.8rem;">ပြင်ဆင်ရန်</button>
-                        <button onclick="triggerDelete('${emp.employee_id}')" class="btn-red" style="padding:4px 8px; font-size:0.8rem;">ပယ်ဖျက်ရန်</button>
+                        <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.position || 'Staff'}', '${emp.face_embedding}')" class="btn-yellow" style="padding:4px 8px; font-size:0.8rem; width:auto;">ပြင်ဆင်ရန်</button>
+                        <button onclick="triggerDelete('${emp.employee_id}')" class="btn-red" style="padding:4px 8px; font-size:0.8rem; width:auto;">ပယ်ဖျက်ရန်</button>
                     </div>
                 </td>
             </tr>`;
@@ -470,6 +509,18 @@ function editEmployee(id, name, position, face) {
     }
     document.getElementById('form-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
     isEditing = true;
+
+    // အလိုအလျောက် ဝန်ထမ်းထည့်သွင်းခြင်း Tab သို့ ရွှေ့ပေးရန်
+    const menuBtns = document.querySelectorAll('.nav-menu-btn');
+    menuBtns.forEach(btn => {
+        if(btn.innerText.includes("ဝန်ထမ်းအသစ်ထည့်ရန်")) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-menu-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('add-employee-tab').classList.add('active');
+            btn.classList.add('active');
+            document.getElementById('current-panel-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
+        }
+    });
 }
 
 function triggerDelete(empId) {
@@ -592,7 +643,7 @@ async function initCalendar() {
                 type: log.type === 'IN' ? 'Check-In' : 'Check-Out',
                 time: timeStr, remark: log.remark || "မရှိပါ",
                 location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
-                mapsLink: `https://www.google.com/maps?q=${log.latitude},${log.longitude}`
+                mapsLink: `https://maps.google.com/?q=${log.latitude},${log.longitude}`
             },
             backgroundColor: log.type === 'IN' ? '#10b981' : '#ef4444',
             borderColor: log.type === 'IN' ? '#10b981' : '#ef4444'
