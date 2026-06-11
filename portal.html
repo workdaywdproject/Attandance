@@ -3,29 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Management Gateway</title>
+    <title>Attendance Gate Portal</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
 </head>
-<body style="display: flex; align-items: center; justify-content: center; background: #f1f5f9;">
+<body style="display: flex; align-items: center; justify-content: center; width: 100vw; height: 100vh; background-color: #f1f5f9;">
 
-    <div class="card" style="width: 100%; max-width: 440px; text-align: center; padding: 35px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
-        <h2 style="color: var(--primary); margin-bottom: 6px;">HR Management System</h2>
-        <p class="sub-title">Select an environment entry below to proceed</p>
-        <hr style="margin: 20px 0;">
+    <div class="card" style="width: 100%; max-width: 450px; text-align: center; padding: 35px; border-radius: 16px;">
+        <h2 style="color: var(--primary); font-weight: 800; font-size: 1.6rem; margin-bottom: 5px;">ATTENDANCE SYSTEM</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Please select verification option</p>
 
-        <div style="display: flex; flex-direction: column; gap: 14px;">
-            <button onclick="window.location.href='index.html'" class="btn-blue" style="padding: 15px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                🕒 Open Attendance Terminal
-            </button>
-            
-            <button onclick="window.location.href='admin.html'" class="btn-green" style="padding: 15px; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                🛠 Open Admin Control Panel
-            </button>
+        <div id="step-1">
+            <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 25px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; font-size: 1.05rem;">
+                    <input type="radio" name="attendance-type" value="IN" checked style="transform: scale(1.2);"> Check-In
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 700; cursor: pointer; font-size: 1.05rem;">
+                    <input type="radio" name="attendance-type" value="OUT" style="transform: scale(1.2);"> Check-Out
+                </label>
+            </div>
+
+            <div style="margin-bottom: 25px; text-align: left;">
+                <label style="font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 6px; display: block;">Optional Remarks</label>
+                <input type="text" id="remark" placeholder="e.g., On duty, Field trip...">
+            </div>
+
+            <button onclick="openScanModal()" class="btn-blue" style="font-size: 1.1rem; padding: 14px; border-radius: 10px;">Start Face Scanning</button>
+            <p onclick="window.location.href='admin.html'" style="margin-top: 20px; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; text-decoration: underline;">Access Admin Dashboard</p>
         </div>
 
-        <hr style="margin: 24px 0;">
-        <p style="font-size: 0.75rem; color: var(--text-muted);">Secure Biometric Authentication Gate v2.4.0</p>
+        <div id="step-2" class="hidden" style="text-align: left;">
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                <p style="color: #16a34a; font-weight: 700; font-size: 1.1rem;">✓ Face Identified Successfully</p>
+            </div>
+            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 25px;">
+                <p style="margin-bottom: 8px; font-size: 0.95rem;"><b>ID:</b> <span id="recognized-id" style="color: var(--primary);"></span></p>
+                <p style="margin-bottom: 8px; font-size: 0.95rem;"><b>Name:</b> <span id="recognized-name"></span></p>
+                <p style="font-size: 0.95rem;"><b>Position:</b> <span id="recognized-pos" style="color: var(--text-muted);"></span></p>
+            </div>
+            <button onclick="showConfirmModal()" class="btn-green" style="font-size: 1.05rem; padding: 12px; margin-bottom: 10px;">Confirm Attendance</button>
+            <button onclick="location.reload()" class="btn-gray" style="width: 100%;">Cancel</button>
+        </div>
     </div>
 
+    <div id="scan-modal" class="modal-overlay hidden">
+        <div class="card" style="width: 350px; text-align: center; background: #ffffff; padding: 25px; border-radius: var(--radius-lg); border: 2px solid #cbd5e1; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            
+            <h3 style="color: #0f172a !important; font-weight: 800 !important; font-size: 1.3rem !important; margin-bottom: 8px; display: block !important;">Biometric Profile Enrolment</h3>
+            
+            <div class="motion-steps">
+                <div id="portal-dot-step1" class="step-dot portal-step-dot"></div>
+                <div id="portal-dot-step2" class="step-dot portal-step-dot"></div>
+                <div id="portal-dot-step3" class="step-dot portal-step-dot"></div>
+            </div>
+
+            <div class="video-container">
+                <video id="video" autoplay muted playsinline></video>
+            </div>
+            
+            <p id="instruction" class="instruction-box">Booting camera module...</p>
+            
+            <button onclick="closeScanModal()" class="btn-gray" style="margin-top: 18px; padding: 12px; font-weight: 700; font-size: 1rem; display: block !important; width: 100%;">Cancel</button>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="modal-overlay hidden">
+        <div class="card" style="width: 320px; text-align: center; padding: 25px;">
+            <h3>Verify Submission?</h3><hr>
+            <div style="text-align: left; font-size: 0.9rem; margin-bottom: 20px; background: #f8fafc; padding: 12px; border-radius: 6px;">
+                <p style="margin-bottom: 6px;"><b>Staff:</b> <span id="conf-name"></span></p>
+                <p style="margin-bottom: 6px;"><b>Action:</b> <span id="conf-type" style="color: var(--primary); font-weight:700;"></span></p>
+                <p><b>Remark:</b> <span id="conf-remark" style="font-style: italic;"></span></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="submitAttendance()" class="btn-green">Submit</button>
+                <button onclick="closeConfirmModal()" class="btn-gray">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="status-modal" class="modal-overlay hidden">
+        <div class="card" style="width: 300px; text-align: center; padding: 30px;">
+            <div style="font-size: 3rem; color: var(--success); margin-bottom: 10px;">✓</div>
+            <h3 id="status-title">Success</h3>
+            <p id="status-message" style="color: var(--text-muted); font-size: 0.9rem;"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
