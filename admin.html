@@ -46,7 +46,7 @@
 
         <div class="main-content">
             <div class="content-header">
-                <div><h2 id="current-panel-title">Dashboard Overview</h2></div>
+                <div><h2 id="current-panel-title" style="color: var(--text); font-weight: 700;">Employee Information Overview</h2></div>
                 <div class="mobile-logout-wrapper"><button onclick="handleLogout()" class="btn-logout-sm">Sign Out</button></div>
             </div>
 
@@ -95,10 +95,17 @@
 
             <div id="view-employee-tab" class="tab-content">
                 <div class="card">
-                    <h3 style="color: var(--text); font-weight: 700;">Active Employee Directory</h3><hr>
+                    <h3 style="color: var(--text); font-weight: 700;">Employee Directory Roster</h3><hr>
                     <div style="overflow-x: auto;">
                         <table>
-                            <thead><tr><th>Employee ID</th><th>Full Name</th><th>Designation</th><th>Action</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Position</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
                             <tbody id="employee-table-body"></tbody>
                         </table>
                     </div>
@@ -108,8 +115,9 @@
     </div>
 
     <div id="admin-scan-modal" class="modal-overlay hidden">
-        <div class="card" style="width: 350px; text-align: center; background: #ffffff; padding: 25px; border-radius: var(--radius-lg);">
-            <h3 style="color: #1e293b; font-weight: 800; font-size: 1.25rem; margin-bottom: 6px;">Biometric Profile Enrolment</h3>
+        <div class="card" style="width: 350px; text-align: center; background: #ffffff; padding: 25px; border-radius: var(--radius-lg); border: 2px solid #cbd5e1; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            
+            <h3 style="color: #0f172a !important; font-weight: 800 !important; font-size: 1.3rem !important; margin-bottom: 8px; display: block !important;">Biometric Profile Enrolment</h3>
             
             <div class="motion-steps">
                 <div id="dot-step1" class="step-dot"></div>
@@ -122,7 +130,8 @@
             </div>
             
             <p id="admin-instruction" class="instruction-box">Booting camera module...</p>
-            <button onclick="closeAdminScanModal()" class="btn-gray" style="margin-top: 14px; padding: 12px; font-weight: 700;">Cancel</button>
+            
+            <button onclick="closeAdminScanModal()" class="btn-gray" style="margin-top: 18px; padding: 12px; font-weight: 700; font-size: 1rem; display: block !important;">Cancel</button>
         </div>
     </div>
 
