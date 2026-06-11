@@ -1,4 +1,4 @@
-/* ==================== ORIGINAL LIGHT / BLUE THEME ==================== */
+/* ==================== GLOBAL THEME VARIABLES ==================== */
 :root {
     --primary: #0066cc; 
     --primary-hover: #0052a3;
@@ -136,9 +136,7 @@ body {
     margin-top: auto;
 }
 
-.mobile-logout-wrapper {
-    display: none; 
-}
+.mobile-logout-wrapper { display: none; }
 
 .btn-logout-sm {
     width: auto;
@@ -170,15 +168,15 @@ h3 { font-size: 1.1rem; margin-bottom: 14px; color: var(--text); }
 .sub-title { color: var(--text-muted); font-size: 0.85rem; }
 hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
 
-/* ==================== 📸 PREMIUM FACE SCANNER UI (မျက်နှာဝိုင်းဒီဇိုင်းသစ်) ==================== */
+/* ==================== 📸 PREMIUM FACE SCANNER UI ==================== */
 .video-container {
     position: relative;
-    width: 280px;
-    height: 280px; /* ဉပုံစံမဟုတ်ဘဲ မျက်နှာအချိုးကျ စတုရန်းပုံစံပြောင်း */
+    width: 270px;
+    height: 270px; 
     margin: 15px auto;
     overflow: hidden;
-    border-radius: 50%; /* ✨ ဝိုင်းစက်ပြီး လှပသော မျက်နှာပုံစံဘောင်ဖြစ်သွားစေရန် */
-    box-shadow: 0 0 0 999px rgba(255, 255, 255, 0.85), 0 0 20px rgba(0,0,0,0.15); /* 🛠 အမဲကြီးမဟုတ်တော့ဘဲ ဖြူကြည်ဆန်းသစ်သော Premium Overlay */
+    border-radius: 50%; /* Smooth Circular Mask */
+    box-shadow: 0 0 0 999px rgba(255, 255, 255, 0.88), 0 0 20px rgba(0,0,0,0.15); /* Glassmorphic White Blur Overlay */
     border: 4px solid var(--primary);
     background: #f1f5f9;
 }
@@ -187,10 +185,10 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1); /* မှန်ပုံစံ (Mirror Effect) */
+    transform: scaleX(-1); /* Mirror Effect */
 }
 
-/* စကင်ဖတ်နေစဉ် လှုပ်ရှားနေမည့် Premium စိမ်းပြာရောင် Scanner Line */
+/* Scanning Indicator Line Animation */
 .video-container::before {
     content: '';
     position: absolute;
@@ -199,7 +197,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     width: 100%;
     height: 4px;
     background: linear-gradient(to right, transparent, var(--success), transparent);
-    animation: scanAnimation 2.5s ease-in-out infinite;
+    animation: scanAnimation 2.2s ease-in-out infinite;
     z-index: 5;
 }
 
@@ -221,7 +219,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     margin-top: 10px;
 }
 
-/* Progress Dot ဘားလေးများ (လှုပ်ရှားမှု အဆင့်ဆင့်ပြရန်) */
+/* Liveness Step dots */
 .motion-steps {
     display: flex;
     justify-content: center;
@@ -240,7 +238,7 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     transform: scale(1.2);
 }
 
-/* ==================== INPUTS, BUTTONS & TABLES ==================== */
+/* ==================== FORM CONTROLS & TABLES ==================== */
 input[type="text"], input[type="password"] {
     width: 100%;
     padding: 12px 14px;
@@ -280,7 +278,7 @@ th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--bo
 th { background: #f8f9fa; font-weight: 600; color: var(--text-muted); }
 .emp-row:hover { background-color: var(--primary-light); cursor: pointer; }
 
-/* Modal မှုန်ဝါးဝါး Glassmorphism နောက်ခံ */
+/* Modal Overlay */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(15, 23, 42, 0.3);
