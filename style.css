@@ -175,8 +175,8 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     height: 270px; 
     margin: 15px auto;
     overflow: hidden;
-    border-radius: 50%; /* Smooth Circular Mask */
-    box-shadow: 0 0 0 999px rgba(255, 255, 255, 0.88), 0 0 20px rgba(0,0,0,0.15); /* Glassmorphic White Blur Overlay */
+    border-radius: 50%; 
+    box-shadow: 0 0 0 999px rgba(255, 255, 255, 0.90), 0 0 25px rgba(0, 0, 0, 0.18); 
     border: 4px solid var(--primary);
     background: #f1f5f9;
 }
@@ -185,10 +185,10 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transform: scaleX(-1); /* Mirror Effect */
+    transform: scaleX(-1); 
 }
 
-/* Scanning Indicator Line Animation */
+/* Scanning Line Animation */
 .video-container::before {
     content: '';
     position: absolute;
@@ -207,16 +207,18 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     100% { top: 0%; }
 }
 
+/* ✨ ပြင်ဆင်လိုက်သည့် Premium လင်းထင်ပြတ်သားသော Instruction Box စနစ် */
 .instruction-box {
-    background: var(--primary-light);
-    color: var(--primary);
-    padding: 12px;
+    background: #e6f0ff; /* Light clear blue backdrop */
+    color: #004499;       /* Deep solid bold blue text for clear readability */
+    padding: 14px;
     border-radius: var(--radius-md);
     text-align: center;
-    font-weight: 600;
-    font-size: 0.9rem;
-    border: 1px solid rgba(0, 102, 204, 0.15);
-    margin-top: 10px;
+    font-weight: 700;    /* High contrast bold font style */
+    font-size: 0.95rem;
+    border: 2px solid #b3d1ff;
+    margin-top: 12px;
+    box-shadow: 0 2px 8px rgba(0, 102, 204, 0.05);
 }
 
 /* Liveness Step dots */
@@ -278,7 +280,6 @@ th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--bo
 th { background: #f8f9fa; font-weight: 600; color: var(--text-muted); }
 .emp-row:hover { background-color: var(--primary-light); cursor: pointer; }
 
-/* Modal Overlay */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(15, 23, 42, 0.3);

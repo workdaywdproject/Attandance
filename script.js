@@ -68,7 +68,7 @@ async function openScanModal() {
             video.srcObject = activeStream;
             video.onloadedmetadata = () => { video.play(); startEmployeeRecognitionLoop(); };
         } catch(e) {
-            instruction.innerText = "❌ Stream Error. Please grand hardware permissions.";
+            instruction.innerText = "❌ Stream Error. Please grant hardware permissions.";
         }
     }
 }
@@ -198,7 +198,7 @@ function updateStepDots() {
     if(currentDot) currentDot.classList.add('active');
 }
 
-// 🧠 Anti-Spoof Dynamic Liveness Loop (Balanced Pace)
+// ✨ အင်္ဂလိပ်စာသား သီးသန့်သို့ လုံးဝပြောင်းလဲပြင်ဆင်ထားသော Liveness System
 async function runPremiumLivenessLoop() {
     const video = document.getElementById('admin-video');
     const instruction = document.getElementById('admin-instruction');
@@ -280,7 +280,7 @@ async function saveEmployee() {
         resetAdminForm();
         loadEmployeeTable();
         trainFaceMatcher();
-    } catch(e) { alert("Error communication payload with server."); }
+    } catch(e) { alert("Error communicating payload with server."); }
 }
 
 function resetAdminForm() {
