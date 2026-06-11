@@ -9,48 +9,78 @@ let faceMatcher = null;
 let activeStream = null;
 let currentLivenessStep = 1; 
 let collectedDescriptors = [];
+let isModelsLoaded = false;
 
-// Fetch Neural Weights and Active Data Models
+// 🚀 မော်ဒယ်များအားလုံး အောင်မြင်စွာ တက်လာစေရန် စနစ်တကျ ချိတ်ဆက်ခြင်း
 async function loadFaceApiModels() {
     const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
     try {
+        console.log("Loading Face API Models...");
         await Promise.all([
             faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
             faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
             faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
         ]);
-        await trainFaceMatcher();
-    } catch(e) { console.error("Model Boot Failure:", e); }
+        console.log("Models Loaded Successfully.");
+        isModelsLoaded = true;
+        await trainFaceMatcher(); // မော်ဒယ်တက်ပြီးတာနဲ့ DB က ဝန်ထမ်း Data ကို ချက်ချင်းဆွဲယူမည်
+    } catch(e) { 
+        console.error("Model Boot Failure:", e); 
+    }
 }
 loadFaceApiModels();
 
-// Dynamic Compilation to prevent 'undefined' values across datasets
+// 🔄 Database ထဲမှ ဝန်ထမ်းမျက်နှာ Data များအားလုံးကို ဆွဲထုတ်ပြီး မော်ဒယ်ထဲ ထည့်သွင်းခြင်း
 async function trainFaceMatcher() {
     try {
-        const { data: employees } = await supabaseClient.from('employees').select('*');
+        const { data: employees, error } = await supabaseClient.from('employees').select('*');
+        if (error) { console.error("Database fetch error:", error); return; }
+        
         const labeledDescriptors = [];
-        if (!employees) return;
+        if (!employees || employees.length === 0) {
+            console.log("No registered employees found in database yet.");
+            return;
+        }
 
         employees.forEach(emp => {
             const actualEmpId = emp.emp_id || emp.employee_id || emp.id || "EMP-UNKNOWN";
             if (emp.face_data) {
-                const parsed = JSON.parse(emp.face_data);
-                labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(
-                    `${actualEmpId}||${emp.name}||${emp.position}`, 
-                    [new Float32Array(parsed)]
-                ));
+                try {
+                    const parsed = JSON.parse(emp.face_data);
+                    labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(
+                        `${actualEmpId}||${emp.name}||${emp.position}`, 
+                        [new Float32Array(parsed)]
+                    ));
+                } catch(err) {
+                    console.error("Error parsing face data for employee:", emp.name);
+                }
             }
         });
+
         if (labeledDescriptors.length > 0) {
             faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55);
+            console.log("Face Matcher Trained successfully with " + labeledDescriptors.length + " profiles.");
         }
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+        console.error("Training initialization failed:", e); 
+    }
 }
 
 // ==========================================
-// 📸 LOGS TERMINAL CONTROLLER (index.html)
+// 📸 LOGS TERMINAL CONTROLLER (Check In/Out Scan Engine)
 // ==========================================
 async function openScanModal() {
+    // အကယ်၍ မော်ဒယ်က ဒေါင်းလုဒ်ဆွဲမပြီးသေးရင် ခေတ္တစောင့်ခိုင်းခြင်း
+    if (!isModelsLoaded) {
+        alert("Face Recognition models are still initializing. Please wait a few seconds...");
+        return;
+    }
+
+    // နောက်ခံဆွဲရမည့် faceMatcher မရှိသေးပါက ဆွဲခိုင်းခြင်း
+    if (!faceMatcher) {
+        await trainFaceMatcher();
+    }
+
     document.getElementById('scan-modal').classList.remove('hidden');
     const video = document.getElementById('video');
     const instruction = document.getElementById('instruction');
@@ -61,7 +91,10 @@ async function openScanModal() {
     try {
         activeStream = await navigator.mediaDevices.getUserMedia(options);
         video.srcObject = activeStream;
-        video.onloadedmetadata = () => { video.play(); startEmployeeRecognitionLoop(); };
+        video.onloadedmetadata = () => { 
+            video.play(); 
+            startEmployeeRecognitionLoop(); 
+        };
     } catch (err) {
         try {
             activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
@@ -73,35 +106,61 @@ async function openScanModal() {
     }
 }
 
+// 🔄 Check In/Out မှာ မျက်နှာကို စက္ကန့်ပိုင်းအတွင်း ဖတ်ပေးမည့် အဓိက Loop
 async function startEmployeeRecognitionLoop() {
     const video = document.getElementById('video');
     const instruction = document.getElementById('instruction');
-    if (!video || video.paused) return;
+    
+    // Modal ပိတ်သွားရင် သို့မဟုတ် ဗီဒီယိုရပ်သွားရင် Loop ကို ရပ်ပစ်မည်
+    if (!video || video.paused || document.getElementById('scan-modal').classList.contains('hidden')) return;
 
-    instruction.innerText = "Align your face inside the circle tracker...";
+    instruction.innerText = "Scanning... Align your face inside the circle.";
+    
     try {
         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
-        if (detection && faceMatcher) {
-            const match = faceMatcher.findBestMatch(detection.descriptor);
-            if (match && match.label !== 'unknown') {
-                const [id, name, pos] = match.label.split('||');
-                document.getElementById('recognized-id').innerText = id;
-                document.getElementById('recognized-name').innerText = name;
-                document.getElementById('recognized-pos').innerText = pos;
+        
+        if (detection) {
+            if (faceMatcher) {
+                const match = faceMatcher.findBestMatch(detection.descriptor);
                 
-                closeScanModal();
-                document.getElementById('step-1').classList.add('hidden');
-                document.getElementById('step-2').classList.remove('hidden');
-                return;
+                if (match && match.label !== 'unknown') {
+                    const [id, name, pos] = match.label.split('||');
+                    
+                    // ပေါ်လာမည့်စာသားများအား သတ်မှတ်နေရာတွင် ပြောင်းလဲတပ်ဆင်ခြင်း
+                    document.getElementById('recognized-id').innerText = id;
+                    document.getElementById('recognized-name').innerText = name;
+                    document.getElementById('recognized-pos').innerText = pos;
+                    
+                    closeScanModal();
+                    
+                    // ဝန်ထမ်းအချက်အလက်ကို ပြသပြီး သတ်မှတ်လုပ်ငန်းစဉ်အဆင့်သို့ ကူးပြောင်းခြင်း
+                    document.getElementById('step-1').classList.add('hidden');
+                    document.getElementById('step-2').classList.remove('hidden');
+                    return; // အောင်မြင်သွားသဖြင့် Loop မှ ထွက်မည်
+                } else {
+                    instruction.innerText = "Searching profile... Keep looking straight.";
+                }
+            } else {
+                instruction.innerText = "Syncing directory registry... Please wait.";
+                await trainFaceMatcher();
             }
+        } else {
+            instruction.innerText = "No Face Detected. Position your face in front of the camera.";
         }
-    } catch(e) { console.error(e); }
-    setTimeout(startEmployeeRecognitionLoop, 400);
+    } catch(e) { 
+        console.error("Recognition inner execution loop exception:", e); 
+    }
+    
+    // မျက်နှာမတွေ့မချင်း တစ်စက္ကန့်လျှင် ၂ ကြိမ်နှုန်းဖြင့် အလိုအလျောက် ထပ်ခါထပ်ခါ ဖတ်နေမည်
+    setTimeout(startEmployeeRecognitionLoop, 500);
 }
 
 function closeScanModal() {
     document.getElementById('scan-modal').classList.add('hidden');
-    if (activeStream) activeStream.getTracks().forEach(track => track.stop());
+    if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+        activeStream = null;
+    }
 }
 
 function showConfirmModal() {
@@ -176,6 +235,10 @@ async function deleteEmployee(id) {
 }
 
 async function openAdminScanModal() {
+    if (!isModelsLoaded) {
+        alert("Face API Neural weights are loading. Try again in 3 seconds.");
+        return;
+    }
     document.getElementById('admin-scan-modal').classList.remove('hidden');
     const video = document.getElementById('admin-video');
     currentLivenessStep = 1;
@@ -197,11 +260,11 @@ function updateStepDots() {
     if(currentDot) currentDot.classList.add('active');
 }
 
-// 🔥 Anti-Spoof Advanced High-Security Liveness Detection Loop (No Photo Allowed)
+// 🛡️ Anti-Spoof စနစ် (ဓာတ်ပုံပြရင် လုံးဝကျော်မရဘဲ အပြင်လူအစစ်အမှန် လှည့်ပြမှသာ အဆင်ပြေပြေ ကျော်သွားမည့် Stable Threshold)
 async function runPremiumLivenessLoop() {
     const video = document.getElementById('admin-video');
     const instruction = document.getElementById('admin-instruction');
-    if (!video || video.paused) return;
+    if (!video || video.paused || document.getElementById('admin-scan-modal').classList.contains('hidden')) return;
 
     try {
         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
@@ -221,30 +284,30 @@ async function runPremiumLivenessLoop() {
             const turnRatio = noseToLeftJaw / rightJawToNose;
 
             if (currentLivenessStep === 1) {
-                instruction.innerText = "Step 1: Look directly at the camera and stay still...";
-                // ဓာတ်ပုံမဟုတ်ဘဲ လူအစစ်ဖြစ်ကြောင်း အလယ်ဗဟိုတည့်တည့် တိကျစွာစစ်ဆေးခြင်း
-                if (turnRatio > 0.88 && turnRatio < 1.12) {
+                instruction.innerText = "Step 1: Look straight at the camera and stay still...";
+                // မျက်နှာတည်ငြိမ်မှု စစ်ဆေးခြင်း
+                if (turnRatio > 0.85 && turnRatio < 1.15) {
                     collectedDescriptors.push(detection.descriptor);
                     currentLivenessStep = 2;
                     updateStepDots();
-                    await new Promise(r => setTimeout(r, 1200)); 
+                    await new Promise(r => setTimeout(r, 1000)); 
                 }
             } 
             else if (currentLivenessStep === 2) {
-                instruction.innerText = "Step 2: Turn your head SIGNIFICANTLY to the Left or Right...";
-                // ဓာတ်ပုံပြရင် ကျော်မရအောင် ဘေးကို လုံးလုံးလှည့်ပြရမည့် စည်းမျဉ်း (Strict Bounds: < 0.50 သို့မဟုတ် > 1.80)
-                if (turnRatio < 0.50 || turnRatio > 1.80) {
+                instruction.innerText = "Step 2: Turn your head CLEARLY to the Left or Right side...";
+                // ဓာတ်ပုံငြိမ်ပြနေရင် ကျော်မရဘဲ မျက်နှာကို ဘေးသို့ အမှန်တကယ် လှည့်ပြမှသာ ကျော်မည့်စနစ် (0.60 အောက် သို့မဟုတ် 1.60 အထက်)
+                if (turnRatio < 0.60 || turnRatio > 1.60) {
                     currentLivenessStep = 3;
                     updateStepDots();
-                    await new Promise(r => setTimeout(r, 1200));
+                    await new Promise(r => setTimeout(r, 1000));
                 }
             } 
             else if (currentLivenessStep === 3) {
-                instruction.innerText = "Step 3: Tilt your head SIGNIFICANTLY Upwards or Downwards...";
+                instruction.innerText = "Step 3: Tilt your head CLEARLY Upwards or Downwards...";
                 const noseToEyeY = nose.y - (leftEye.y + rightEye.y)/2;
                 
-                // အပေါ်/အောက်သို့ အမှန်တကယ် လုံးလုံးပြောင်းလဲလှုပ်ရှားမှု ရှိမရှိ စစ်ဆေးခြင်း
-                if (noseToEyeY < eyeDistance * 0.32 || noseToEyeY > eyeDistance * 0.68) {
+                // အပေါ်/အောက်သို့ သိသိသာသာ မော့ပြ/ငုံ့ပြခြင်း ရှိမရှိ စစ်ဆေးခြင်း
+                if (noseToEyeY < eyeDistance * 0.35 || noseToEyeY > eyeDistance * 0.65) {
                     instruction.innerText = "🎉 All 3 liveness steps verified successfully!";
                     
                     const finalDescriptor = collectedDescriptors[0] || detection.descriptor;
@@ -258,12 +321,15 @@ async function runPremiumLivenessLoop() {
             }
         }
     } catch (e) { console.error(e); }
-    setTimeout(runPremiumLivenessLoop, 150); 
+    setTimeout(runPremiumLivenessLoop, 200); 
 }
 
 function closeAdminScanModal() {
     document.getElementById('admin-scan-modal').classList.add('hidden');
-    if (activeStream) activeStream.getTracks().forEach(track => track.stop());
+    if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
+        activeStream = null;
+    }
 }
 
 async function saveEmployee() {

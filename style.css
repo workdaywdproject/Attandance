@@ -11,8 +11,8 @@
     --background: #f8f9fa; 
     --card-bg: #ffffff; 
     --sidebar-bg: #ffffff;
-    --text: #1e293b;       /* Darker text for high contrast */
-    --text-muted: #475569; /* Slate text instead of light gray */
+    --text: #0f172a;       
+    --text-muted: #334155; 
     --border: #cbd5e1;
     --radius-md: 12px;
     --radius-lg: 20px;
@@ -23,7 +23,6 @@
     padding: 0;
     box-sizing: border-box;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    -webkit-tap-highlight-color: transparent;
 }
 
 body {
@@ -32,150 +31,21 @@ body {
     line-height: 1.5;
     display: flex;
     min-height: 100vh;
-    overflow-x: hidden;
 }
 
-/* ==================== LAYOUT CONFIGURATION ==================== */
-.admin-layout {
-    display: flex;
-    width: 100%;
-}
-
-.sidebar {
-    width: 260px;
-    background: var(--sidebar-bg);
-    border-right: 1px solid var(--border);
-    padding: 24px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.nav-menu-btn {
-    width: 100%;
-    padding: 14px 16px;
-    background: transparent;
-    color: var(--text);
-    text-align: left;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-}
-
-.nav-menu-btn:hover {
-    background: #f1f5f9;
-    color: var(--primary);
-}
-
-.nav-menu-btn.active {
-    background: var(--primary-light);
-    color: var(--primary);
-    font-weight: 700;
-    border-left: 4px solid var(--primary);
-}
-
-.bottom-nav {
-    display: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: var(--sidebar-bg);
-    border-top: 1px solid var(--border);
-    z-index: 999;
-    justify-content: space-around;
-    padding: 12px 0;
-    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
-}
-
-.bottom-nav-item {
-    background: transparent;
-    border: none;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    font-weight: 600;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    flex: 1;
-}
-
-.bottom-nav-item.active {
-    color: var(--primary);
-    font-weight: 700;
-}
-
-.main-content {
-    flex-grow: 1;
-    padding: 24px;
-    overflow-y: auto;
-    width: 100%;
-}
-
-.content-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    background: var(--card-bg);
-    padding: 16px 24px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border);
-}
-
-.logout-container {
-    padding: 16px;
-    margin-top: auto;
-}
-
-.mobile-logout-wrapper { display: none; }
-
-.btn-logout-sm {
-    width: auto;
-    padding: 6px 14px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    background: transparent;
-    color: var(--danger);
-    border: 1px solid var(--danger);
-    border-radius: 6px;
-}
-
-/* ==================== CARD & TABLES ==================== */
-.card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 24px;
-    margin-bottom: 20px;
-}
-
-.tab-content { display: none; }
-.tab-content.active { display: block; }
 .hidden { display: none !important; }
 
-h2 { font-size: 1.4rem; color: var(--text); font-weight: 700; }
-h3 { font-size: 1.15rem; margin-bottom: 14px; color: var(--text); font-weight: 700; }
-.sub-title { color: var(--text-muted); font-size: 0.85rem; font-weight: 500; }
-hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
-
-/* ==================== 📸 FIX: 100% VISIBLE FACE SCANNER UI ==================== */
+/* ==================== 📸 SCREEN VISIBILITY SCANNER FIX ==================== */
 .video-container {
     position: relative;
-    width: 260px;
-    height: 260px; 
+    width: 250px;
+    height: 250px; 
     margin: 20px auto;
     overflow: hidden;
-    border-radius: 50%; 
-    /* ⚠️ အဖြူရောင် Shadow လွှာအကြီးကြီးကို ဖယ်ရှားလိုက်ပြီး ရိုးရိုး Border & Shadow သာ သုံးထားပါတယ် */
-    border: 4px solid var(--primary);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); 
+    border-radius: 50% !important; 
+    border: 5px solid var(--primary) !important;
+    /* ⚠️ စာသားတွေကို ကွယ်စေတဲ့ box-shadow အဖြူလွှာကြီးကို လုံးဝဖြုတ်ချလိုက်ပါပြီ */
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2) !important; 
     background: #000000;
 }
 
@@ -186,112 +56,55 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     transform: scaleX(-1); 
 }
 
-/* Scanning Line Animation */
-.video-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(to right, transparent, var(--success), transparent);
-    animation: scanAnimation 2.2s ease-in-out infinite;
-    z-index: 5;
-}
-
-@keyframes scanAnimation {
-    0% { top: 0%; }
-    50% { top: 100%; }
-    100% { top: 0%; }
-}
-
-/* စာသားမှိန်နေခြင်းကို လုံးဝဖြေရှင်းထားသည့် Dynamic Box */
+/* Clear View Instruction Box */
 .instruction-box {
-    background: #f0f7ff !important; 
-    color: #004499 !important;       
-    padding: 14px;
+    background: #e0f2fe !important; 
+    color: #0369a1 !important;       
+    padding: 12px 14px;
     border-radius: var(--radius-md);
     text-align: center;
     font-weight: 700 !important;    
     font-size: 0.95rem;
-    border: 2px solid #b3d1ff !important;
+    border: 2px solid #bae6fd !important;
     margin-top: 15px;
     display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
 }
 
-/* Liveness Step dots */
+/* Steps Dots Indicator */
 .motion-steps {
     display: flex;
     justify-content: center;
     gap: 8px;
-    margin: 14px 0;
+    margin: 10px 0;
 }
 .step-dot {
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: #cbd5e1;
-    transition: all 0.3s ease;
+    background: #e2e8f0;
+    border: 1px solid #cbd5e1;
 }
 .step-dot.active {
     background: var(--success);
-    transform: scale(1.2);
+    transform: scale(1.1);
 }
 
-/* ==================== FORM CONTROLS & TABLES ==================== */
-input[type="text"], input[type="password"] {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.9rem;
-    outline: none;
-    background: #fff;
-    transition: all 0.2s;
-    color: var(--text);
-}
-input[type="text"]:focus, input[type="password"]:focus {
-    border-color: var(--primary);
-}
-
+/* Button UI Controls */
 button {
-    width: 100%;
     padding: 12px 16px;
     border: none;
     border-radius: 8px;
     font-size: 0.95rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
 }
-button:hover { opacity: 0.94; }
-
 .btn-blue { background: var(--primary); color: #fff; } 
 .btn-green { background: var(--success); color: #fff; }
-.btn-yellow { background: var(--warning); color: #2c3e50; }
-.btn-red { background: var(--danger); color: #fff; }
-.btn-gray { background: #334155 !important; color: #ffffff !important; } /* ခလုတ်ကို အမှောင်ရောင်ပြောင်းပြီး ထင်သာမြင်သာရှိစေခြင်း */
-.btn-outline-red { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.btn-gray { background: #334155 !important; color: #ffffff !important; } 
 
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-th { background: #f1f5f9; font-weight: 700; color: #334155; }
-.emp-row:hover { background-color: var(--primary-light); cursor: pointer; }
-
-/* Modal Background Blur Fix */
+/* Modal Overlay Background Back Drop */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.6) !important; /* တခြားအရာတွေကို မှောင်ချပစ်ပြီး Modal ကို လင်းတင်ပေးခြင်း */
-    backdrop-filter: blur(4px);
+    background: rgba(15, 23, 42, 0.75) !important; /* အောက်က စာသားတွေကို မှောင်ချပြီး Modal ကို အပေါ်ကို ဆွဲတင်ပေးမည် */
     display: flex; align-items: center; justify-content: center; z-index: 9999;
-}
-
-@media (max-width: 992px) {
-    body { padding-bottom: 80px; flex-direction: column; }
-    .sidebar { display: none; }
-    .bottom-nav { display: flex; }
-    .main-content { padding: 16px; }
-    .mobile-logout-wrapper { display: block; }
 }
