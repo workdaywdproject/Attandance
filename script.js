@@ -211,7 +211,6 @@ function initDashboard() {
     initFullCalendar();
 }
 
-// ဝန်ထမ်းများစာရင်းဇယားကို ဆွဲထုတ်ခြင်း (Pop-up Card Engine စနစ်သစ်)
 async function loadEmployeeTable() {
     const tbody = document.getElementById('employee-table-body');
     if (!tbody) return;
@@ -231,7 +230,6 @@ async function loadEmployeeTable() {
             const tr = document.createElement('tr');
             tr.className = "emp-row";
             
-            // 💡 ဝန်ထမ်းအတန်းကို ထိလိုက်/နှိပ်လိုက်ရင် Pop-up Card ပေါ်လာစေမည့် စနစ်
             tr.addEventListener('click', () => {
                 openActionPopup(emp.id, displayId, emp.name, emp.position);
             });
@@ -248,20 +246,17 @@ async function loadEmployeeTable() {
     }
 }
 
-// 🛠 POP-UP CARD FUNCTIONS
 function openActionPopup(dbId, empId, name, position) {
     document.getElementById('pop-emp-id').innerText = empId;
     document.getElementById('pop-emp-name').innerText = name;
     document.getElementById('pop-emp-pos').innerText = position;
     
-    // ပြင်ဆင်ရန်ခလုတ် နှိပ်ပါက လုပ်ဆောင်မည့် လမ်းကြောင်းသတ်မှတ်ခြင်း
     const editBtn = document.getElementById('pop-edit-btn');
     editBtn.onclick = () => {
         closeActionPopup();
         editEmployeeData(dbId, empId, name, position);
     };
     
-    // ပယ်ဖျက်ခလုတ် နှိပ်ပါက လုပ်ဆောင်မည့် လမ်းကြောင်းသတ်မှတ်ခြင်း
     const deleteBtn = document.getElementById('pop-delete-btn');
     deleteBtn.onclick = () => {
         closeActionPopup();
@@ -282,8 +277,11 @@ function editEmployeeData(dbId, empId, name, position) {
     document.getElementById('admin-emp-pos').value = position;
     
     document.getElementById('form-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
-    document.getElementById('face-status').innerText = "✅ ဇီဝအချက်အလက် မူရင်းအတိုင်း ရှိနေပါသည် (မပြောင်းလဲလိုက အလွတ်ထားပါ)";
-    document.getElementById('face-status').style.color = "var(--primary)";
+    
+    // 🛠 စာသားအလိုအလျောက် ဆင်းသွားစေရန် class ဖြင့် တည်ဆောက်ထားသော စနစ်သစ်
+    const faceStatusEl = document.getElementById('face-status');
+    faceStatusEl.innerText = "✅ ဇီဝအချက်အလက် မူရင်းအတိုင်း ရှိနေပါသည် (မပြောင်းလဲလိုက အလွတ်ထားပါ)";
+    faceStatusEl.style.color = "var(--primary)";
     
     const tabBtn = document.querySelector('[data-target="add-emp"]');
     switchTab('add-employee-tab', tabBtn);
@@ -317,13 +315,15 @@ async function checkDuplicateID() {
     if (!empId) return;
 
     const { data } = await supabaseClient.from('employees').select('emp_id').eq('emp_id', empId);
+    const faceStatusEl = document.getElementById('face-status');
+    
     if (data && data.length > 0) {
-        document.getElementById('face-status').innerText = "⚠️ ဤဝန်ထမ်းကုဒ်မှာ စနစ်ထဲတွင် ရှိနှင့်ပြီးသားဖြစ်သည်!";
-        document.getElementById('face-status').style.color = "var(--danger)";
+        faceStatusEl.innerText = "⚠️ ဤဝန်ထမ်းကုဒ်မှာ စနစ်ထဲတွင် ရှိနှင့်ပြီးသားဖြစ်သည်!";
+        faceStatusEl.style.color = "var(--danger)";
         btnSave.disabled = true;
     } else {
-        document.getElementById('face-status').innerText = adminFaceDescriptor ? "✅ ဇီဝအချက်အလက် အဆင်သင့်ရှိပါသည်" : "ဇီဝအချက်အလက် မရှိသေးပါ";
-        document.getElementById('face-status').style.color = adminFaceDescriptor ? "var(--success)" : "var(--danger)";
+        faceStatusEl.innerText = adminFaceDescriptor ? "✅ ဇီဝအချက်အလက် အဆင်သင့်ရှိပါသည်" : "ဇီဝအချက်အလက် မရှိသေးပါ";
+        faceStatusEl.style.color = adminFaceDescriptor ? "var(--success)" : "var(--danger)";
         btnSave.disabled = false;
     }
 }
@@ -353,12 +353,14 @@ async function captureAdminFace() {
 
     try {
         const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+        const faceStatusEl = document.getElementById('face-status');
+        
         if (detection) {
             adminFaceDescriptor = Array.from(detection.descriptor);
             document.getElementById('admin-face-data').value = JSON.stringify(adminFaceDescriptor);
             
-            document.getElementById('face-status').innerText = "✅ ဇီဝအချက်အလက် အဆင်သင့်ရှိပါသည်";
-            document.getElementById('face-status').style.color = "var(--success)";
+            faceStatusEl.innerText = "✅ ဇီဝအချက်အလက် အဆင်သင့်ရှိပါသည်";
+            faceStatusEl.style.color = "var(--success)";
             
             document.getElementById('admin-instruction').innerText = "✅ မျက်နှာမှတ်တမ်း ရယူခြင်း အောင်မြင်ပါသည်။";
             setTimeout(closeAdminScanModal, 1200);
@@ -426,8 +428,10 @@ function resetAdminForm() {
     document.getElementById('admin-face-data').value = "";
     adminFaceDescriptor = null;
     document.getElementById('form-title').innerText = "ဝန်ထမ်းအသစ် စာရင်းသွင်းခြင်း";
-    document.getElementById('face-status').innerText = "ဇီဝအချက်အလက် မရှိသေးပါ";
-    document.getElementById('face-status').style.color = "var(--danger)";
+    
+    const faceStatusEl = document.getElementById('face-status');
+    faceStatusEl.innerText = "ဇီဝအချက်အလက် မရှိသေးပါ";
+    faceStatusEl.style.color = "var(--danger)";
     document.getElementById('btn-save').disabled = false;
 }
 

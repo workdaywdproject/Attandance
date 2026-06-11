@@ -72,10 +72,9 @@
                     <h2 id="current-panel-title">Dashboard</h2>
                     <p class="sub-title">Realtime System Overview</p>
                 </div>
-            </div>
-
-            <div class="mobile-logout-wrapper">
-                <button onclick="handleLogout()" class="btn-outline-red">Log Out</button>
+                <div class="mobile-logout-wrapper">
+                    <button onclick="handleLogout()" class="btn-logout-sm">Log Out</button>
+                </div>
             </div>
 
             <div id="dashboard-tab" class="tab-content active">
@@ -115,7 +114,7 @@
                     </div>
                     <div class="form-group">
                         <label>ဇီဝအချက်အလက် အခြေအနေ</label>
-                        <p id="face-status" style="font-weight: 600; color: var(--danger); margin-top: 4px; font-size: 0.85rem; white-space: nowrap;">ဇီဝအချက်အလက် မရှိသေးပါ</p>
+                        <p id="face-status" class="status-text-wrap">ဇီဝအချက်အလက် မရှိသေးပါ</p>
                         <input type="hidden" id="admin-face-data">
                     </div>
                     <button onclick="openAdminScanModal()" class="btn-blue" style="margin-bottom: 16px;">ဇီဝအချက်အလက် မှတ်တမ်းယူမည်</button>
@@ -129,7 +128,6 @@
             <div id="view-employee-tab" class="tab-content">
                 <div class="card">
                     <h3>ဝန်ထမ်းများစာရင်း</h3>
-                    <p class="sub-title" style="margin-bottom: 10px; color: var(--primary); font-weight: 500;">* ဝန်ထမ်းတစ်ဦး၏ အတန်းကို နှိပ်ပါက လုပ်ဆောင်ချက် Card ပေါ်လာပါမည်။</p>
                     <hr>
                     <div style="overflow-x: auto;">
                         <table>
@@ -199,7 +197,7 @@
     <div id="delete-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px;">
             <h3 style="margin-bottom: 8px; color: var(--danger);">ပယ်ဖျက်ရန် အတည်ပြုခြင်း</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေချာပါသလား?</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေချက်ပါသလား?</p>
             <div class="button-row">
                 <button id="delete-confirm-btn" class="btn-red">ပယ်ဖျက်မည်</button>
                 <button onclick="closeDeleteModal()" class="btn-gray">မလုပ်တော့ပါ</button>
