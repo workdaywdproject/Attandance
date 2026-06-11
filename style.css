@@ -311,6 +311,7 @@ button:active {
     white-space: nowrap;
 }
 
+/* ==================== HOVER EFFECT FOR ACTION BUTTONS ==================== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -328,6 +329,22 @@ th {
     background: #f8f9fa;
     font-weight: 500;
     color: var(--text-muted);
+}
+
+/* ဝန်ထမ်း Row တစ်ခုချင်းစီကို ထောက်မှ ခလုတ်ပေါ်လာစေမည့် Style */
+.emp-row .action-btns {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.emp-row:hover {
+    background-color: #f8f9fa;
+}
+
+.emp-row:hover .action-btns {
+    opacity: 1;
+    visibility: visible;
 }
 
 .dashboard-grid {
@@ -374,6 +391,11 @@ th {
     }
     .portal-container, .index-container {
         max-width: 100%;
+    }
+    /* Mobile ပေါ်တွင် အမြဲပေါ်နေစေရန် */
+    .emp-row .action-btns {
+        opacity: 1;
+        visibility: visible;
     }
 }
 

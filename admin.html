@@ -99,6 +99,8 @@
                 <div class="card" style="max-width: 520px; margin: 0 auto;">
                     <h3 id="form-title">ဝန်ထမ်းအသစ် စာရင်းသွင်းခြင်း</h3>
                     <hr>
+                    <input type="hidden" id="edit-db-id">
+                    
                     <div class="form-group">
                         <label>ဝန်ထမ်းကုဒ် (Employee ID)</label>
                         <input type="text" id="admin-emp-id" oninput="checkDuplicateID()" placeholder="ဥပမာ - EMP-001">
@@ -127,11 +129,12 @@
             <div id="view-employee-tab" class="tab-content">
                 <div class="card">
                     <h3>ဝန်ထမ်းများစာရင်း</h3>
+                    <p class="sub-title" style="margin-bottom: 10px; color: var(--primary);">* ပြင်ဆင်ရန် သို့မဟုတ် ဖျက်ရန် သက်ဆိုင်ရာ ဝန်ထမ်းအถက်ပေါ်သို့ မောက်စ်ထောက် (Hover) ပေးပါ</p>
                     <hr>
                     <div style="overflow-x: auto;">
                         <table>
                             <thead>
-                                <tr><th>ID</th><th>အမည်</th><th>ရာထူး</th><th>လုပ်ဆောင်ချက်</th></tr>
+                                <tr><th>ID</th><th>အမည်</th><th>ရာထူး</th><th style="text-align: right; padding-right: 40px;">လုပ်ဆောင်ချက်</th></tr>
                             </thead>
                             <tbody id="employee-table-body"></tbody>
                         </table>
@@ -196,7 +199,7 @@
     <div id="delete-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px;">
             <h3 style="margin-bottom: 8px; color: var(--danger);">ပယ်ဖျက်ရန် အတည်ပြုခြင်း</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေသာပါသလား?</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေချာပါသလား?</p>
             <div class="button-row">
                 <button id="delete-confirm-btn" class="btn-red">ပယ်ဖျက်မည်</button>
                 <button onclick="closeDeleteModal()" class="btn-gray">မလုပ်တော့ပါ</button>
@@ -206,7 +209,6 @@
 
     <script src="script.js"></script>
     <script>
-        // 💡 လုံခြုံရေးအရ admin.html ကို ဖွင့်တိုင်း Password အမြဲတမ်း ပြန်တောင်းစေရန် အောက်ပါအတိုင်း သတ်မှတ်ထားပါသည်။
         document.addEventListener("DOMContentLoaded", () => {
             handleLogout(); 
         });
@@ -221,13 +223,11 @@
         }
         function closeStatusModal() { document.getElementById('status-modal').classList.add('hidden'); }
 
-        // LOGIN PROCESS ENGINE
         async function loginAdmin() {
             const user = document.getElementById('admin-username').value.trim();
             const pass = document.getElementById('admin-password').value.trim();
             if (!user || !pass) { showStatus('သတိပေးချက်', 'အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။'); return; }
 
-            // script.js ရှိ ပင်မ supabaseClient ထံသို့ ချိတ်ဆက်စစ်ဆေးခြင်း
             const { data, error } = await supabaseClient.from('admin_settings').select('*').eq('username', user).eq('password', pass);
             if (error || !data || data.length === 0) {
                 showStatus('မအောင်မြင်ပါ', 'အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
@@ -253,8 +253,8 @@
                 else btn.classList.remove('active');
             });
             let displayTitle = "Dashboard";
-            if(tabId === 'add-employee-tab') displayTitle = "ဝန်ထမ်းအသစ်ထည့်ရန်";
-            if(tabId === 'view-employee-tab') displayTitle = "ဝန်ထမ်းအချက်အလက်များ";
+            if(tabId === 'add-employee-tab') displayTitle = "ဝန်ထမ်းအချက်အလက်များ";
+            if(tabId === 'view-employee-tab') displayTitle = "ဝန်ထမ်းများ";
             if(tabId === 'admin-config-tab') displayTitle = "Admin အကောင့်စီမံရန်";
             document.getElementById('current-panel-title').innerText = displayTitle;
             if(tabId === 'dashboard-tab') { setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50); }
