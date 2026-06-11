@@ -129,12 +129,12 @@
             <div id="view-employee-tab" class="tab-content">
                 <div class="card">
                     <h3>ဝန်ထမ်းများစာရင်း</h3>
-                    <p class="sub-title" style="margin-bottom: 10px; color: var(--primary); font-weight: 500;">* ဝန်ထမ်းတစ်ဦး၏ စာတန်းကို နှိပ်လိုက်ပါက ပြင်ဆင်ရန်/ပယ်ဖျက်ရန် ခလုတ်များ ထွက်လာပါမည်။</p>
+                    <p class="sub-title" style="margin-bottom: 10px; color: var(--primary); font-weight: 500;">* ဝန်ထမ်းတစ်ဦး၏ အတန်းကို နှိပ်ပါက လုပ်ဆောင်ချက် Card ပေါ်လာပါမည်။</p>
                     <hr>
                     <div style="overflow-x: auto;">
                         <table>
                             <thead>
-                                <tr><th>ID</th><th>အမည်</th><th>ရာထူး</th><th style="text-align: right; padding-right: 40px;">လုပ်ဆောင်ချက်</th></tr>
+                                <tr><th>ဝန်ထမ်း ID</th><th>အမည်</th><th>ရာထူး</th></tr>
                             </thead>
                             <tbody id="employee-table-body"></tbody>
                         </table>
@@ -207,17 +207,31 @@
         </div>
     </div>
 
+    <div id="action-popup-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
+        <div class="card" style="width: 100%; max-width: 380px; margin: 16px; padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="color: var(--primary); margin:0;">ဝန်ထမ်း စီမံခန့်ခွဲမှု</h3>
+                <button onclick="closeActionPopup()" class="btn-gray" style="width: auto; padding: 4px 12px; font-size: 0.8rem; margin: 0; background: #eee; color: #333;">ပိတ်မည်</button>
+            </div>
+            
+            <div class="popup-box">
+                <p>🆔 ဝန်ထမ်း ID - <b id="pop-emp-id"></b></p>
+                <p>👤 အမည် - <b id="pop-emp-name"></b></p>
+                <p>💼 ရာထူး - <b id="pop-emp-pos"></b></p>
+            </div>
+            
+            <p class="sub-title" style="margin-bottom: 14px; text-align: center;">ဤဝန်ထမ်းအတွက် ပြုလုပ်လိုသော လုပ်ဆောင်ချက်ကို ရွေးချယ်ပါ</p>
+            <div class="button-row">
+                <button id="pop-edit-btn" class="btn-yellow">✏️ ပြင်ဆင်ရန်</button>
+                <button id="pop-delete-btn" class="btn-red">🗑 ပယ်ဖျက်</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             handleLogout(); 
-            
-            // 💡 ဇယားပြင်ပရှိ တခြားနေရာလွတ်ကို နှိပ်လိုက်ပါက ဖွင့်ထားသော ခလုတ်များကို အလိုအလျောက် ပြန်ပိတ်ပေးရန်
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.emp-row')) {
-                    document.querySelectorAll('.emp-row').forEach(row => row.classList.remove('show-actions'));
-                }
-            });
         });
 
         function showStatus(title, message, isSuccess = false) {

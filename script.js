@@ -211,7 +211,7 @@ function initDashboard() {
     initFullCalendar();
 }
 
-// ဝန်ထမ်းများစာရင်းဇယားကို ဆွဲထုတ်ခြင်း (Click/Touch Logic အသစ်ဖြင့် ပြင်ဆင်ပြီး)
+// ဝန်ထမ်းများစာရင်းဇယားကို ဆွဲထုတ်ခြင်း (Pop-up Card Engine စနစ်သစ်)
 async function loadEmployeeTable() {
     const tbody = document.getElementById('employee-table-body');
     if (!tbody) return;
@@ -222,7 +222,7 @@ async function loadEmployeeTable() {
 
         tbody.innerHTML = "";
         if (!employees || employees.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">စနစ်အတွင်း ဝန်ထမ်းစာရင်း မရှိသေးပါ။</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">စနစ်အတွင်း ဝန်ထမ်းစာရင်း မရှိသေးပါ။</td></tr>`;
             return;
         }
 
@@ -231,38 +231,48 @@ async function loadEmployeeTable() {
             const tr = document.createElement('tr');
             tr.className = "emp-row";
             
-            // 💡 နှိပ်လိုက်မှ (Click သို့မဟုတ် Touch လုပ်မှ) Toggle ပေါ်လာစေမည့် Event Listener
-            tr.addEventListener('click', (event) => {
-                // ခလုတ်တွေကို နှိပ်လိုက်ရင် Row Click Event ထပ်မပွင့်အောင် ကာကွယ်ခြင်း
-                if (event.target.tagName === 'BUTTON') return;
-
-                const isAlreadyShown = tr.classList.contains('show-actions');
-                
-                // အခြားဖွင့်ထားသော Row အားလုံးကို အရင်ပိတ်ပါ
-                document.querySelectorAll('.emp-row').forEach(row => row.classList.remove('show-actions'));
-                
-                // လက်ရှိ Row ကို ဖွင့်/ပိတ် လုပ်ပါ
-                if (!isAlreadyShown) {
-                    tr.classList.add('show-actions');
-                }
+            // 💡 ဝန်ထမ်းအတန်းကို ထိလိုက်/နှိပ်လိုက်ရင် Pop-up Card ပေါ်လာစေမည့် စနစ်
+            tr.addEventListener('click', () => {
+                openActionPopup(emp.id, displayId, emp.name, emp.position);
             });
             
             tr.innerHTML = `
                 <td><b>${displayId}</b></td>
                 <td>${emp.name}</td>
                 <td>${emp.position}</td>
-                <td style="text-align: right; padding-right: 20px;">
-                    <div class="action-btns">
-                        <button onclick="editEmployeeData('${emp.id}', '${displayId}', '${emp.name}', '${emp.position}')" class="btn-yellow" style="width:auto; padding:6px 12px; font-size:0.75rem; margin-right:6px;">ပြင်ဆင်ရန်</button>
-                        <button onclick="confirmDeleteEmployee('${emp.id}')" class="btn-red" style="width:auto; padding:6px 12px; font-size:0.75rem;">ပယ်ဖျက်</button>
-                    </div>
-                </td>
             `;
             tbody.appendChild(tr);
         });
     } catch (err) {
         console.error("Load Workers Matrix Error:", err);
     }
+}
+
+// 🛠 POP-UP CARD FUNCTIONS
+function openActionPopup(dbId, empId, name, position) {
+    document.getElementById('pop-emp-id').innerText = empId;
+    document.getElementById('pop-emp-name').innerText = name;
+    document.getElementById('pop-emp-pos').innerText = position;
+    
+    // ပြင်ဆင်ရန်ခလုတ် နှိပ်ပါက လုပ်ဆောင်မည့် လမ်းကြောင်းသတ်မှတ်ခြင်း
+    const editBtn = document.getElementById('pop-edit-btn');
+    editBtn.onclick = () => {
+        closeActionPopup();
+        editEmployeeData(dbId, empId, name, position);
+    };
+    
+    // ပယ်ဖျက်ခလုတ် နှိပ်ပါက လုပ်ဆောင်မည့် လမ်းကြောင်းသတ်မှတ်ခြင်း
+    const deleteBtn = document.getElementById('pop-delete-btn');
+    deleteBtn.onclick = () => {
+        closeActionPopup();
+        confirmDeleteEmployee(dbId);
+    };
+
+    document.getElementById('action-popup-modal').classList.remove('hidden');
+}
+
+function closeActionPopup() {
+    document.getElementById('action-popup-modal').classList.add('hidden');
 }
 
 function editEmployeeData(dbId, empId, name, position) {

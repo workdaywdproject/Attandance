@@ -311,7 +311,7 @@ button:active {
     white-space: nowrap;
 }
 
-/* ==================== 🛠 CLICK/TOUCH TO SHOW ACTION BUTTONS SYSTEM ==================== */
+/* ==================== 📋 TABLE STYLE WITHOUT ACTION COLUMN ==================== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -331,28 +331,28 @@ th {
     color: var(--text-muted);
 }
 
-/* စတင်ချိန်တွင် ဝန်ထမ်း Row တစ်ခုချင်းစီ၏ ခလုတ်များကို လုံးဝဖျောက်ထားမည် */
 .emp-row {
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.15s ease;
 }
 
-.emp-row .action-btns {
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(10px);
-    transition: all 0.25s ease-in-out;
+.emp-row:hover {
+    background-color: var(--primary-light);
 }
 
-/* Row ကို နှိပ်လိုက်၍ .show-actions Class ဝင်လာမှသာ လှပစွာ ပေါ်လာစေမည် */
-.emp-row.show-actions {
-    background-color: var(--primary-light) !important;
+/* Pop-up Box မှာ သုံးမယ့် ပုံစံအသစ် */
+.popup-box {
+    text-align: left;
+    background: #f8f9fa;
+    border-left: 4px solid var(--primary);
+    padding: 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: 20px;
 }
 
-.emp-row.show-actions .action-btns {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(0);
+.popup-box p {
+    margin-bottom: 8px;
+    font-size: 0.9rem;
 }
 
 .dashboard-grid {
