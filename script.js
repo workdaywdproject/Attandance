@@ -84,7 +84,7 @@ if (document.getElementById('video') || document.getElementById('admin-video')) 
 }
 
 // ==========================================
-// 📸 SCANNING HANDLER FOR EMPLOYEES (index.html)
+// 📸 SCANNING HANDLER FOR EMPLOYEES (index.html) - ဒေါင်လိုက်ပုံစံ ကင်မရာအသစ်
 // ==========================================
 async function openScanModal() {
     const modal = document.getElementById('scan-modal');
@@ -94,20 +94,39 @@ async function openScanModal() {
     modal.classList.remove('hidden');
     instruction.innerText = "ကင်မရာ စတင်ဖွင့်လှစ်နေပါသည်...";
 
+    // 🛠 ဖုန်းများတွင် ဒေါင်လိုက် (Portrait) ပိုမိုပွင့်လွယ်စေမည့် ဆက်တင်သစ်
+    const constraints = {
+        video: {
+            width: { ideal: 480 },
+            height: { ideal: 640 },
+            aspectRatio: 0.75, // ၃:၄ ဒေါင်လိုက်အချိုး
+            facingMode: "user"
+        }
+    };
+
     try {
-        activeStream = await navigator.mediaDevices.getUserMedia({ 
-            video: { width: 640, height: 480, facingMode: "user" } 
-        });
+        activeStream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = activeStream;
-        
         video.onloadedmetadata = () => {
             video.play();
             instruction.innerText = "မျက်နှာကို ဘောင်အတွင်းတည့်တည့် ထားပေးပါ...";
             startFaceRecognitionLoop();
         };
     } catch (err) {
-        console.error("Camera Access Denied:", err);
-        instruction.innerText = "❌ ကင်မရာဖွင့်၍မရပါ (Permission ပေးရန်လိုအပ်ပါသည်)";
+        console.warn("⚠️ Standard camera setup failed, trying fallback mode...", err);
+        // Fallback: အပေါ်ကစနစ်မရပါက ရိုးရိုးကင်မရာပုံစံဖြင့် ပြန်ပွင့်စေရန်ပြုလုပ်ခြင်း
+        try {
+            activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = activeStream;
+            video.onloadedmetadata = () => {
+                video.play();
+                instruction.innerText = "မျက်နှာကို ဘောင်အတွင်းတည့်တည့် ထားပေးပါ...";
+                startFaceRecognitionLoop();
+            };
+        } catch (fallbackErr) {
+            console.error("Camera completely denied:", fallbackErr);
+            instruction.innerText = "❌ ကင်မရာဖွင့်၍မရပါ (ဘရောက်ဆာ၏ Camera Permission ကို Allow ပေးပါ)";
+        }
     }
 }
 
@@ -278,7 +297,6 @@ function editEmployeeData(dbId, empId, name, position) {
     
     document.getElementById('form-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
     
-    // 🛠 စာသားအလိုအလျောက် ဆင်းသွားစေရန် class ဖြင့် တည်ဆောက်ထားသော စနစ်သစ်
     const faceStatusEl = document.getElementById('face-status');
     faceStatusEl.innerText = "✅ ဇီဝအချက်အလက် မူရင်းအတိုင်း ရှိနေပါသည် (မပြောင်းလဲလိုက အလွတ်ထားပါ)";
     faceStatusEl.style.color = "var(--primary)";
@@ -328,14 +346,25 @@ async function checkDuplicateID() {
     }
 }
 
+// 🛠 Admin ဘက်ခြမ်း ကင်မရာ ဒေါင်လိုက်ဖွင့်စနစ်
 async function openAdminScanModal() {
     const modal = document.getElementById('admin-scan-modal');
     const video = document.getElementById('admin-video');
 
     modal.classList.remove('hidden');
     document.getElementById('admin-instruction').innerText = "ကင်မရာ စတင်နေပါသည်...";
+
+    const constraints = {
+        video: {
+            width: { ideal: 480 },
+            height: { ideal: 640 },
+            aspectRatio: 0.75,
+            facingMode: "user"
+        }
+    };
+
     try {
-        activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        activeStream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = activeStream;
         video.onloadedmetadata = () => {
             video.play();
@@ -343,7 +372,18 @@ async function openAdminScanModal() {
             captureAdminFace();
         };
     } catch (err) {
-        document.getElementById('admin-instruction').innerText = "❌ ကင်မရာဖွင့်၍မရပါ";
+        console.warn("Admin camera fallbacked:", err);
+        try {
+            activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = activeStream;
+            video.onloadedmetadata = () => {
+                video.play();
+                document.getElementById('admin-instruction').innerText = "စနစ်မှ မျက်နှာကို မှတ်တမ်းယူနေပါသည်၊ ငြိမ်ငြိမ်နေပေးပါ...";
+                captureAdminFace();
+            };
+        } catch (fallbackErr) {
+            document.getElementById('admin-instruction').innerText = "❌ ကင်မရာဖွင့်မရပါ (Permission စစ်ဆေးပါ)";
+        }
     }
 }
 
@@ -375,64 +415,6 @@ async function captureAdminFace() {
 function closeAdminScanModal() {
     document.getElementById('admin-scan-modal').classList.add('hidden');
     if (activeStream) activeStream.getTracks().forEach(track => track.stop());
-}
-
-async function saveEmployee() {
-    const dbId = document.getElementById('edit-db-id').value;
-    const empId = document.getElementById('admin-emp-id').value.trim();
-    const name = document.getElementById('admin-emp-name').value.trim();
-    const pos = document.getElementById('admin-emp-pos').value.trim();
-    const faceData = document.getElementById('admin-face-data').value;
-
-    if (!empId || !name || !pos) {
-        alert("⚠️ ဝန်ထမ်းအချက်အလက်များ ပြည့်စုံစွာ ဖြည့်စွက်ပါ!");
-        return;
-    }
-
-    const payload = { emp_id: empId, name: name, position: pos };
-    if (faceData) {
-        payload.face_data = faceData;
-    } else if (!dbId) {
-        alert("⚠️ ဝန်ထမ်းအသစ်အတွက် ဇီဝဒေတာ ရိုက်ကူးပေးရန် လိုအပ်ပါသည်!");
-        return;
-    }
-
-    try {
-        if (dbId) {
-            const { error } = await supabaseClient.from('employees').update(payload).eq('id', dbId);
-            if (error) throw error;
-            alert("✅ ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း အောင်မြင်ပါသည်။");
-        } else {
-            const { error } = await supabaseClient.from('employees').insert([payload]);
-            if (error) throw error;
-            alert("✅ ဝန်ထမ်းသစ် သိမ်းဆည်းခြင်း အောင်မြင်ပါသည်။");
-        }
-        
-        resetAdminForm();
-        loadEmployeeTable();
-        trainFaceMatcher();
-        
-        const tabBtn = document.querySelector('[data-target="view-emp"]');
-        switchTab('view-employee-tab', tabBtn);
-    } catch (err) {
-        console.error(err);
-        alert("❌ လုပ်ဆောင်ချက် မအောင်မြင်ပါ။");
-    }
-}
-
-function resetAdminForm() {
-    document.getElementById('edit-db-id').value = "";
-    document.getElementById('admin-emp-id').value = "";
-    document.getElementById('admin-emp-name').value = "";
-    document.getElementById('admin-emp-pos').value = "";
-    document.getElementById('admin-face-data').value = "";
-    adminFaceDescriptor = null;
-    document.getElementById('form-title').innerText = "ဝန်ထမ်းအသစ် စာရင်းသွင်းခြင်း";
-    
-    const faceStatusEl = document.getElementById('face-status');
-    faceStatusEl.innerText = "ဇီဝအချက်အလက် မရှိသေးပါ";
-    faceStatusEl.style.color = "var(--danger)";
-    document.getElementById('btn-save').disabled = false;
 }
 
 // ==========================================

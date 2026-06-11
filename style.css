@@ -122,7 +122,6 @@ body {
     width: 100%;
 }
 
-/* Header စနစ်ကို ညာဘက်ထောင့်မှာ Log Out ထားနိုင်အောင် Flex ပြင်ဆင်မှု */
 .content-header {
     display: flex;
     justify-content: space-between;
@@ -141,7 +140,6 @@ body {
     margin-top: auto;
 }
 
-/* 📱 ဖုန်းတွင် သုံးမည့် ညာဘက်ထောင့် Log Out စတိုင် */
 .mobile-logout-wrapper {
     display: none; 
 }
@@ -208,16 +206,16 @@ hr {
     margin: 16px 0;
 }
 
-/* ==================== WEBCAM VIEW & OVAL MASK ==================== */
+/* ==================== 📸 WEBCAM VIEW & PORTRAIT OVAL MASK (ဒေါင်လိုက်အရှည်စနစ်သစ်) ==================== */
 .video-container {
     position: relative;
     width: 100%;
-    max-width: 380px; 
+    max-width: 300px; /* ဖုန်းနဲ့ အဆင်ပြေအောင် အကျယ်ကို ချုံ့ထားသည် */
     margin: 0 auto;
-    aspect-ratio: 4/3;
+    aspect-ratio: 3/4; /* 🛠 ၉:၁၆ သို့မဟုတ် ၃:၄ ဒေါင်လိုက်အရှည်စနစ်သို့ ပြောင်းလဲထားမှု */
     overflow: hidden;
     border-radius: var(--radius-md);
-    background: #000000; 
+    background: #111111; 
 }
 
 #admin-video, #video {
@@ -225,18 +223,18 @@ hr {
     height: 100%;
     object-fit: cover;
     transform: scaleX(-1); 
-    clip-path: ellipse(38% 48% at 50% 50%);
+    clip-path: ellipse(40% 45% at 50% 50%); /* ဒေါင်လိုက်မျက်နှာပုံစံ Oval ညှပ်နည်း */
 }
 
 .video-container::after {
     content: '';
     position: absolute;
-    top: 2%;
-    left: 12%;
-    width: 76%;
-    height: 96%;
+    top: 5%;
+    left: 10%;
+    width: 80%;
+    height: 90%;
     border: 2px dashed var(--primary);
-    border-radius: 50%;
+    border-radius: 50% / 50%; /* ဒေါင်လိုက် ဥဝိုင်းပုံစံ ဘောင်လိုင်း */
     pointer-events: none;
     z-index: 10;
 }
@@ -269,7 +267,6 @@ hr {
     white-space: nowrap;
 }
 
-/* 🛠 စာသားလျှံထွက်မှု ကာကွယ်ရန် သတ်မှတ်ချက် အသစ် */
 .status-text-wrap {
     font-weight: 600; 
     color: var(--danger); 
@@ -414,7 +411,6 @@ th {
         padding: 12px 16px;
         margin-bottom: 16px;
     }
-    /* 📱 ဖုန်းတွင် Header ညာဘက်ထောင့်တွင် Log Out ခလုတ်ငယ်ကို ပေါ်စေခြင်း */
     .mobile-logout-wrapper {
         display: block;
     }
