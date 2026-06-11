@@ -196,7 +196,7 @@
     <div id="delete-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
         <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px;">
             <h3 style="margin-bottom: 8px; color: var(--danger);">ပယ်ဖျက်ရန် အတည်ပြုခြင်း</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေჩာပါသလား?</p>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေသာပါသလား?</p>
             <div class="button-row">
                 <button id="delete-confirm-btn" class="btn-red">ပယ်ဖျက်မည်</button>
                 <button onclick="closeDeleteModal()" class="btn-gray">မလုပ်တော့ပါ</button>
@@ -206,12 +206,9 @@
 
     <script src="script.js"></script>
     <script>
-        // 💡 API_URL နှင့် Supabase Config များကို script.js မှ တစ်ဆင့်တည်းသာ သုံးထားသဖြင့် ဤနေရာ၌ ထပ်မံကြေညာခြင်း မပြုတော့ပါ။ (Error ကင်းဝေးစေရန်)
-
+        // 💡 လုံခြုံရေးအရ admin.html ကို ဖွင့်တိုင်း Password အမြဲတမ်း ပြန်တောင်းစေရန် အောက်ပါအတိုင်း သတ်မှတ်ထားပါသည်။
         document.addEventListener("DOMContentLoaded", () => {
-            if (sessionStorage.getItem('admin_authenticated') === 'true') {
-                showDashboardDirectly();
-            }
+            handleLogout(); 
         });
 
         function showStatus(title, message, isSuccess = false) {
@@ -224,6 +221,7 @@
         }
         function closeStatusModal() { document.getElementById('status-modal').classList.add('hidden'); }
 
+        // LOGIN PROCESS ENGINE
         async function loginAdmin() {
             const user = document.getElementById('admin-username').value.trim();
             const pass = document.getElementById('admin-password').value.trim();
@@ -264,7 +262,8 @@
 
         function handleLogout() {
             sessionStorage.removeItem('admin_authenticated');
-            document.getElementById('admin-username').value = ""; document.getElementById('admin-password').value = "";
+            document.getElementById('admin-username').value = ""; 
+            document.getElementById('admin-password').value = "";
             document.getElementById('admin-dashboard-section').classList.add('hidden');
             document.getElementById('admin-login-section').classList.remove('hidden');
         }
