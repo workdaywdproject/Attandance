@@ -3,123 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Hub & Dashboard</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="style.css">
     
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
-    
-    <style>
-        .login-frame {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100vw;
-            height: 100vh;
-            padding: 16px;
-            background-color: var(--background);
-        }
-    </style>
 </head>
 <body>
 
-    <div id="admin-login-section" class="login-frame">
-        <div class="card" style="width: 100%; max-width: 400px; padding: 32px 24px;">
-            <div style="text-align: center; margin-bottom: 24px;">
-                <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--primary); margin-bottom: 6px;">Admin Portal</h3>
-                <p class="sub-title">ကျေးဇူးပြု၍ စီမံခန့်ခွဲသူအကောင့်ဖြင့် ဝင်ရောက်ပါ</p>
-            </div>
+    <div id="admin-login-section" style="display:flex; align-items:center; justify-content:center; width:100vw; height:100vh;">
+        <div class="card" style="width:100%; max-width:400px;">
+            <h3 style="text-align:center; color:var(--primary);">Admin Portal</h3>
             <hr>
-            <div class="form-group">
-                <label>အသုံးပြုသူအမည် (Username)</label>
+            <div style="margin-bottom:12px;">
                 <input type="text" id="admin-username" placeholder="Username ရိုက်ထည့်ပါ">
             </div>
-            <div class="form-group" style="margin-bottom: 24px;">
-                <label>စကားဝှက် (Password)</label>
+            <div style="margin-bottom:20px;">
                 <input type="password" id="admin-password" placeholder="Password ရိုက်ထည့်ပါ" onkeydown="if(event.key === 'Enter') loginAdmin()">
             </div>
-            <button onclick="loginAdmin()" class="btn-blue" style="padding: 14px; font-size: 1rem;">လော့ဂ်အင်ဝင်မည်</button>
-            <button onclick="window.location.href='portal.html'" class="btn-gray" style="margin-top: 10px; background: #e9ecef; color: #333;">ပင်မစာမျက်နှာသို့</button>
+            <button onclick="loginAdmin()" class="btn-blue">လော့ဂ်အင်ဝင်မည်</button>
         </div>
     </div>
 
     <div id="admin-dashboard-section" class="admin-layout hidden">
-        
         <div class="sidebar">
-            <div style="height: 20px;"></div>
             <button onclick="switchTab('dashboard-tab', this)" class="nav-menu-btn active" data-target="dashboard">Dashboard</button>
             <button onclick="switchTab('add-employee-tab', this)" class="nav-menu-btn" data-target="add-emp">ဝန်ထမ်းအသစ်ထည့်</button>
             <button onclick="switchTab('view-employee-tab', this)" class="nav-menu-btn" data-target="view-emp">ဝန်ထမ်းများ</button>
-            <button onclick="switchTab('admin-config-tab', this)" class="nav-menu-btn" data-target="security">လုံခြုံရေးအကောင့်</button>
-            
-            <div class="logout-container">
-                <button onclick="handleLogout()" class="btn-outline-red">Log Out</button>
-            </div>
+            <div class="logout-container"><button onclick="handleLogout()" class="btn-outline-red">Log Out</button></div>
         </div>
 
         <div class="bottom-nav">
-            <button onclick="switchTab('dashboard-tab', this)" class="bottom-nav-item active" data-target="dashboard"><span>Dashboard</span></button>
-            <button onclick="switchTab('add-employee-tab', this)" class="bottom-nav-item" data-target="add-emp"><span>အသစ်ထည့်</span></button>
-            <button onclick="switchTab('view-employee-tab', this)" class="bottom-nav-item" data-target="view-emp"><span>ဝန်ထမ်းများ</span></button>
-            <button onclick="switchTab('admin-config-tab', this)" class="bottom-nav-item" data-target="security"><span>လုံခြုံရေး</span></button>
+            <button onclick="switchTab('dashboard-tab', this)" class="bottom-nav-item active" data-target="dashboard">Dashboard</button>
+            <button onclick="switchTab('add-employee-tab', this)" class="bottom-nav-item" data-target="add-emp">အသစ်ထည့်</button>
+            <button onclick="switchTab('view-employee-tab', this)" class="bottom-nav-item" data-target="view-emp">ဝန်ထမ်းများ</button>
         </div>
 
         <div class="main-content">
             <div class="content-header">
-                <div>
-                    <h2 id="current-panel-title">Dashboard</h2>
-                    <p class="sub-title">Realtime System Overview</p>
-                </div>
-                <div class="mobile-logout-wrapper">
-                    <button onclick="handleLogout()" class="btn-logout-sm">Log Out</button>
-                </div>
+                <div><h2 id="current-panel-title">Dashboard</h2></div>
+                <div class="mobile-logout-wrapper"><button onclick="handleLogout()" class="btn-logout-sm">Log Out</button></div>
             </div>
 
             <div id="dashboard-tab" class="tab-content active">
-                <div class="dashboard-grid">
+                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+                    <div class="card"><div id="calendar"></div></div>
                     <div class="card">
-                        <h3>တက်ရောက်မှု ပြက္ခဒိန်</h3>
-                        <hr>
-                        <div id="calendar"></div>
-                    </div>
-                    <div class="card" style="border-left: 4px solid var(--primary); height: fit-content;">
-                        <h3 id="selected-date-title">မှတ်တမ်းအသေးစိတ်</h3>
-                        <hr>
-                        <div id="attendance-details">
-                            <p style="color: var(--text-muted); font-style: italic; text-align: center; font-size: 0.85rem; white-space: nowrap;">ပြက္ခဒိန်ပေါ်ရှိ မှတ်တမ်းကိုနှိပ်၍ ကြည့်နိုင်ပါသည်။</p>
-                        </div>
+                        <h3 id="selected-date-title">မှတ်တမ်းအသေးစိတ်</h3><hr>
+                        <div id="attendance-details"></div>
                     </div>
                 </div>
             </div>
 
             <div id="add-employee-tab" class="tab-content">
-                <div class="card" style="max-width: 520px; margin: 0 auto;">
-                    <h3 id="form-title">ဝန်ထမ်းအသစ် စာရင်းသွင်းခြင်း</h3>
-                    <hr>
+                <div class="card" style="max-width:500px; margin:0 auto;">
+                    <h3 id="form-title">ဝန်ထမ်းအသစ် စာရင်းသွင်းခြင်း</h3><hr>
                     <input type="hidden" id="edit-db-id">
-                    
-                    <div class="form-group">
+                    <div style="margin-bottom:12px;">
                         <label>ဝန်ထမ်းကုဒ် (Employee ID)</label>
-                        <input type="text" id="admin-emp-id" oninput="checkDuplicateID()" placeholder="ဥပမာ - EMP-001">
+                        <input type="text" id="admin-emp-id" placeholder="ဥပမာ - EMP-001">
                     </div>
-                    <div class="form-group">
-                        <label>ဝန်ထမ်းအမည် (Full Name)</label>
-                        <input type="text" id="admin-emp-name" placeholder="အမည် အပြည့်အစုံ ရိုက်ထည့်ပါ">
+                    <div style="margin-bottom:12px;">
+                        <label>ဝန်ထမ်းအမည်</label>
+                        <input type="text" id="admin-emp-name" placeholder="အမည်ရိုက်ထည့်ပါ">
                     </div>
-                    <div class="form-group">
-                        <label>ရာထူး (Position)</label>
-                        <input type="text" id="admin-emp-pos" placeholder="ဥပမာ - Manager, Staff">
+                    <div style="margin-bottom:12px;">
+                        <label>ရာထူး</label>
+                        <input type="text" id="admin-emp-pos" placeholder="ဥပမာ - Staff">
                     </div>
-                    <div class="form-group">
-                        <label>ဇီဝအချက်အလက် အခြေအနေ</label>
-                        <p id="face-status" class="status-text-wrap">ဇီဝအချက်အလက် မရှိသေးပါ</p>
+                    <div style="margin-bottom:16px;">
+                        <label>ဇီဝအချက်အလက်</label>
+                        <p id="face-status" style="color:var(--danger); font-weight:600;">ဇီဝအချက်အလက် မရှိသေးပါ</p>
                         <input type="hidden" id="admin-face-data">
                     </div>
-                    <button onclick="openAdminScanModal()" class="btn-blue" style="margin-bottom: 16px;">ဇီဝအချက်အလက် မှတ်တမ်းယူမည်</button>
-                    <div class="button-row">
-                        <button onclick="saveEmployee()" id="btn-save" class="btn-green">သိမ်းဆည်းမည်</button>
+                    <button onclick="openAdminScanModal()" class="btn-blue" style="margin-bottom:12px;">ဇီဝအချက်အလက် မှတ်တမ်းယူမည်</button>
+                    <div style="display:flex; gap:10px;">
+                        <button onclick="saveEmployee()" class="btn-green">သိမ်းဆည်းမည်</button>
                         <button onclick="resetAdminForm()" class="btn-gray">ပယ်ဖျက်မည်</button>
                     </div>
                 </div>
@@ -127,165 +88,56 @@
 
             <div id="view-employee-tab" class="tab-content">
                 <div class="card">
-                    <h3>ဝန်ထမ်းများစာရင်း</h3>
-                    <hr>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr><th>ဝန်ထမ်း ID</th><th>အမည်</th><th>ရာထူး</th></tr>
-                            </thead>
-                            <tbody id="employee-table-body"></tbody>
-                        </table>
-                    </div>
+                    <h3>ဝန်ထမ်းများစာရင်း</h3><hr>
+                    <table>
+                        <thead><tr><th>ဝန်ထမ်း ID</th><th>အမည်</th><th>ရာထူး</th><th>လုပ်ဆောင်ချက်</th></tr></thead>
+                        <tbody id="employee-table-body"></tbody>
+                    </table>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div id="admin-config-tab" class="tab-content">
-                <div class="dashboard-grid">
-                    <div class="card">
-                        <h3>လက်ရှိ Admin အကောင့် ပြောင်းလဲရန်</h3>
-                        <hr>
-                        <div class="form-group">
-                            <label>အသုံးပြုသူအမည်သစ် (New Username)</label>
-                            <input type="text" id="update-admin-user" placeholder="အသုံးပြုသူအမည်သစ်">
-                        </div>
-                        <div class="form-group">
-                            <label>စကားဝှက်အသစ် (New Password)</label>
-                            <input type="password" id="update-admin-pass" placeholder="အနည်းဆုံး ၆ လုံး">
-                        </div>
-                        <button onclick="updateAdminAccount()" class="btn-blue">အချက်အလက် ပြောင်းလဲမည်</button>
-                    </div>
-
-                    <div class="card">
-                        <h3>စီမံခန့်ခွဲသူ (Admin အသစ်) ထည့်သွင်းရန်</h3>
-                        <hr>
-                        <div class="form-group">
-                            <label>အသုံးပြုသူအမည် (Username)</label>
-                            <input type="text" id="new-admin-user" placeholder="username သတ်မှတ်ပါ">
-                        </div>
-                        <div class="form-group">
-                            <label>စကားဝှက် (Password)</label>
-                            <input type="password" id="new-admin-pass" placeholder="password သတ်မှတ်ပါ">
-                        </div>
-                        <button onclick="createNewAdminAccount()" class="btn-green">Admin အသစ် ဖန်တီးမည်</button>
-                    </div>
-                </div>
+    <div id="admin-scan-modal" class="modal-overlay hidden">
+        <div class="card" style="width:340px; text-align:center; position:relative; overflow:hidden;">
+            <h3 style="color:var(--primary); margin-bottom:5px;">Face Registration</h3>
+            
+            <div class="motion-steps">
+                <div id="dot-step1" class="step-dot"></div>
+                <div id="dot-step2" class="step-dot"></div>
+                <div id="dot-step3" class="step-dot"></div>
             </div>
 
-        </div>
-    </div>
-
-    <div id="admin-scan-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div class="card" style="width: 100%; max-width: 340px; margin: 16px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="color: var(--primary); margin:0;">Face Verification</h3>
-                <button onclick="closeAdminScanModal()" class="btn-gray" style="width: auto; padding: 4px 12px; font-size: 0.8rem; margin: 0;">ပိတ်မည်</button>
-            </div>
-            <p id="admin-instruction" class="instruction-box" style="margin-bottom: 14px;">အချက်အလက်များအား ပြင်ဆင်နေပါသည်...</p>
-            <div class="video-container"><video id="admin-video" autoplay muted playsinline></video></div>
-        </div>
-    </div>
-
-    <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-        <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px;">
-            <h3 id="status-title" style="margin-bottom: 8px;"></h3>
-            <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;"></p>
-            <button onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
-        </div>
-    </div>
-
-    <div id="delete-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-        <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px;">
-            <h3 style="margin-bottom: 8px; color: var(--danger);">ပယ်ဖျက်ရန် အတည်ပြုခြင်း</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေချာပါသလား?</p>
-            <div class="button-row">
-                <button id="delete-confirm-btn" class="btn-red">ပယ်ဖျက်မည်</button>
-                <button onclick="closeDeleteModal()" class="btn-gray">မလုပ်တော့ပါ</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="action-popup-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div class="card" style="width: 100%; max-width: 380px; margin: 16px; padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <h3 style="color: var(--primary); margin:0;">ဝန်ထမ်း စီမံခန့်ခွဲမှု</h3>
-                <button onclick="closeActionPopup()" class="btn-gray" style="width: auto; padding: 4px 12px; font-size: 0.8rem; margin: 0; background: #eee; color: #333;">ပိတ်မည်</button>
+            <div class="video-container">
+                <video id="admin-video" autoplay muted playsinline></video>
             </div>
             
-            <div class="popup-box">
-                <p>🆔 ဝန်ထမ်း ID - <b id="pop-emp-id"></b></p>
-                <p>👤 အမည် - <b id="pop-emp-name"></b></p>
-                <p>💼 ရာထူး - <b id="pop-emp-pos"></b></p>
-            </div>
-            
-            <p class="sub-title" style="margin-bottom: 14px; text-align: center;">ဤဝန်ထမ်းအတွက် ပြုလုပ်လိုသော လုပ်ဆောင်ချက်ကို ရွေးချယ်ပါ</p>
-            <div class="button-row">
-                <button id="pop-edit-btn" class="btn-yellow">✏️ ပြင်ဆင်ရန်</button>
-                <button id="pop-delete-btn" class="btn-red">🗑 ပယ်ဖျက်</button>
-            </div>
+            <p id="admin-instruction" class="instruction-box">စနစ်ပြင်ဆင်နေပါသည်...</p>
+            <button onclick="closeAdminScanModal()" class="btn-gray" style="margin-top:12px;">ပိတ်မည်</button>
         </div>
     </div>
 
     <script src="script.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            handleLogout(); 
-        });
-
-        function showStatus(title, message, isSuccess = false) {
-            const modal = document.getElementById('status-modal');
-            const titleEl = document.getElementById('status-title');
-            titleEl.style.color = isSuccess ? "var(--success)" : "var(--danger)";
-            titleEl.innerText = title;
-            document.getElementById('status-message').innerText = message;
-            modal.classList.remove('hidden');
-        }
-        function closeStatusModal() { document.getElementById('status-modal').classList.add('hidden'); }
-
         async function loginAdmin() {
             const user = document.getElementById('admin-username').value.trim();
             const pass = document.getElementById('admin-password').value.trim();
-            if (!user || !pass) { showStatus('သတိပေးချက်', 'အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။'); return; }
-
             const { data, error } = await supabaseClient.from('admin_settings').select('*').eq('username', user).eq('password', pass);
             if (error || !data || data.length === 0) {
-                showStatus('မအောင်မြင်ပါ', 'အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
+                alert('လော့ဂ်အင် မအောင်မြင်ပါ။');
             } else {
-                sessionStorage.setItem('admin_authenticated', 'true');
-                showDashboardDirectly();
+                document.getElementById('admin-login-section').classList.add('hidden');
+                document.getElementById('admin-dashboard-section').classList.remove('hidden');
+                initDashboard();
             }
         }
-
-        function showDashboardDirectly() {
-            document.getElementById('admin-login-section').classList.add('hidden');
-            document.getElementById('admin-dashboard-section').classList.remove('hidden');
-            if (typeof initDashboard === "function") { initDashboard(); }
-            setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
-        }
-
-        function switchTab(tabId, clickedElement) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            const targetType = clickedElement.getAttribute('data-target');
-            document.querySelectorAll('.nav-menu-btn, .bottom-nav-item').forEach(btn => {
-                if(btn.getAttribute('data-target') === targetType) btn.classList.add('active');
-                else btn.classList.remove('active');
-            });
-            let displayTitle = "Dashboard";
-            if(tabId === 'add-employee-tab') displayTitle = "ဝန်ထမ်းအချက်အလက်များ";
-            if(tabId === 'view-employee-tab') displayTitle = "ဝန်ထမ်းများ";
-            if(tabId === 'admin-config-tab') displayTitle = "Admin အကောင့်စီမံရန်";
-            document.getElementById('current-panel-title').innerText = displayTitle;
-            if(tabId === 'dashboard-tab') { setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50); }
+            document.querySelectorAll('.nav-menu-btn, .bottom-nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
         }
-
-        function handleLogout() {
-            sessionStorage.removeItem('admin_authenticated');
-            document.getElementById('admin-username').value = ""; 
-            document.getElementById('admin-password').value = "";
-            document.getElementById('admin-dashboard-section').classList.add('hidden');
-            document.getElementById('admin-login-section').classList.remove('hidden');
-        }
+        function handleLogout() { location.reload(); }
     </script>
 </body>
 </html>
