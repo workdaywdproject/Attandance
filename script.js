@@ -5,7 +5,7 @@ const SUPABASE_URL = "https://recgyevngygrfozfjpqn.supabase.co";
 const SUPABASE_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Database ချိတ်ဆက်မှု ရှိ/မရှိ နောက်ကွယ်မှ စစ်ဆေးခြင်း
+// Database ချိတ်ဆက်မှု အခြေအနေအား နောက်ကွယ်မှ စမ်းသပ်ခြင်း
 async function testDatabaseConnection() {
     try {
         const { data, error } = await supabaseClient.from('admin_settings').select('count', { count: 'exact', head: true });
@@ -45,7 +45,7 @@ async function loadFaceApiModels() {
     }
 }
 
-// Database ထဲမှ ဝန်ထမ်းမျက်နှာများကို စနစ်ထဲသို့ မှတ်မိစေရန် သင်ကြားခြင်း (Training)
+// Database ထဲမှ ဝန်ထမ်းမျက်နှာများကို စနစ်ထဲသို့ မှတ်မိစေရန် သင်ကြားခြင်း
 async function trainFaceMatcher() {
     try {
         const { data: employees, error } = await supabaseClient.from('employees').select('*');
@@ -80,7 +80,7 @@ async function trainFaceMatcher() {
     }
 }
 
-// စာမျက်နှာစတင်ပွင့်ချိန်တွင် Model များကို Load လုပ်ခြင်း
+// စာမျက်နှာတွင် ကင်မရာ Element ပါဝင်ပါက Model များကို တိုက်ရိုက်ဆွဲတင်ခြင်း
 if (document.getElementById('video') || document.getElementById('admin-video')) {
     loadFaceApiModels();
 }
@@ -95,7 +95,6 @@ async function openScanModal() {
 
     modal.classList.remove('hidden');
     instruction.innerText = "ကင်မရာ စတင်ဖွင့်လှစ်နေပါသည်...";
-    instruction.className = "instruction-box";
 
     try {
         activeStream = await navigator.mediaDevices.getUserMedia({ 
@@ -103,7 +102,7 @@ async function openScanModal() {
         });
         video.srcObject = activeStream;
         
-        // ⚠️ ကင်မရာပွင့်ပြီးမှ ဗီဒီယိုစတင်မောင်းနှင်ရန် သေချာစေခြင်း (နောက်ခံအမည်းသက်သာစေရန်)
+        // ⚠️ နောက်ခံမည်းမနေစေရန် ကင်မရာ Stream ကျလာမှ Play လုပ်ပြီး မျက်နှာဖတ်စနစ်ကို စတင်စေခြင်း
         video.onloadedmetadata = () => {
             video.play();
             instruction.innerText = "မျက်နှာကို ဘောင်အတွင်းတည့်တည့် ထားပေးပါ...";
@@ -112,7 +111,6 @@ async function openScanModal() {
     } catch (err) {
         console.error("Camera Access Denied:", err);
         instruction.innerText = "❌ ကင်မရာဖွင့်၍မရပါ (Permission ပေးရန်လိုအပ်ပါသည်)";
-        instruction.style.color = "var(--danger)";
     }
 }
 
@@ -123,7 +121,7 @@ function closeScanModal() {
     }
 }
 
-// ဝန်ထမ်းမျက်နှာများကို စကင်ဖတ်စစ်ဆေးခြင်း ကွင်းဆက် (Loop)
+// မျက်နှာဖတ်စစ်ဆေးခြင်း ကွင်းဆက် Loop
 async function startFaceRecognitionLoop() {
     const video = document.getElementById('video');
     const instruction = document.getElementById('instruction');
@@ -140,16 +138,13 @@ async function startFaceRecognitionLoop() {
             if (match && match.label !== 'unknown') {
                 const [id, name, pos] = match.label.split('||');
                 
-                // ဒေတာများ သတ်မှတ်ခြင်း
                 recognizedEmployee = { id, name, pos };
                 document.getElementById('recognized-id').innerText = id;
                 document.getElementById('recognized-name').innerText = name;
                 document.getElementById('recognized-pos').innerText = pos;
 
                 instruction.innerText = `✅ ကိုက်ညီမှုရှိပါသည် - ${name}`;
-                instruction.style.color = "var(--success)";
 
-                // အဆင့် ၂ သို့ ကူးပြောင်းခြင်း
                 setTimeout(() => {
                     closeScanModal();
                     document.getElementById('step-1').classList.add('hidden');
@@ -157,18 +152,16 @@ async function startFaceRecognitionLoop() {
                 }, 1000);
                 return; 
             } else {
-                instruction.innerText = "🔍 မျက်နှာကို ရှာဖွေမတွေ့ရှိသေးပါ (မသိသောမျက်နှာ)";
+                instruction.innerText = "🔍 မျက်နှာကို ရှာဖွေမတွေ့ရှိသေးပါ...";
             }
         }
     } catch (err) {
         console.error("Recognition Error loop:", err);
     }
 
-    // ၁ စက္ကန့်လျှင် ၂ ကြိမ် စကင်ဖတ်ရန် ညွှန်ကြားခြင်း
     setTimeout(startFaceRecognitionLoop, 500);
 }
 
-// Attendance အတည်ပြုချက်ပြကွက် ပြသခြင်း
 function showConfirmModal() {
     if (!recognizedEmployee) return;
     const type = document.querySelector('input[name="attendance-type"]:checked').value;
@@ -185,7 +178,7 @@ function showConfirmModal() {
 
 function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); }
 
-// Database ထဲသို့ တက်ရောက်မှု မှတ်တမ်းအချက်အလက် သိမ်းဆည်းခြင်း
+// တက်ရောက်မှု ဒေတာဘေ့စ်ထဲသို့ သိမ်းဆည်းခြင်း
 async function submitAttendance() {
     closeConfirmModal();
     const type = document.querySelector('input[name="attendance-type"]:checked').value;
@@ -204,7 +197,6 @@ async function submitAttendance() {
         const { error } = await supabaseClient.from('attendance').insert([payload]);
         if (error) throw error;
 
-        // အောင်မြင်မှုပြသပြီး Portal သို့ ပြန်ပို့ခြင်း
         const globalModal = document.getElementById('status-modal');
         const title = document.getElementById('status-title');
         title.style.color = "var(--success)";
@@ -213,14 +205,13 @@ async function submitAttendance() {
         
         globalModal.classList.remove('hidden');
         
-        // ၃ စက္ကန့်အကြာတွင် Portal သို့ အလိုအလျောက်ပြန်သွားရန်
         setTimeout(() => {
             window.location.href = 'portal.html';
         }, 3000);
 
     } catch (err) {
         console.error("Database Insert Error:", err);
-        alert("❌ မှတ်တမ်းတင်ရန် ဒေတာဘေ့စ်သို့ မချိတ်ဆက်နိုင်ပါ သို့မဟုတ် Error ဖြစ်နေပါသည်။");
+        alert("❌ မှတ်တမ်းတင်ရန် ဒေတာဘေ့စ်သို့ မချိတ်ဆက်နိုင်ပါ။");
     }
 }
 
@@ -228,7 +219,6 @@ function closeStatusModal() {
     document.getElementById('status-modal').classList.add('hidden');
     window.location.href = 'portal.html';
 }
-
 
 // ==========================================
 // 👑 ADMIN & DASHBOARD CONTROL ENGINE (admin.html)
@@ -240,7 +230,6 @@ function initDashboard() {
     initFullCalendar();
 }
 
-// ဝန်ထမ်းများစာရင်းကို ဆွဲထုတ်ပြသခြင်း
 async function loadEmployeeTable() {
     const tbody = document.getElementById('employee-table-body');
     if (!tbody) return;
@@ -272,7 +261,6 @@ async function loadEmployeeTable() {
     }
 }
 
-// ဝန်ထမ်းပယ်ဖျက်ခြင်း အတည်ပြုချက်
 function confirmDeleteEmployee(dbId) {
     employeeToDeleteId = dbId;
     document.getElementById('delete-modal').classList.remove('hidden');
@@ -286,13 +274,12 @@ document.getElementById('delete-confirm-btn')?.addEventListener('click', async (
         if (error) throw error;
         closeDeleteModal();
         loadEmployeeTable();
-        trainFaceMatcher(); // Database အချက်အလက်သစ်ပြန်လည်သင်ကြားခြင်း
+        trainFaceMatcher();
     } catch (err) {
-        console.error("Delete worker processing fail:", err);
+        console.error(err);
     }
 });
 
-// ဝန်ထမ်းကုဒ် ထပ်/မထပ် စစ်ဆေးခြင်း
 async function checkDuplicateID() {
     const empId = document.getElementById('admin-emp-id').value.trim();
     const btnSave = document.getElementById('btn-save');
@@ -310,7 +297,6 @@ async function checkDuplicateID() {
     }
 }
 
-// ADMIN SIDE မျက်နှာမှတ်တမ်းတင်စနစ် (Enrollment)
 async function openAdminScanModal() {
     const modal = document.getElementById('admin-scan-modal');
     const instr = document.getElementById('admin-instruction');
@@ -349,7 +335,7 @@ async function captureAdminFace() {
             instr.innerText = "✅ မျက်နှာမှတ်တမ်း ရယူခြင်း အောင်မြင်ပါသည်။";
             setTimeout(closeAdminScanModal, 1200);
         } else {
-            setTimeout(captureAdminFace, 400); // ရှာမတွေ့ပါက ပြန်ရှာခိုင်းခြင်း
+            setTimeout(captureAdminFace, 400);
         }
     } catch (err) {
         console.error(err);
@@ -361,7 +347,6 @@ function closeAdminScanModal() {
     if (activeStream) activeStream.getTracks().forEach(track => track.stop());
 }
 
-// ဝန်ထမ်းအသစ် သိမ်းဆည်းခြင်း
 async function saveEmployee() {
     const empId = document.getElementById('admin-emp-id').value.trim();
     const name = document.getElementById('admin-emp-name').value.trim();
@@ -398,7 +383,6 @@ function resetAdminForm() {
     document.getElementById('face-status').style.color = "var(--danger)";
 }
 
-// FULLCALENDAR ပြက္ခဒိန် တပ်ဆင်ခြင်းနှင့် Data ချိတ်ဆက်ခြင်း
 async function initFullCalendar() {
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl) return;
@@ -412,7 +396,6 @@ async function initFullCalendar() {
                 const { data: logs, error } = await supabaseClient.from('attendance').select('*');
                 if (error) throw error;
 
-                // နေ့ရက်အလိုက် စာရင်းများကို အုပ်စုဖွဲ့ရန် (Group By Date)
                 const counts = {};
                 logs.forEach(log => {
                     const dateStr = log.timestamp.split('T')[0];
@@ -428,22 +411,16 @@ async function initFullCalendar() {
 
                 successCallback(eventsList);
             } catch (err) {
-                console.error("Fetch calendar data log fail:", err);
                 failureCallback(err);
             }
         },
-        dateClick: function(info) {
-            fetchAttendanceDetailsByDate(info.dateStr);
-        },
-        eventClick: function(info) {
-            fetchAttendanceDetailsByDate(info.event.extendedProps.rawDate);
-        }
+        dateClick: function(info) { fetchAttendanceDetailsByDate(info.dateStr); },
+        eventClick: function(info) { fetchAttendanceDetailsByDate(info.event.extendedProps.rawDate); }
     });
 
     fullCalendarInstance.render();
 }
 
-// ပြက္ခဒိန်ရက်အလိုက် မှတ်တမ်းအသေးစိတ်ကို Database မှဆွဲထုတ်ခြင်း
 async function fetchAttendanceDetailsByDate(dateStr) {
     const detailBox = document.getElementById('attendance-details');
     document.getElementById('selected-date-title').innerText = `မှတ်တမ်းအသေးစိတ် (${dateStr})`;
@@ -481,11 +458,10 @@ async function fetchAttendanceDetailsByDate(dateStr) {
             detailBox.appendChild(item);
         });
     } catch (err) {
-        console.error("Fetch details error:", err);
+        console.error(err);
     }
 }
 
-// ADMIN CONFIGS: ACCOUNT MANAGEMENT
 async function updateAdminAccount() {
     const user = document.getElementById('update-admin-user').value.trim();
     const pass = document.getElementById('update-admin-pass').value.trim();
@@ -496,7 +472,6 @@ async function updateAdminAccount() {
     }
 
     try {
-        // ပထမဆုံး Admin ID ကို ရှာဖွေပြီး Update ပြုလုပ်ခြင်း
         const { data: existing } = await supabaseClient.from('admin_settings').select('id').limit(1).single();
         if (existing) {
             const { error } = await supabaseClient.from('admin_settings').update({ username: user, password: pass }).eq('id', existing.id);
