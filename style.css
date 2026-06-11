@@ -12,7 +12,7 @@
     --card-bg: #ffffff; 
     --sidebar-bg: #ffffff;
     --text: #2c3e50;
-    --text-muted: #7f8c8d;
+    --text-muted: #64748b;
     --border: #e2e8f0;
     --radius-md: 12px;
     --radius-lg: 20px;
@@ -155,7 +155,7 @@ body {
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
     padding: 24px;
-    margin-bottom: 20px;
+    margin-bottom: 200px;
     box-shadow: var(--shadow);
 }
 
@@ -176,9 +176,9 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     margin: 15px auto;
     overflow: hidden;
     border-radius: 50%; 
-    box-shadow: 0 0 0 999px rgba(255, 255, 255, 0.90), 0 0 25px rgba(0, 0, 0, 0.18); 
+    box-shadow: 0 0 0 999px rgba(255, 255, 255, 0.92), 0 0 25px rgba(0, 0, 0, 0.2); 
     border: 4px solid var(--primary);
-    background: #f1f5f9;
+    background: #000;
 }
 
 #admin-video, #video {
@@ -207,14 +207,14 @@ hr { border: 0; border-top: 1px solid var(--border); margin: 16px 0; }
     100% { top: 0%; }
 }
 
-/* ✨ ပြင်ဆင်လိုက်သည့် Premium လင်းထင်ပြတ်သားသော Instruction Box စနစ် */
+/* High Contrast Clear Readability Instruction Box */
 .instruction-box {
-    background: #e6f0ff; /* Light clear blue backdrop */
-    color: #004499;       /* Deep solid bold blue text for clear readability */
+    background: #f0f7ff; 
+    color: #004499;       
     padding: 14px;
     border-radius: var(--radius-md);
     text-align: center;
-    font-weight: 700;    /* High contrast bold font style */
+    font-weight: 700;    
     font-size: 0.95rem;
     border: 2px solid #b3d1ff;
     margin-top: 12px;
@@ -272,17 +272,17 @@ button:hover { opacity: 0.9; }
 .btn-green { background: var(--success); color: #fff; }
 .btn-yellow { background: var(--warning); color: #2c3e50; }
 .btn-red { background: var(--danger); color: #fff; }
-.btn-gray { background: #64748b; color: #fff; }
+.btn-gray { background: #475569; color: #fff; } /* Solid Dark Gray for Cancel/Back buttons */
 .btn-outline-red { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
 
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-th { background: #f8f9fa; font-weight: 600; color: var(--text-muted); }
+th { background: #f8f9fa; font-weight: 600; color: #475569; }
 .emp-row:hover { background-color: var(--primary-light); cursor: pointer; }
 
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.3);
+    background: rgba(15, 23, 42, 0.4);
     backdrop-filter: blur(8px);
     display: flex; align-items: center; justify-content: center; z-index: 9999;
 }

@@ -24,7 +24,7 @@
                 <input type="password" id="admin-password" placeholder="Enter password" onkeydown="if(event.key === 'Enter') loginAdmin()">
             </div>
             <button onclick="loginAdmin()" class="btn-blue">Log In</button>
-            <button onclick="window.location.href='portal.html'" class="btn-gray" style="margin-top: 10px; background: #eee; color:#333;">Back to Gate</button>
+            <button onclick="window.location.href='portal.html'" class="btn-gray" style="margin-top: 10px;">Back to Gate</button>
         </div>
     </div>
 
@@ -64,26 +64,28 @@
 
             <div id="add-employee-tab" class="tab-content">
                 <div class="card" style="max-width: 500px; margin: 0 auto;">
-                    <h3 id="form-title">New Employee Registration</h3><hr>
+                    <h3 id="form-title" style="color: var(--text); font-weight: 700;">New Employee Registration</h3><hr>
                     <input type="hidden" id="edit-db-id">
                     <div style="margin-bottom: 14px;">
-                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Employee ID</label>
+                        <label style="font-size:0.85rem; font-weight:700; color:var(--text);">Employee ID</label>
                         <input type="text" id="admin-emp-id" placeholder="e.g., EMP-104">
                     </div>
                     <div style="margin-bottom: 14px;">
-                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Full Name</label>
+                        <label style="font-size:0.85rem; font-weight:700; color:var(--text);">Full Name</label>
                         <input type="text" id="admin-emp-name" placeholder="Enter profile name">
                     </div>
                     <div style="margin-bottom: 14px;">
-                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Official Position</label>
-                        <input type="text" id="admin-emp-pos" placeholder="e.g., HR Specialist, System Architect">
+                        <label style="font-size:0.85rem; font-weight:700; color:var(--text);">Official Position</label>
+                        <input type="text" id="admin-emp-pos" placeholder="e.g., HR Specialist">
                     </div>
                     <div style="margin-bottom: 18px;">
-                        <label style="font-size:0.8rem; font-weight:600; color:var(--text-muted);">Biometric Face Enrolment</label>
-                        <p id="face-status" style="color: var(--danger); font-weight: 600; font-size: 0.9rem; margin-top: 4px;">No biometric credentials enrolled yet.</p>
+                        <label style="font-size:0.85rem; font-weight:700; color:var(--text);">Biometric Face Enrolment</label>
+                        <p id="face-status" style="color: var(--danger); font-weight: 700; font-size: 0.9rem; margin-top: 4px;">No biometric credentials enrolled yet.</p>
                         <input type="hidden" id="admin-face-data">
                     </div>
-                    <button onclick="openAdminScanModal()" class="btn-blue" style="margin-bottom: 12px;">📸 Capture 3-Step Biometric Data</button>
+                    
+                    <button onclick="openAdminScanModal()" class="btn-blue" style="margin-bottom: 12px; font-size: 1rem; padding: 14px;">Biometric Data</button>
+                    
                     <div style="display: flex; gap: 10px;">
                         <button onclick="saveEmployee()" class="btn-green">Save Profile</button>
                         <button onclick="resetAdminForm()" class="btn-gray">Cancel</button>
@@ -93,7 +95,7 @@
 
             <div id="view-employee-tab" class="tab-content">
                 <div class="card">
-                    <h3>Active Employee Directory</h3><hr>
+                    <h3 style="color: var(--text); font-weight: 700;">Active Employee Directory</h3><hr>
                     <div style="overflow-x: auto;">
                         <table>
                             <thead><tr><th>Employee ID</th><th>Full Name</th><th>Designation</th><th>Action</th></tr></thead>
@@ -106,8 +108,8 @@
     </div>
 
     <div id="admin-scan-modal" class="modal-overlay hidden">
-        <div class="card" style="width: 340px; text-align: center; position: relative;">
-            <h3 style="color: var(--primary); margin-bottom: 4px;">Biometric Profile Enrolment</h3>
+        <div class="card" style="width: 350px; text-align: center; background: #ffffff; padding: 25px; border-radius: var(--radius-lg);">
+            <h3 style="color: #1e293b; font-weight: 800; font-size: 1.25rem; margin-bottom: 6px;">Biometric Profile Enrolment</h3>
             
             <div class="motion-steps">
                 <div id="dot-step1" class="step-dot"></div>
@@ -120,7 +122,7 @@
             </div>
             
             <p id="admin-instruction" class="instruction-box">Booting camera module...</p>
-            <button onclick="closeAdminScanModal()" class="btn-gray" style="margin-top: 12px;">Cancel</button>
+            <button onclick="closeAdminScanModal()" class="btn-gray" style="margin-top: 14px; padding: 12px; font-weight: 700;">Cancel</button>
         </div>
     </div>
 

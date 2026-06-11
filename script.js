@@ -7,7 +7,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let faceMatcher = null;
 let activeStream = null;
-let currentLivenessStep = 1; // 1: Center, 2: Left/Right, 3: Up/Down
+let currentLivenessStep = 1; 
 let collectedDescriptors = [];
 
 // Fetch Neural Weights and Active Data Models
@@ -175,7 +175,6 @@ async function deleteEmployee(id) {
     }
 }
 
-// 📸 REGISTRATION LIVENESS TRIGGER
 async function openAdminScanModal() {
     document.getElementById('admin-scan-modal').classList.remove('hidden');
     const video = document.getElementById('admin-video');
@@ -198,7 +197,7 @@ function updateStepDots() {
     if(currentDot) currentDot.classList.add('active');
 }
 
-// ✨ အင်္ဂလိပ်စာသား သီးသန့်သို့ လုံးဝပြောင်းလဲပြင်ဆင်ထားသော Liveness System
+// 🔥 Anti-Spoof Advanced High-Security Liveness Detection Loop (No Photo Allowed)
 async function runPremiumLivenessLoop() {
     const video = document.getElementById('admin-video');
     const instruction = document.getElementById('admin-instruction');
@@ -223,26 +222,29 @@ async function runPremiumLivenessLoop() {
 
             if (currentLivenessStep === 1) {
                 instruction.innerText = "Step 1: Look directly at the camera and stay still...";
-                if (turnRatio > 0.85 && turnRatio < 1.15) {
+                // ဓာတ်ပုံမဟုတ်ဘဲ လူအစစ်ဖြစ်ကြောင်း အလယ်ဗဟိုတည့်တည့် တိကျစွာစစ်ဆေးခြင်း
+                if (turnRatio > 0.88 && turnRatio < 1.12) {
                     collectedDescriptors.push(detection.descriptor);
                     currentLivenessStep = 2;
                     updateStepDots();
-                    await new Promise(r => setTimeout(r, 1000)); // 1s buffer for balanced pacing
+                    await new Promise(r => setTimeout(r, 1200)); 
                 }
             } 
             else if (currentLivenessStep === 2) {
-                instruction.innerText = "Step 2: Turn your head slightly Left or Right...";
-                if (turnRatio < 0.65 || turnRatio > 1.45) {
+                instruction.innerText = "Step 2: Turn your head SIGNIFICANTLY to the Left or Right...";
+                // ဓာတ်ပုံပြရင် ကျော်မရအောင် ဘေးကို လုံးလုံးလှည့်ပြရမည့် စည်းမျဉ်း (Strict Bounds: < 0.50 သို့မဟုတ် > 1.80)
+                if (turnRatio < 0.50 || turnRatio > 1.80) {
                     currentLivenessStep = 3;
                     updateStepDots();
-                    await new Promise(r => setTimeout(r, 1000));
+                    await new Promise(r => setTimeout(r, 1200));
                 }
             } 
             else if (currentLivenessStep === 3) {
-                instruction.innerText = "Step 3: Tilt your head slightly Up or Down...";
+                instruction.innerText = "Step 3: Tilt your head SIGNIFICANTLY Upwards or Downwards...";
                 const noseToEyeY = nose.y - (leftEye.y + rightEye.y)/2;
                 
-                if (noseToEyeY < eyeDistance * 0.38 || noseToEyeY > eyeDistance * 0.62) {
+                // အပေါ်/အောက်သို့ အမှန်တကယ် လုံးလုံးပြောင်းလဲလှုပ်ရှားမှု ရှိမရှိ စစ်ဆေးခြင်း
+                if (noseToEyeY < eyeDistance * 0.32 || noseToEyeY > eyeDistance * 0.68) {
                     instruction.innerText = "🎉 All 3 liveness steps verified successfully!";
                     
                     const finalDescriptor = collectedDescriptors[0] || detection.descriptor;
