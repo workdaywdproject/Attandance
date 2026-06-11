@@ -1,673 +1,530 @@
-// ==================== ၁။ SUPABASE CONFIGURATION ====================
-const API_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
-const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
+// ==========================================
+// 🌐 SUPABASE DATABASE CONFIGURATION & CONNECTIVITY
+// ==========================================
+const SUPABASE_URL = "https://recgyevngygrfozfjpqn.supabase.co"; 
+const SUPABASE_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let appSupabase;
-try {
-    if (typeof supabase !== 'undefined' && supabase.createClient) {
-        appSupabase = supabase.createClient(API_URL, API_KEY);
-    } else {
-        console.error("Supabase Library Reference Error.");
+// Database ချိတ်ဆက်မှု ရှိ/မရှိ နောက်ကွယ်မှ စစ်ဆေးခြင်း
+async function testDatabaseConnection() {
+    try {
+        const { data, error } = await supabaseClient.from('admin_settings').select('count', { count: 'exact', head: true });
+        if (error) console.error("❌ Database Connection Error:", error.message);
+        else console.log("✅ Supabase Database Connected Successfully.");
+    } catch (err) {
+        console.error("❌ Network or Config Error:", err);
     }
-} catch (err) {
-    console.log("Supabase initialization caught: ", err.message);
+}
+testDatabaseConnection();
+
+// ==========================================
+// 🌎 GLOBAL SYSTEM VARIABLES
+// ==========================================
+let faceMatcher = null;
+let activeStream = null;
+let recognizedEmployee = null;
+let fullCalendarInstance = null;
+let employeeToDeleteId = null;
+
+// ==========================================
+// 🚀 INITIALIZATION & MODEL LOADING
+// ==========================================
+async function loadFaceApiModels() {
+    console.log("⚙️ Loading Face-API Models...");
+    const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+    try {
+        await Promise.all([
+            faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+            faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+        ]);
+        console.log("✅ All FaceModels Loaded Successfully.");
+        await trainFaceMatcher();
+    } catch (err) {
+        console.error("❌ Failed to load Face-API Models:", err);
+    }
 }
 
-window.globalCamStream = null;
-let detectionTimer = null;
+// Database ထဲမှ ဝန်ထမ်းမျက်နှာများကို စနစ်ထဲသို့ မှတ်မိစေရန် သင်ကြားခြင်း (Training)
+async function trainFaceMatcher() {
+    try {
+        const { data: employees, error } = await supabaseClient.from('employees').select('*');
+        if (error) throw error;
 
-// ==================== CUSTOM POP-UP GLOBAL STATUS MODAL ====================
-let postStatusAction = null;
+        const labeledDescriptors = [];
+        if (!employees || employees.length === 0) {
+            console.warn("⚠️ No employee facial data found in database.");
+            return;
+        }
 
-function showStatus(type, title, message, callback = null) {
-    const modal = document.getElementById('status-modal');
-    const titleEl = document.getElementById('status-title');
-    const msgEl = document.getElementById('status-message');
-    const btnEl = document.getElementById('status-btn');
+        employees.forEach(emp => {
+            if (emp.face_data) {
+                try {
+                    const parsed = JSON.parse(emp.face_data);
+                    const float32Array = new Float32Array(parsed);
+                    const descriptor = [float32Array];
+                    const label = `${emp.emp_id}||${emp.name}||${emp.position}`;
+                    labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(label, descriptor));
+                } catch (e) {
+                    console.error(`❌ Data parse error for worker: ${emp.name}`, e);
+                }
+            }
+        });
 
-    if (!modal) {
-        if (callback) callback();
-        return;
+        if (labeledDescriptors.length > 0) {
+            faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.55); // Threshold = 55% Match
+            console.log("✅ Face Matcher Database sync completed.");
+        }
+    } catch (err) {
+        console.error("❌ Face training error:", err);
     }
+}
 
-    if (type === 'success') {
-        titleEl.style.color = "var(--success)";
-        btnEl.className = "btn-blue";
-    } else {
-        titleEl.style.color = "var(--danger)";
-        btnEl.className = "btn-red";
-    }
+// စာမျက်နှာစတင်ပွင့်ချိန်တွင် Model များကို Load လုပ်ခြင်း
+if (document.getElementById('video') || document.getElementById('admin-video')) {
+    loadFaceApiModels();
+}
 
-    titleEl.innerText = title;
-    msgEl.innerText = message;
-    postStatusAction = callback;
+// ==========================================
+// 📸 SCANNING HANDLER FOR EMPLOYEES (index.html)
+// ==========================================
+async function openScanModal() {
+    const modal = document.getElementById('scan-modal');
+    const instruction = document.getElementById('instruction');
+    const video = document.getElementById('video');
+
     modal.classList.remove('hidden');
-}
+    instruction.innerText = "ကင်မရာ စတင်ဖွင့်လှစ်နေပါသည်...";
+    instruction.className = "instruction-box";
 
-function closeStatusModal() {
-    const modal = document.getElementById('status-modal');
-    if (modal) modal.classList.add('hidden');
-    if (postStatusAction) {
-        postStatusAction();
-        postStatusAction = null;
+    try {
+        activeStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: 640, height: 480, facingMode: "user" } 
+        });
+        video.srcObject = activeStream;
+        
+        // ⚠️ ကင်မရာပွင့်ပြီးမှ ဗီဒီယိုစတင်မောင်းနှင်ရန် သေချာစေခြင်း (နောက်ခံအမည်းသက်သာစေရန်)
+        video.onloadedmetadata = () => {
+            video.play();
+            instruction.innerText = "မျက်နှာကို ဘောင်အတွင်းတည့်တည့် ထားပေးပါ...";
+            startFaceRecognitionLoop();
+        };
+    } catch (err) {
+        console.error("Camera Access Denied:", err);
+        instruction.innerText = "❌ ကင်မရာဖွင့်၍မရပါ (Permission ပေးရန်လိုအပ်ပါသည်)";
+        instruction.style.color = "var(--danger)";
     }
-}
-
-// ==================== 📸 WEBCAM MODAL MANAGEMENT ====================
-function openScanModal() {
-    document.getElementById('scan-modal').classList.remove('hidden');
-    startAutoFaceScan();
 }
 
 function closeScanModal() {
-    if (detectionTimer) clearInterval(detectionTimer);
-    if (window.globalCamStream) {
-        window.globalCamStream.getTracks().forEach(track => track.stop());
-        window.globalCamStream = null;
-    }
     document.getElementById('scan-modal').classList.add('hidden');
-}
-
-function openAdminScanModal() {
-    document.getElementById('admin-scan-modal').classList.remove('hidden');
-    startFaceScan('ADMIN');
-}
-
-function closeAdminScanModal() {
-    if (detectionTimer) clearInterval(detectionTimer);
-    if (window.globalCamStream) {
-        window.globalCamStream.getTracks().forEach(track => track.stop());
-        window.globalCamStream = null;
-    }
-    document.getElementById('admin-scan-modal').classList.add('hidden');
-}
-
-document.addEventListener('keydown', function(event) {
-    if (event.key === "Escape") {
-        closeScanModal();
-        closeAdminScanModal();
-        closeStatusModal();
-        if(typeof closeConfirmModal === 'function') closeConfirmModal();
-        if(typeof closeDeleteModal === 'function') closeDeleteModal();
-    }
-});
-
-// ==================== ၂။ ADMIN CREDENTIALS & ACCOUNT OPERATIONS ====================
-async function updateAdminAccount() {
-    const newUser = document.getElementById('update-admin-user').value.trim();
-    const newPass = document.getElementById('update-admin-pass').value.trim();
-
-    if(!newUser || !newPass) { 
-        showStatus('error', 'သတိပေးချက်', 'အသုံးပြုသူအမည်သစ်နှင့် စကားဝှက်သစ် ဖြည့်သွင်းပါ။'); 
-        return; 
-    }
-    if(newPass.length < 6) { 
-        showStatus('error', 'သတိပေးချက်', 'စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။'); 
-        return; 
-    }
-    if(!appSupabase) return;
-
-    const { error } = await appSupabase
-        .from('admin_settings')
-        .update({ username: newUser, password: newPass })
-        .eq('id', 1); 
-
-    if(error) {
-        showStatus('error', 'မအောင်မြင်ပါ', error.message);
-    } else {
-        showStatus('success', 'အောင်မြင်ပါသည်', 'Admin အကောင့် အထောက်အထားများ ပြောင်းလဲပြီးပါပြီ။', () => {
-            document.getElementById('update-admin-user').value = "";
-            document.getElementById('update-admin-pass').value = "";
-        });
+    if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
     }
 }
 
-async function createNewAdminAccount() {
-    const adminUser = document.getElementById('new-admin-user').value.trim();
-    const adminPass = document.getElementById('new-admin-pass').value.trim();
-
-    if(!adminUser || !adminPass) { 
-        showStatus('error', 'သတိပေးချက်', 'Admin အသစ်အတွက် အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်သွင်းပါ။'); 
-        return; 
-    }
-    if(adminPass.length < 6) {
-        showStatus('error', 'သတိပေးချက်', 'စကားဝှက်သည် အနည်းဆုံး ၆ လုံး ရှိရပါမည်။');
-        return;
-    }
-    if(!appSupabase) return;
-
-    const { error } = await appSupabase
-        .from('admin_settings')
-        .insert([{ username: adminUser, password: adminPass }]);
-
-    if(error) {
-        showStatus('error', 'မအောင်မြင်ပါ', error.message);
-    } else {
-        showStatus('success', 'အောင်မြင်ပါသည်', 'စီမံခန့်ခွဲသူ (Admin အသစ်) အား အောင်မြင်စွာ ဖန်တီးပြီးပါပြီ။', () => {
-            document.getElementById('new-admin-user').value = "";
-            document.getElementById('new-admin-pass').value = "";
-        });
-    }
-}
-
-function handleLogout() {
-    sessionStorage.removeItem('admin_authenticated');
-    window.location.replace('portal.html');
-}
-
-// ==================== ၃။ AI MODELS LOADING ====================
-async function loadFaceModels() {
-    try {
-        if (typeof faceapi === 'undefined') return;
-        const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
-        const modelsPath = `${window.location.origin}${basePath}/models`;
-
-        await faceapi.nets.tinyFaceDetector.loadFromUri(modelsPath);
-        await faceapi.nets.faceLandmark68Net.loadFromUri(modelsPath);
-        await faceapi.nets.faceRecognitionNet.loadFromUri(modelsPath);
-        await faceapi.nets.faceExpressionNet.loadFromUri(modelsPath);
-        console.log("Biometric Models Loaded.");
-        
-        if (document.getElementById('employee-table-body') && sessionStorage.getItem('admin_authenticated') === 'true') {
-            fetchEmployees();
-        }
-    } catch (e) {
-        console.log("AI Models status: " + e.message);
-    }
-}
-
-window.onload = () => {
-    loadFaceModels();
-    if(document.getElementById('calendar')) {
-        initCalendar();
-    }
-};
-
-// ==================== ၄။ BIOMETRIC AUTO-RECOGNITION VERIFICATION ====================
-let matchedEmployeeId = null;
-let matchedEmployeeName = null;
-let matchedEmployeePos = null;
-
-async function startAutoFaceScan() {
+// ဝန်ထမ်းမျက်နှာများကို စကင်ဖတ်စစ်ဆေးခြင်း ကွင်းဆက် (Loop)
+async function startFaceRecognitionLoop() {
     const video = document.getElementById('video');
     const instruction = document.getElementById('instruction');
-    if(!video || !instruction) return;
 
-    const constraints = {
-        video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false
+    if (!video || video.paused || video.ended) return;
+
+    try {
+        const detection = await faceapi.detectSingleFace(video)
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (detection && faceMatcher) {
+            const match = faceMatcher.findBestMatch(detection.descriptor);
+            if (match && match.label !== 'unknown') {
+                const [id, name, pos] = match.label.split('||');
+                
+                // ဒေတာများ သတ်မှတ်ခြင်း
+                recognizedEmployee = { id, name, pos };
+                document.getElementById('recognized-id').innerText = id;
+                document.getElementById('recognized-name').innerText = name;
+                document.getElementById('recognized-pos').innerText = pos;
+
+                instruction.innerText = `✅ ကိုက်ညီမှုရှိပါသည် - ${name}`;
+                instruction.style.color = "var(--success)";
+
+                // အဆင့် ၂ သို့ ကူးပြောင်းခြင်း
+                setTimeout(() => {
+                    closeScanModal();
+                    document.getElementById('step-1').classList.add('hidden');
+                    document.getElementById('step-2').classList.remove('hidden');
+                }, 1000);
+                return; 
+            } else {
+                instruction.innerText = "🔍 မျက်နှာကို ရှာဖွေမတွေ့ရှိသေးပါ (မသိသောမျက်နှာ)";
+            }
+        }
+    } catch (err) {
+        console.error("Recognition Error loop:", err);
+    }
+
+    // ၁ စက္ကန့်လျှင် ၂ ကြိမ် စကင်ဖတ်ရန် ညွှန်ကြားခြင်း
+    setTimeout(startFaceRecognitionLoop, 500);
+}
+
+// Attendance အတည်ပြုချက်ပြကွက် ပြသခြင်း
+function showConfirmModal() {
+    if (!recognizedEmployee) return;
+    const type = document.querySelector('input[name="attendance-type"]:checked').value;
+    const remark = document.getElementById('remark').value.trim();
+
+    document.getElementById('conf-id').innerText = recognizedEmployee.id;
+    document.getElementById('conf-name').innerText = recognizedEmployee.name;
+    document.getElementById('conf-pos').innerText = recognizedEmployee.pos;
+    document.getElementById('conf-type').innerText = type === "IN" ? "Check-In (အလုပ်ဝင်)" : "Check-Out (အလုပ်ဆင်း)";
+    document.getElementById('conf-remark').innerText = remark ? remark : "-";
+
+    document.getElementById('confirm-modal').classList.remove('hidden');
+}
+
+function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); }
+
+// Database ထဲသို့ တက်ရောက်မှု မှတ်တမ်းအချက်အလက် သိမ်းဆည်းခြင်း
+async function submitAttendance() {
+    closeConfirmModal();
+    const type = document.querySelector('input[name="attendance-type"]:checked').value;
+    const remark = document.getElementById('remark').value.trim();
+
+    const payload = {
+        emp_id: recognizedEmployee.id,
+        name: recognizedEmployee.name,
+        position: recognizedEmployee.pos,
+        type: type,
+        remark: remark,
+        timestamp: new Date().toISOString()
     };
 
     try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        window.globalCamStream = stream; 
-        video.srcObject = stream;
-        video.setAttribute('playsinline', true);
-        await video.play();
+        const { error } = await supabaseClient.from('attendance').insert([payload]);
+        if (error) throw error;
 
-        let livenessStep = 'HEAD_TURN'; 
-        let isWaiting = false; 
-        let isFinished = false; 
-        const HOLD_DURATION = 1500; 
-
-        instruction.innerText = "ဦးခေါင်းကို ဘယ်/ညာသို့ ဖြည်းညှင်းစွာ လှည့်ပေးပါ...";
-
-        if (detectionTimer) clearInterval(detectionTimer);
-
-        detectionTimer = setInterval(async () => {
-            if (video.paused || video.ended || isWaiting || isFinished) return;
-
-            const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
-                                        .withFaceLandmarks()
-                                        .withFaceExpressions()
-                                        .withFaceDescriptor();
-
-            if (result) {
-                const landmarks = result.landmarks;
-                const nose = landmarks.getNose()[0]; 
-                const leftJaw = landmarks.getJawOutline()[0]; 
-                const rightJaw = landmarks.getJawOutline()[16]; 
-                const topJaw = landmarks.getJawOutline()[8]; 
-                const noseBridge = landmarks.getNose()[3]; 
-
-                const distanceToLeft = Math.abs(nose.x - leftJaw.x);
-                const distanceToRight = Math.abs(nose.x - rightJaw.x);
-                const turnRatio = distanceToLeft / distanceToRight;
-                const distanceNoseToChin = Math.abs(topJaw.y - noseBridge.y);
-
-                if (livenessStep === 'HEAD_TURN') {
-                    if (turnRatio < 0.50 || turnRatio > 1.90) {
-                        isWaiting = true; 
-                        instruction.innerText = "ခဏလေး ငြိမ်ပေးပါ...";
-                        setTimeout(() => {
-                            livenessStep = 'HEAD_NOD';
-                            instruction.innerText = "ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
-                            isWaiting = false; 
-                        }, HOLD_DURATION);
-                    }
-                } 
-                else if (livenessStep === 'HEAD_NOD') {
-                    if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
-                        isWaiting = true;
-                        instruction.innerText = "ခဏလေး Ngim ပေးပါ...";
-                        setTimeout(() => {
-                            livenessStep = 'CAMERA_FOCUS';
-                            instruction.innerText = "ကင်မရာတည့်တည့်သို့ စိုက်ကြည့်ပါ...";
-                            isWaiting = false; 
-                        }, HOLD_DURATION);
-                    }
-                }
-                else if (livenessStep === 'CAMERA_FOCUS') {
-                    if (turnRatio >= 0.70 && turnRatio <= 1.40) { 
-                        isFinished = true; 
-                        clearInterval(detectionTimer); 
-                        instruction.innerText = "အချက်အလက်များအား စစ်ဆေးနေပါသည်...";
-
-                        const currentDescriptor = result.descriptor;
-                        const isRecognized = await matchFaceWithDatabase(currentDescriptor);
-
-                        closeScanModal(); 
-
-                        if(isRecognized) {
-                            showStatus('success', 'စစ်ဆေးမှုအောင်မြင်ပါသည်', 'ဝန်ထမ်းအထောက်အထား ကိုက်ညီမှုရှိပါသည်။', () => {
-                                document.getElementById('step-1').classList.add('hidden');
-                                document.getElementById('recognized-name').innerText = matchedEmployeeName;
-                                document.getElementById('recognized-pos').innerText = matchedEmployeePos;
-                                document.getElementById('recognized-id').innerText = matchedEmployeeId;
-                                document.getElementById('step-2').classList.remove('hidden');
-                            });
-                        } else {
-                            showStatus('error', 'မအောင်မြင်ပါ', 'ဝန်ထမ်းမှတ်တမ်း ရှာမတွေ့ပါ။', () => {
-                                location.reload();
-                            });
-                        }
-                    }
-                }
-            }
-        }, 600); 
+        // အောင်မြင်မှုပြသပြီး Portal သို့ ပြန်ပို့ခြင်း
+        const globalModal = document.getElementById('status-modal');
+        const title = document.getElementById('status-title');
+        title.style.color = "var(--success)";
+        title.innerText = "အောင်မြင်ပါသည်";
+        document.getElementById('status-message').innerText = `${recognizedEmployee.name} ၏ ${type} မှတ်တမ်းကို သိမ်းဆည်းပြီးပါပြီ။`;
+        
+        globalModal.classList.remove('hidden');
+        
+        // ၃ စက္ကန့်အကြာတွင် Portal သို့ အလိုအလျောက်ပြန်သွားရန်
+        setTimeout(() => {
+            window.location.href = 'portal.html';
+        }, 3000);
 
     } catch (err) {
-        closeScanModal();
-        showStatus('error', 'ချိတ်ဆက်မှုပရာဇယ', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name);
+        console.error("Database Insert Error:", err);
+        alert("❌ မှတ်တမ်းတင်ရန် ဒေတာဘေ့စ်သို့ မချိတ်ဆက်နိုင်ပါ သို့မဟုတ် Error ဖြစ်နေပါသည်။");
     }
 }
 
-async function matchFaceWithDatabase(currentDescriptor) {
-    if (!appSupabase) return false;
-
-    const { data: employees, error } = await appSupabase.from('employees').select('employee_id, name, position, face_embedding');
-    if (error || !employees) return false;
-
-    let bestMatch = null;
-    let threshold = 0.55; 
-
-    for (const emp of employees) {
-        if (!emp.face_embedding) continue;
-        try {
-            const savedDescriptor = new Float32Array(JSON.parse(emp.face_embedding));
-            let distance = 0;
-            for (let i = 0; i < currentDescriptor.length; i++) {
-                distance += Math.pow(currentDescriptor[i] - savedDescriptor[i], 2);
-            }
-            distance = Math.sqrt(distance);
-
-            if (distance < threshold) {
-                threshold = distance;
-                bestMatch = emp;
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    }
-
-    if (bestMatch) {
-        matchedEmployeeId = bestMatch.employee_id;
-        matchedEmployeeName = bestMatch.name;
-        matchedEmployeePos = bestMatch.position || "Staff";
-        return true;
-    }
-    return false;
+function closeStatusModal() {
+    document.getElementById('status-modal').classList.add('hidden');
+    window.location.href = 'portal.html';
 }
 
-// ==================== ၄။(ခ) BIOMETRIC ENROLLMENT SCAN (ADMIN) ====================
-async function startFaceScan(role) {
-    if(role !== 'ADMIN') return;
-    const video = document.getElementById('admin-video');
-    const instruction = document.getElementById('admin-instruction');
-    if(!video || !instruction) return;
 
-    const constraints = { video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false };
+// ==========================================
+// 👑 ADMIN & DASHBOARD CONTROL ENGINE (admin.html)
+// ==========================================
+let adminFaceDescriptor = null;
+
+function initDashboard() {
+    loadEmployeeTable();
+    initFullCalendar();
+}
+
+// ဝန်ထမ်းများစာရင်းကို ဆွဲထုတ်ပြသခြင်း
+async function loadEmployeeTable() {
+    const tbody = document.getElementById('employee-table-body');
+    if (!tbody) return;
 
     try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        window.globalCamStream = stream; 
-        video.srcObject = stream;
-        await video.play();
+        const { data: employees, error } = await supabaseClient.from('employees').select('*');
+        if (error) throw error;
 
-        let livenessStep = 'HEAD_TURN'; 
-        let isWaiting = false; 
-        let isFinished = false; 
-        const HOLD_DURATION = 1500; 
+        tbody.innerHTML = "";
+        if (!employees || employees.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">စနစ်အတွင်း ဝန်ထမ်းစာရင်း မရှိသေးပါ။</td></tr>`;
+            return;
+        }
 
-        instruction.innerText = "ဦးခေါင်းကို ဘယ်/ညာသို့ ဖြည်းညှင်းစွာ လှည့်ပေးပါ...";
-
-        if (detectionTimer) clearInterval(detectionTimer);
-
-        detectionTimer = setInterval(async () => {
-            if (video.paused || video.ended || isWaiting || isFinished) return;
-
-            const result = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions().withFaceDescriptor();
-
-            if (result) {
-                const landmarks = result.landmarks;
-                const nose = landmarks.getNose()[0]; 
-                const leftJaw = landmarks.getJawOutline()[0]; 
-                const rightJaw = landmarks.getJawOutline()[16]; 
-                const topJaw = landmarks.getJawOutline()[8]; 
-                const noseBridge = landmarks.getNose()[3]; 
-
-                const distanceToLeft = Math.abs(nose.x - leftJaw.x);
-                const distanceToRight = Math.abs(nose.x - rightJaw.x);
-                const turnRatio = distanceToLeft / distanceToRight;
-                const distanceNoseToChin = Math.abs(topJaw.y - noseBridge.y);
-
-                if (livenessStep === 'HEAD_TURN') {
-                    if (turnRatio < 0.50 || turnRatio > 1.90) {
-                        isWaiting = true; 
-                        instruction.innerText = "ခဏလေး ငြိမ်ပေးပါ...";
-                        setTimeout(() => {
-                            livenessStep = 'HEAD_NOD';
-                            instruction.innerText = "ဦးခေါင်းကို အပေါ်/အောက်သို့ အနည်းငယ် လှည့်ပေးပါ...";
-                            isWaiting = false; 
-                        }, HOLD_DURATION);
-                    }
-                } 
-                else if (livenessStep === 'HEAD_NOD') {
-                    if (distanceNoseToChin < 112 || distanceNoseToChin > 172) {
-                        isWaiting = true;
-                        instruction.innerText = "ခဏလေး Ngim ပေးပါ...";
-                        setTimeout(() => {
-                            livenessStep = 'CAMERA_FOCUS';
-                            instruction.innerText = "ကင်မရာတည့်တည့်သို့ စိုက်ကြည့်ပါ...";
-                            isWaiting = false; 
-                        }, HOLD_DURATION);
-                    }
-                }
-                else if (livenessStep === 'CAMERA_FOCUS') {
-                    if (turnRatio >= 0.70 && turnRatio <= 1.40) { 
-                        isFinished = true; 
-                        clearInterval(detectionTimer); 
-                        instruction.innerText = "လုပ်ငန်းစဉ် ပြီးမြောက်ပါပြီ...";
-
-                        setTimeout(() => {
-                            document.getElementById('admin-face-data').value = JSON.stringify(Array.from(result.descriptor));
-                            const faceStatus = document.getElementById('face-status');
-                            if(faceStatus) {
-                                faceStatus.innerText = "ဇီဝအချက်အလက် စစ်ဆေးမှု အောင်မြင်ပါသည်";
-                                faceStatus.style.color = "var(--success)";
-                            }
-                            closeAdminScanModal();
-                            showStatus('success', 'အောင်မြင်ပါသည်', 'ဇီဝအချက်အလက် မှတ်တမ်းယူခြင်း အောင်မြင်ပါသည်။');
-                        }, HOLD_DURATION);
-                    }
-                }
-            }
-        }, 600); 
-    } catch (err) { 
-        closeAdminScanModal();
-        showStatus('error', 'အမှားအယွင်း', 'ဗီဒီယိုစနစ် ချိတ်ဆက်မှု မအောင်မြင်ပါ: ' + err.name); 
+        employees.forEach(emp => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${emp.emp_id}</b></td>
+                <td>${emp.name}</td>
+                <td>${emp.position}</td>
+                <td>
+                    <button onclick="confirmDeleteEmployee('${emp.id}')" class="btn-red" style="width:auto; padding:6px 12px; font-size:0.75rem;">ပယ်ဖျက်</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        console.error("Load Workers Matrix Error:", err);
     }
 }
 
-// ==================== ၅။ EMPLOYEE DATA MANAGEMENT (CRUD) ====================
+// ဝန်ထမ်းပယ်ဖျက်ခြင်း အတည်ပြုချက်
+function confirmDeleteEmployee(dbId) {
+    employeeToDeleteId = dbId;
+    document.getElementById('delete-modal').classList.remove('hidden');
+}
+function closeDeleteModal() { document.getElementById('delete-modal').classList.add('hidden'); }
+
+document.getElementById('delete-confirm-btn')?.addEventListener('click', async () => {
+    if (!employeeToDeleteId) return;
+    try {
+        const { error } = await supabaseClient.from('employees').delete().eq('id', employeeToDeleteId);
+        if (error) throw error;
+        closeDeleteModal();
+        loadEmployeeTable();
+        trainFaceMatcher(); // Database အချက်အလက်သစ်ပြန်လည်သင်ကြားခြင်း
+    } catch (err) {
+        console.error("Delete worker processing fail:", err);
+    }
+});
+
+// ဝန်ထမ်းကုဒ် ထပ်/မထပ် စစ်ဆေးခြင်း
 async function checkDuplicateID() {
     const empId = document.getElementById('admin-emp-id').value.trim();
-    if (!empId || !appSupabase) return;
-
-    const { data, error } = await appSupabase.from('employees').select('employee_id').eq('employee_id', empId);
-    if (error) return;
-
     const btnSave = document.getElementById('btn-save');
-    if (data.length > 0 && !isEditing) {
-        showStatus('error', 'သတိပေးချက်', 'ဤဝန်ထမ်းကုဒ်သည် စနစ်အတွင်း တည်ရှိပြီးဖြစ်သည်။');
-        document.getElementById('admin-emp-id').style.borderColor = "var(--danger)";
-        if(btnSave) { btnSave.disabled = true; btnSave.style.opacity = "0.5"; }
+    if (!empId) return;
+
+    const { data } = await supabaseClient.from('employees').select('emp_id').eq('emp_id', empId);
+    if (data && data.length > 0) {
+        document.getElementById('face-status').innerText = "⚠️ ဤဝန်ထမ်းကုဒ်မှာ စနစ်ထဲတွင် ရှိနှင့်ပြီးသားဖြစ်သည်!";
+        document.getElementById('face-status').style.color = "var(--danger)";
+        btnSave.disabled = true;
     } else {
-        document.getElementById('admin-emp-id').style.borderColor = "var(--success)";
-        if(btnSave) { btnSave.disabled = false; btnSave.style.opacity = "1"; }
+        document.getElementById('face-status').innerText = adminFaceDescriptor ? "✅ ဇီဝအချက်အလက် အဆင်သင့်ရှိပါသည်" : "ဇီဝအချက်အလက် မရှိသေးပါ";
+        document.getElementById('face-status').style.color = adminFaceDescriptor ? "var(--success)" : "var(--danger)";
+        btnSave.disabled = false;
     }
 }
 
+// ADMIN SIDE မျက်နှာမှတ်တမ်းတင်စနစ် (Enrollment)
+async function openAdminScanModal() {
+    const modal = document.getElementById('admin-scan-modal');
+    const instr = document.getElementById('admin-instruction');
+    const video = document.getElementById('admin-video');
+
+    modal.classList.remove('hidden');
+    instr.innerText = "ကင်မရာ စတင်နေပါသည်...";
+    try {
+        activeStream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = activeStream;
+        video.onloadedmetadata = () => {
+            video.play();
+            instr.innerText = "စနစ်မှ မျက်နှာကို မှတ်တမ်းယူနေပါသည်၊ ငြိမ်ငြိမ်နေပေးပါ...";
+            captureAdminFace();
+        };
+    } catch (err) {
+        instr.innerText = "❌ ကင်မရာဖွင့်၍မရပါ";
+    }
+}
+
+async function captureAdminFace() {
+    const video = document.getElementById('admin-video');
+    const instr = document.getElementById('admin-instruction');
+
+    if (!video || video.paused) return;
+
+    try {
+        const detection = await faceapi.detectSingleFace(video).withFaceLandmarks().withFaceDescriptor();
+        if (detection) {
+            adminFaceDescriptor = Array.from(detection.descriptor);
+            document.getElementById('admin-face-data').value = JSON.stringify(adminFaceDescriptor);
+            
+            document.getElementById('face-status').innerText = "✅ ဇီဝအချက်အလက် အဆင်သင့်ရှိပါသည်";
+            document.getElementById('face-status').style.color = "var(--success)";
+            
+            instr.innerText = "✅ မျက်နှာမှတ်တမ်း ရယူခြင်း အောင်မြင်ပါသည်။";
+            setTimeout(closeAdminScanModal, 1200);
+        } else {
+            setTimeout(captureAdminFace, 400); // ရှာမတွေ့ပါက ပြန်ရှာခိုင်းခြင်း
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function closeAdminScanModal() {
+    document.getElementById('admin-scan-modal').classList.add('hidden');
+    if (activeStream) activeStream.getTracks().forEach(track => track.stop());
+}
+
+// ဝန်ထမ်းအသစ် သိမ်းဆည်းခြင်း
 async function saveEmployee() {
     const empId = document.getElementById('admin-emp-id').value.trim();
     const name = document.getElementById('admin-emp-name').value.trim();
-    const position = document.getElementById('admin-emp-pos').value.trim() || "Staff";
+    const pos = document.getElementById('admin-emp-pos').value.trim();
     const faceData = document.getElementById('admin-face-data').value;
 
-    if (!empId || !name || !faceData || !appSupabase) { 
-        showStatus('error', 'သတိပေးချက်', 'လိုအပ်သော အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။'); 
-        return; 
+    if (!empId || !name || !pos || !faceData) {
+        alert("⚠️ ဝန်ထမ်းအချက်အလက်များနှင့် ဇီဝဒေတာများ ပြည့်စုံစွာ ဖြည့်စွက်ပါ!");
+        return;
     }
 
-    let query;
-    if (isEditing) {
-        query = await appSupabase.from('employees').update({ name: name, position: position, face_embedding: faceData }).eq('employee_id', empId);
-    } else {
-        query = await appSupabase.from('employees').insert([{ employee_id: empId, name: name, position: position, face_embedding: faceData }]);
-    }
+    try {
+        const { error } = await supabaseClient.from('employees').insert([{
+            emp_id: empId, name: name, position: pos, face_data: faceData
+        }]);
 
-    if (query.error) { 
-        showStatus('error', 'မအောင်မြင်ပါ', query.error.message); 
-    } else { 
-        showStatus('success', 'အောင်မြင်ပါသည်', 'ဝန်ထမ်းအချက်အလက် သိမ်းဆည်းမှု အောင်မြင်ပါသည်။', () => {
-            resetAdminForm(); 
-            fetchEmployees(); 
-        });
-    }
-}
-
-async function fetchEmployees() {
-    const tableBody = document.getElementById('employee-table-body');
-    if (!tableBody || !appSupabase) return;
-
-    const { data: employees, error } = await appSupabase.from('employees').select('*').order('created_at', { ascending: false });
-    if (error) return;
-
-    tableBody.innerHTML = "";
-    employees.forEach(emp => {
-        tableBody.innerHTML += `
-            <tr>
-                <td><b>${emp.employee_id}</b></td>
-                <td>${emp.name}</td>
-                <td><span style="background:#2b3139; padding:4px 8px; border-radius:4px; font-size:0.85rem; color:var(--text);">${emp.position || 'Staff'}</span></td>
-                <td>
-                    <div class="button-row">
-                        <button onclick="editEmployee('${emp.employee_id}', '${emp.name}', '${emp.position || 'Staff'}', '${emp.face_embedding}')" class="btn-yellow" style="padding:4px 8px; font-size:0.8rem; width:auto;">ပြင်ဆင်ရန်</button>
-                        <button onclick="triggerDelete('${emp.employee_id}')" class="btn-red" style="padding:4px 8px; font-size:0.8rem; width:auto;">ပယ်ဖျက်ရန်</button>
-                    </div>
-                </td>
-            </tr>`;
-    });
-}
-
-let isEditing = false;
-let targetDeleteId = null;
-
-function editEmployee(id, name, position, face) {
-    document.getElementById('admin-emp-id').value = id;
-    document.getElementById('admin-emp-id').disabled = true;
-    document.getElementById('admin-emp-name').value = name;
-    document.getElementById('admin-emp-pos').value = position;
-    document.getElementById('admin-face-data').value = face;
-    const faceStatus = document.getElementById('face-status');
-    if(faceStatus) {
-        faceStatus.innerText = "ဇီဝအချက်အလက် ထည့်သွင်းပြီး";
-        faceStatus.style.color = "var(--success)";
-    }
-    document.getElementById('form-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
-    isEditing = true;
-
-    // Cross-Platform Active Tab Redirection
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-    document.getElementById('add-employee-tab').classList.add('active');
-
-    document.querySelectorAll('.nav-menu-btn, .bottom-nav-item').forEach(btn => {
-        if(btn.getAttribute('data-target') === 'add-emp') {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
-    document.getElementById('current-panel-title').innerText = "ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း";
-}
-
-function triggerDelete(empId) {
-    targetDeleteId = empId;
-    const delModal = document.getElementById('delete-modal');
-    if(delModal) {
-        delModal.classList.remove('hidden');
-        document.getElementById('delete-confirm-btn').onclick = executeDelete;
-    }
-}
-
-function closeDeleteModal() {
-    const delModal = document.getElementById('delete-modal');
-    if(delModal) delModal.classList.add('hidden');
-    targetDeleteId = null;
-}
-
-async function executeDelete() {
-    if (targetDeleteId && appSupabase) {
-        const { error } = await appSupabase.from('employees').delete().eq('employee_id', targetDeleteId);
-        closeDeleteModal();
-        if(error) {
-            showStatus('error', 'မအောင်မြင်ပါ', error.message);
-        } else {
-            showStatus('success', 'အောင်မြင်ပါသည်', 'မှတ်တမ်းအား ပယ်ဖျက်ပြီးပါပြီ။', () => {
-                fetchEmployees();
-            });
-        }
+        if (error) throw error;
+        alert("✅ ဝန်ထမ်းသစ် သိမ်းဆည်းခြင်း အောင်မြင်ပါသည်။");
+        resetAdminForm();
+        loadEmployeeTable();
+        trainFaceMatcher();
+    } catch (err) {
+        console.error(err);
     }
 }
 
 function resetAdminForm() {
     document.getElementById('admin-emp-id').value = "";
-    document.getElementById('admin-emp-id').disabled = false;
-    document.getElementById('admin-emp-id').style.borderColor = "var(--border)";
     document.getElementById('admin-emp-name').value = "";
     document.getElementById('admin-emp-pos').value = "";
     document.getElementById('admin-face-data').value = "";
-    const faceStatus = document.getElementById('face-status');
-    if(faceStatus) {
-        faceStatus.innerText = "ဇီဝအချက်အလက် မရှိသေးပါ";
-        faceStatus.style.color = "var(--danger)";
-    }
-    document.getElementById('form-title').innerText = "ဝန်ထမ်းအချက်အလက် စာရင်းသွင်းခြင်း";
-    isEditing = false;
+    adminFaceDescriptor = null;
+    document.getElementById('face-status').innerText = "ဇီဝအချက်အလက် မရှိသေးပါ";
+    document.getElementById('face-status').style.color = "var(--danger)";
 }
 
-// ==================== ၆။ ATTENDANCE TRANSACTION LOGIC ====================
-function showConfirmModal() {
-    const typeRadio = document.querySelector('input[name="attendance-type"]:checked').value;
-    const typeText = (typeRadio === 'IN') ? "Check-In" : "Check-Out";
-    const remarkText = document.getElementById('remark').value.trim() || "မရှိပါ";
-
-    document.getElementById('conf-id').innerText = matchedEmployeeId;
-    document.getElementById('conf-name').innerText = matchedEmployeeName;
-    document.getElementById('conf-pos').innerText = matchedEmployeePos;
-    document.getElementById('conf-type').innerText = typeText;
-    document.getElementById('conf-remark').innerText = remarkText;
-
-    document.getElementById('confirm-modal').classList.remove('hidden');
-}
-
-function closeConfirmModal() {
-    document.getElementById('confirm-modal').classList.add('hidden');
-}
-
-function submitAttendance() {
-    if (!appSupabase || !matchedEmployeeId) return;
-
-    const type = document.querySelector('input[name="attendance-type"]:checked').value;
-    const remark = document.getElementById('remark').value;
-
-    closeConfirmModal(); 
-
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const { error } = await appSupabase.from('attendance_logs').insert([
-                { 
-                    employee_id: matchedEmployeeId, 
-                    type: type, 
-                    latitude: position.coords.latitude, 
-                    longitude: position.coords.longitude, 
-                    remark: remark 
-                }
-            ]);
-
-            if (error) {
-                showStatus('error', 'မအောင်မြင်ပါ', error.message);
-            } else { 
-                showStatus('success', 'အောင်မြင်ပါသည်', 'တက်ရောက်မှုမှတ်တမ်း တင်ပြခြင်း အောင်မြင်ပါသည်။', () => {
-                    location.reload();
-                });
-            }
-        }, (geoErr) => {
-            showStatus('error', 'GPS လိုအပ်ချက်', 'GPS စနစ် အသုံးပြုခွင့် ပေးရန် လိုအပ်ပါသည်။');
-        });
-    } else { 
-        showStatus('error', 'စနစ်လိုအပ်ချက်', 'တည်နေရာပြစနစ်အား အသုံးပြု၍မရပါ။'); 
-    }
-}
-
-// ==================== ၇။ FULLCALENDAR DASHBOARD GENERATOR ====================
-async function initCalendar() {
+// FULLCALENDAR ပြက္ခဒိန် တပ်ဆင်ခြင်းနှင့် Data ချိတ်ဆက်ခြင်း
+async function initFullCalendar() {
     const calendarEl = document.getElementById('calendar');
-    if(!calendarEl || !appSupabase) return;
+    if (!calendarEl) return;
 
-    const { data: logs, error } = await appSupabase.from('attendance_logs').select(`*, employees ( name, position )`);
-    if (error) return;
-
-    const calendarEvents = logs.map(log => {
-        const empName = log.employees ? log.employees.name : "Unknown";
-        const empPos = log.employees ? (log.employees.position || "Staff") : "Staff";
-        const timeStr = new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        
-        return {
-            title: `${empName} (${log.type})`, 
-            start: log.timestamp.split('T')[0], 
-            extendedProps: {
-                empId: log.employee_id, empName: empName, empPos: empPos,
-                type: log.type === 'IN' ? 'Check-In' : 'Check-Out',
-                time: timeStr, remark: log.remark || "မရှိပါ",
-                location: `Lat: ${log.latitude.toFixed(4)}, Lng: ${log.longitude.toFixed(4)}`,
-                mapsLink: `http://googleusercontent.com/maps.google.com/2{log.latitude},${log.longitude}`
-            },
-            backgroundColor: log.type === 'IN' ? '#02c076' : '#f84960',
-            borderColor: log.type === 'IN' ? '#02c076' : '#f84960'
-        };
-    });
-
-    const calendar = new FullCalendar.Calendar(calendarEl, {
+    fullCalendarInstance = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        events: calendarEvents,
+        headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+        selectable: true,
+        events: async function(info, successCallback, failureCallback) {
+            try {
+                const { data: logs, error } = await supabaseClient.from('attendance').select('*');
+                if (error) throw error;
+
+                // နေ့ရက်အလိုက် စာရင်းများကို အုပ်စုဖွဲ့ရန် (Group By Date)
+                const counts = {};
+                logs.forEach(log => {
+                    const dateStr = log.timestamp.split('T')[0];
+                    counts[dateStr] = (counts[dateStr] || 0) + 1;
+                });
+
+                const eventsList = Object.keys(counts).map(dateKey => ({
+                    title: `🪵 Record: ${counts[dateKey]} ခု`,
+                    start: dateKey,
+                    allDay: true,
+                    extendedProps: { rawDate: dateKey }
+                }));
+
+                successCallback(eventsList);
+            } catch (err) {
+                console.error("Fetch calendar data log fail:", err);
+                failureCallback(err);
+            }
+        },
+        dateClick: function(info) {
+            fetchAttendanceDetailsByDate(info.dateStr);
+        },
         eventClick: function(info) {
-            const props = info.event.extendedProps;
-            document.getElementById('selected-date-title').innerText = `${info.event.startStr} မှတ်တမ်း`;
-            document.getElementById('attendance-details').innerHTML = `
-                <div class="detail-box">
-                    <p><b>ဝန်ထမ်းအမည်:</b> <span style="color: var(--primary); font-weight:600;">${props.empName}</span></p>
-                    <p style="font-size:0.85rem; color:var(--text-muted);">ရာထူး: ${props.empPos}</p>
-                    <p style="font-size:0.8rem; color:var(--text-muted);">ဝန်ထမ်းကုဒ်: ${props.empId}</p>
-                </div>
-                <div class="detail-text" style="margin-top:10px;">
-                    <p><b>အမျိုးအစား:</b> ${props.type}</p>
-                    <p><b>အချိန်:</b> ${props.time}</p>
-                    <p><b>မှတ်ချက်:</b> ${props.remark}</p>
-                    <p><b>တည်နေရာ:</b> ${props.location}</p>
-                    <a href="${props.mapsLink}" target="_blank" class="maps-link">Google Maps တွင် ကြည့်ရှုရန်</a>
-                </div>`;
+            fetchAttendanceDetailsByDate(info.event.extendedProps.rawDate);
         }
     });
-    calendar.render();
+
+    fullCalendarInstance.render();
+}
+
+// ပြက္ခဒိန်ရက်အလိုက် မှတ်တမ်းအသေးစိတ်ကို Database မှဆွဲထုတ်ခြင်း
+async function fetchAttendanceDetailsByDate(dateStr) {
+    const detailBox = document.getElementById('attendance-details');
+    document.getElementById('selected-date-title').innerText = `မှတ်တမ်းအသေးစိတ် (${dateStr})`;
+
+    try {
+        const { data: records, error } = await supabaseClient
+            .from('attendance')
+            .select('*')
+            .gte('timestamp', `${dateStr}T00:00:00.000Z`)
+            .lte('timestamp', `${dateStr}T23:59:59.999Z`);
+
+        if (error) throw error;
+
+        detailBox.innerHTML = "";
+        if (!records || records.length === 0) {
+            detailBox.innerHTML = `<p style="color:var(--text-muted); text-align:center; font-size:0.85rem;">ဤနေ့အတွက် မှတ်တမ်းမရှိပါ။</p>`;
+            return;
+        }
+
+        records.forEach(rec => {
+            const time = new Date(rec.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const item = document.createElement('div');
+            item.className = "detail-box";
+            item.style.borderLeftColor = rec.type === "IN" ? "var(--success)" : "var(--danger)";
+            item.innerHTML = `
+                <div class="detail-text">
+                    <p><b>[${time}] - ${rec.name}</b> (${rec.position})</p>
+                    <p style="font-size:0.8rem; margin-top:3px;">
+                        အမျိုးအစား: <span style="color:${rec.type === "IN" ? "var(--success)" : "var(--danger)"}; font-weight:700;">${rec.type}</span> 
+                        | ID: ${rec.emp_id}
+                    </p>
+                    ${rec.remark ? `<p style="font-size:0.75rem; color:var(--text-muted);">📝 မှတ်ချက်: ${rec.remark}</p>` : ''}
+                </div>
+            `;
+            detailBox.appendChild(item);
+        });
+    } catch (err) {
+        console.error("Fetch details error:", err);
+    }
+}
+
+// ADMIN CONFIGS: ACCOUNT MANAGEMENT
+async function updateAdminAccount() {
+    const user = document.getElementById('update-admin-user').value.trim();
+    const pass = document.getElementById('update-admin-pass').value.trim();
+
+    if (!user || pass.length < 6) {
+        alert("⚠️ အချက်အလက်များမှန်ကန်စွာဖြည့်ပါ (စကားဝှက်သည် အနည်းဆုံး ၆ လုံးရှိရမည်)");
+        return;
+    }
+
+    try {
+        // ပထမဆုံး Admin ID ကို ရှာဖွေပြီး Update ပြုလုပ်ခြင်း
+        const { data: existing } = await supabaseClient.from('admin_settings').select('id').limit(1).single();
+        if (existing) {
+            const { error } = await supabaseClient.from('admin_settings').update({ username: user, password: pass }).eq('id', existing.id);
+            if (error) throw error;
+            alert("✅ Admin အကောင့် ပြောင်းလဲခြင်း အောင်မြင်ပါသည်။");
+            if(typeof handleLogout === "function") handleLogout();
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function createNewAdminAccount() {
+    const user = document.getElementById('new-admin-user').value.trim();
+    const pass = document.getElementById('new-admin-pass').value.trim();
+
+    if (!user || !pass) {
+        alert("⚠️ အချက်အလက် ဖြည့်စွက်ပေးရန်လိုအပ်ပါသည်။");
+        return;
+    }
+
+    try {
+        const { error } = await supabaseClient.from('admin_settings').insert([{ username: user, password: pass }]);
+        if (error) throw error;
+        alert("✅ Admin အသစ် ထည့်သွင်းခြင်း အောင်မြင်ပါသည်။");
+        document.getElementById('new-admin-user').value = "";
+        document.getElementById('new-admin-pass').value = "";
+    } catch (err) {
+        console.error(err);
+    }
 }
