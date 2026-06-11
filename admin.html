@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Admin Security & Dashboard Hub</title>
+    <title>Admin Hub & Dashboard</title>
     <link rel="stylesheet" href="style.css">
     
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
@@ -12,7 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
     
     <style>
-        /* Login Screen ဗဟိုချက်ညှိရန် Style */
         .login-frame {
             display: flex;
             align-items: center;
@@ -212,7 +211,6 @@
         const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
         const combinedSupabase = supabase.createClient(API_URL, API_KEY);
 
-        // စာမျက်နှာစဖွင့်ချိန်တွင် Authenticated ဖြစ်မဖြစ် စစ်ဆေးခြင်း
         document.addEventListener("DOMContentLoaded", () => {
             if (sessionStorage.getItem('admin_authenticated') === 'true') {
                 showDashboardDirectly();
@@ -229,22 +227,12 @@
         }
         function closeStatusModal() { document.getElementById('status-modal').classList.add('hidden'); }
 
-        // LOGIN PROCESS ENGINE
         async function loginAdmin() {
             const user = document.getElementById('admin-username').value.trim();
             const pass = document.getElementById('admin-password').value.trim();
+            if (!user || !pass) { showStatus('သတိပေးချက်', 'အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။'); return; }
 
-            if (!user || !pass) {
-                showStatus('သတိပေးချက်', 'အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။');
-                return;
-            }
-
-            const { data, error } = await combinedSupabase
-                .from('admin_settings')
-                .select('*')
-                .eq('username', user)
-                .eq('password', pass);
-
+            const { data, error } = await combinedSupabase.from('admin_settings').select('*').eq('username', user).eq('password', pass);
             if (error || !data || data.length === 0) {
                 showStatus('မအောင်မြင်ပါ', 'အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
             } else {
@@ -256,7 +244,6 @@
         function showDashboardDirectly() {
             document.getElementById('admin-login-section').classList.add('hidden');
             document.getElementById('admin-dashboard-section').classList.remove('hidden');
-            // script.js ထဲက Dashboard Data တွေဆွဲတင်မယ့် Function ကို လှမ်းခေါ်ခြင်း
             if (typeof initDashboard === "function") { initDashboard(); }
             setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 100);
         }
@@ -279,8 +266,7 @@
 
         function handleLogout() {
             sessionStorage.removeItem('admin_authenticated');
-            document.getElementById('admin-username').value = "";
-            document.getElementById('admin-password').value = "";
+            document.getElementById('admin-username').value = ""; document.getElementById('admin-password').value = "";
             document.getElementById('admin-dashboard-section').classList.add('hidden');
             document.getElementById('admin-login-section').classList.remove('hidden');
         }

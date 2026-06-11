@@ -1,6 +1,6 @@
 /* ==================== ORIGINAL LIGHT / BLUE THEME ==================== */
 :root {
-    --primary: #0056b3; /* မူလ အပြာရင့်ရောင် */
+    --primary: #0056b3; 
     --primary-hover: #004085;
     --primary-light: rgba(0, 86, 179, 0.1);
     --success: #28a745;
@@ -8,8 +8,8 @@
     --warning: #ffc107;
     --danger: #dc3545;
     --danger-hover: #bd2130;
-    --background: #f4f6f9; /* မူလ အလင်းရောင် Background */
-    --card-bg: #ffffff; /* မူလ ကတ်အဖြူရောင် */
+    --background: #f4f6f9; 
+    --card-bg: #ffffff; 
     --sidebar-bg: #ffffff;
     --text: #333333;
     --text-muted: #6c757d;
@@ -42,7 +42,6 @@ body {
     width: 100%;
 }
 
-/* SIDEBAR - DESKTOP VIEW */
 .sidebar {
     width: 260px;
     background: var(--sidebar-bg);
@@ -54,7 +53,6 @@ body {
     flex-shrink: 0;
 }
 
-/* NAVIGATION BUTTONS */
 .nav-menu-btn {
     width: 100%;
     padding: 14px 16px;
@@ -83,7 +81,6 @@ body {
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
-/* BOTTOM NAVIGATION - MOBILE VIEW ONLY */
 .bottom-nav {
     display: none;
     position: fixed;
@@ -118,7 +115,6 @@ body {
     font-weight: 600;
 }
 
-/* MAIN CONTENT CONTAINER */
 .main-content {
     flex-grow: 1;
     padding: 24px;
@@ -138,7 +134,6 @@ body {
     box-shadow: var(--shadow);
 }
 
-/* LOGOUT BUTTON CONTAINER */
 .logout-container {
     padding: 0 16px 16px 16px;
     margin-top: auto;
@@ -302,7 +297,6 @@ button:active {
     gap: 10px;
 }
 
-/* ==================== TABLES & LOGS ==================== */
 .detail-box {
     border-left: 4px solid var(--primary);
     background: #f8f9fa;
@@ -342,14 +336,13 @@ th {
     gap: 20px;
 }
 
-/* ==================== PORTAL & INDEX SCREEN ADAPTABILITY ==================== */
 .portal-container, .index-container {
     width: 100%;
     max-width: 420px;
     margin: 0 auto;
 }
 
-/* ==================== MOBILE RESPONSIVE PACKET ==================== */
+/* ==================== MOBILE RESPONSIVE ==================== */
 @media (max-width: 992px) {
     body {
         padding-bottom: 80px; 
@@ -394,7 +387,6 @@ th {
     white-space: nowrap;
 }
 
-/* FULLCALENDAR OVERRIDE */
 .fc { background: var(--card-bg); color: var(--text); border-radius: var(--radius-md); padding: 8px; }
 .fc-theme-standard td, .fc-theme-standard th { border: 1px solid var(--border) !important; }
 .fc .fc-button-primary { background-color: #ffffff !important; border-color: var(--border) !important; color: var(--text) !important; }
