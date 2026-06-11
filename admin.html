@@ -129,7 +129,7 @@
             <div id="view-employee-tab" class="tab-content">
                 <div class="card">
                     <h3>ဝန်ထမ်းများစာရင်း</h3>
-                    <p class="sub-title" style="margin-bottom: 10px; color: var(--primary);">* ပြင်ဆင်ရန် သို့မဟုတ် ဖျက်ရန် သက်ဆိုင်ရာ ဝန်ထမ်းအถက်ပေါ်သို့ မောက်စ်ထောက် (Hover) ပေးပါ</p>
+                    <p class="sub-title" style="margin-bottom: 10px; color: var(--primary); font-weight: 500;">* ဝန်ထမ်းတစ်ဦး၏ စာတန်းကို နှိပ်လိုက်ပါက ပြင်ဆင်ရန်/ပယ်ဖျက်ရန် ခလုတ်များ ထွက်လာပါမည်။</p>
                     <hr>
                     <div style="overflow-x: auto;">
                         <table>
@@ -211,6 +211,13 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             handleLogout(); 
+            
+            // 💡 ဇယားပြင်ပရှိ တခြားနေရာလွတ်ကို နှိပ်လိုက်ပါက ဖွင့်ထားသော ခလုတ်များကို အလိုအလျောက် ပြန်ပိတ်ပေးရန်
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.emp-row')) {
+                    document.querySelectorAll('.emp-row').forEach(row => row.classList.remove('show-actions'));
+                }
+            });
         });
 
         function showStatus(title, message, isSuccess = false) {

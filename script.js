@@ -56,7 +56,6 @@ async function trainFaceMatcher() {
         }
 
         employees.forEach(emp => {
-            // Database ကော်လံအမည်အမှန်ကို ယူရန် တိုက်ရိုက်စစ်ဆေးခြင်း
             const actualEmpId = emp.emp_id || emp.employee_id || emp.id;
             if (emp.face_data) {
                 try {
@@ -212,7 +211,7 @@ function initDashboard() {
     initFullCalendar();
 }
 
-// ဝန်ထမ်းများစာရင်းဇယားကို ဆွဲထုတ်ပြသခြင်း (ID နေရာအမှန်ညှိနှိုင်းမှုနှင့် ပြင်ဆင်ရန် ခလုတ်များပါဝင်ပြီး)
+// ဝန်ထမ်းများစာရင်းဇယားကို ဆွဲထုတ်ခြင်း (Click/Touch Logic အသစ်ဖြင့် ပြင်ဆင်ပြီး)
 async function loadEmployeeTable() {
     const tbody = document.getElementById('employee-table-body');
     if (!tbody) return;
@@ -228,10 +227,25 @@ async function loadEmployeeTable() {
         }
 
         employees.forEach(emp => {
-            // undefined မဖြစ်စေရန် Supabase column မျိုးစုံကို စစ်ထုတ်ပေးခြင်း
             const displayId = emp.emp_id || emp.employee_id || emp.id || "N/A";
             const tr = document.createElement('tr');
-            tr.className = "emp-row"; // CSS Hover သုံးရန် class သတ်မှတ်ချက်
+            tr.className = "emp-row";
+            
+            // 💡 နှိပ်လိုက်မှ (Click သို့မဟုတ် Touch လုပ်မှ) Toggle ပေါ်လာစေမည့် Event Listener
+            tr.addEventListener('click', (event) => {
+                // ခလုတ်တွေကို နှိပ်လိုက်ရင် Row Click Event ထပ်မပွင့်အောင် ကာကွယ်ခြင်း
+                if (event.target.tagName === 'BUTTON') return;
+
+                const isAlreadyShown = tr.classList.contains('show-actions');
+                
+                // အခြားဖွင့်ထားသော Row အားလုံးကို အရင်ပိတ်ပါ
+                document.querySelectorAll('.emp-row').forEach(row => row.classList.remove('show-actions'));
+                
+                // လက်ရှိ Row ကို ဖွင့်/ပိတ် လုပ်ပါ
+                if (!isAlreadyShown) {
+                    tr.classList.add('show-actions');
+                }
+            });
             
             tr.innerHTML = `
                 <td><b>${displayId}</b></td>
@@ -251,7 +265,6 @@ async function loadEmployeeTable() {
     }
 }
 
-// ဝန်ထမ်းဒေတာကို ပြန်လည်ပြင်ဆင်ရန် ဖြည့်သွင်းပေးခြင်း
 function editEmployeeData(dbId, empId, name, position) {
     document.getElementById('edit-db-id').value = dbId;
     document.getElementById('admin-emp-id').value = empId;
@@ -262,7 +275,6 @@ function editEmployeeData(dbId, empId, name, position) {
     document.getElementById('face-status').innerText = "✅ ဇီဝအချက်အလက် မူရင်းအတိုင်း ရှိနေပါသည် (မပြောင်းလဲလိုက အလွတ်ထားပါ)";
     document.getElementById('face-status').style.color = "var(--primary)";
     
-    // ဝန်ထမ်းအသစ်ထည့်တဲ့ Tab ဆီသို့ အလိုအလျောက် ရွှေ့ပြောင်းပေးခြင်း
     const tabBtn = document.querySelector('[data-target="add-emp"]');
     switchTab('add-employee-tab', tabBtn);
 }
@@ -288,7 +300,7 @@ document.getElementById('delete-confirm-btn')?.addEventListener('click', async (
 
 async function checkDuplicateID() {
     const isEditMode = document.getElementById('edit-db-id').value;
-    if (isEditMode) return; // ပြင်ဆင်နေချိန်ဆိုလျှင် အထပ်ထပ်စစ်ဆေးမှု မလုပ်ပါ
+    if (isEditMode) return;
 
     const empId = document.getElementById('admin-emp-id').value.trim();
     const btnSave = document.getElementById('btn-save');
@@ -353,7 +365,6 @@ function closeAdminScanModal() {
     if (activeStream) activeStream.getTracks().forEach(track => track.stop());
 }
 
-// ထည့်သွင်းခြင်းနှင့် ပြင်ဆင်ခြင်း နှစ်မျိုးလုံးကို ထိန်းချုပ်ပေးမည့် Save Function
 async function saveEmployee() {
     const dbId = document.getElementById('edit-db-id').value;
     const empId = document.getElementById('admin-emp-id').value.trim();
@@ -367,7 +378,6 @@ async function saveEmployee() {
     }
 
     const payload = { emp_id: empId, name: name, position: pos };
-    // မျက်နှာဒေတာအသစ် ရိုက်ကူးထားမှသာ ဒေတာထဲ ထည့်သွင်းပြင်ဆင်မည်
     if (faceData) {
         payload.face_data = faceData;
     } else if (!dbId) {
@@ -377,12 +387,10 @@ async function saveEmployee() {
 
     try {
         if (dbId) {
-            // UPDATE MODE
             const { error } = await supabaseClient.from('employees').update(payload).eq('id', dbId);
             if (error) throw error;
             alert("✅ ဝန်ထမ်းအချက်အလက် ပြင်ဆင်ခြင်း အောင်မြင်ပါသည်။");
         } else {
-            // INSERT MODE
             const { error } = await supabaseClient.from('employees').insert([payload]);
             if (error) throw error;
             alert("✅ ဝန်ထမ်းသစ် သိမ်းဆည်းခြင်း အောင်မြင်ပါသည်။");
@@ -392,7 +400,6 @@ async function saveEmployee() {
         loadEmployeeTable();
         trainFaceMatcher();
         
-        // ဝန်ထမ်းများစာရင်း Tab သို့ ပြန်ပို့ပေးခြင်း
         const tabBtn = document.querySelector('[data-target="view-emp"]');
         switchTab('view-employee-tab', tabBtn);
     } catch (err) {
