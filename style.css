@@ -54,7 +54,7 @@ body {
     flex-shrink: 0;
 }
 
-/* PREMIUM NAVIGATION BUTTONS */
+/* NAVIGATION BUTTONS */
 .nav-menu-btn {
     width: 100%;
     padding: 14px 16px;
@@ -138,7 +138,7 @@ body {
     box-shadow: var(--shadow);
 }
 
-/* FLOATING LOGOUT BUTTON FOR MOBILE & DESKTOP (OUTSIDE HEADER) */
+/* LOGOUT BUTTON CONTAINER */
 .logout-container {
     padding: 0 16px 16px 16px;
     margin-top: auto;
@@ -207,7 +207,7 @@ hr {
     background: #000; 
 }
 
-#admin-video {
+#admin-video, #video {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -302,7 +302,7 @@ button:active {
     gap: 10px;
 }
 
-/* ==================== TABLES & REALTIME LOGS ==================== */
+/* ==================== TABLES & LOGS ==================== */
 .detail-box {
     border-left: 4px solid var(--primary);
     background: #f8f9fa;
@@ -345,18 +345,11 @@ th {
 /* ==================== PORTAL & INDEX SCREEN ADAPTABILITY ==================== */
 .portal-container, .index-container {
     width: 100%;
-    max-width: 480px;
-    margin: 40px auto;
-    padding: 20px;
+    max-width: 420px;
+    margin: 0 auto;
 }
 
-.top-right-badge {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-}
-
-/* ==================== MOBILE COMPACT SCREEN RESPONSIVE PACKET ==================== */
+/* ==================== MOBILE RESPONSIVE PACKET ==================== */
 @media (max-width: 992px) {
     body {
         padding-bottom: 80px; 
@@ -383,20 +376,11 @@ th {
         margin-bottom: 16px;
     }
     .mobile-logout-wrapper {
-        display: block; /* ဖုန်းမှာ ပေါ်လာမည့် အပြင်ဘက် Log Out ကတ်ပြား */
+        display: block;
         margin-bottom: 20px;
     }
     .portal-container, .index-container {
-        margin: 20px auto;
-        padding: 16px;
-        max-width: 100%; /* ဖုန်း Screen ထဲ ကပ်ပြီး အံဝင်ခွင်ကျဖြစ်စေရန် */
-    }
-    .top-right-badge {
-        position: relative; /* ညာဘက်ထောင့်ကပ်နေတာကို ဗဟိုအနီးသို့ ဆွဲယူပေးခြင်း */
-        top: 0;
-        right: 0;
-        margin-bottom: 16px;
-        text-align: right;
+        max-width: 100%;
     }
 }
 
@@ -410,7 +394,7 @@ th {
     white-space: nowrap;
 }
 
-/* FULLCALENDAR ORIGINAL SKIN OVERRIDE */
+/* FULLCALENDAR OVERRIDE */
 .fc { background: var(--card-bg); color: var(--text); border-radius: var(--radius-md); padding: 8px; }
 .fc-theme-standard td, .fc-theme-standard th { border: 1px solid var(--border) !important; }
 .fc .fc-button-primary { background-color: #ffffff !important; border-color: var(--border) !important; color: var(--text) !important; }

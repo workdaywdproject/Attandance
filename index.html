@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Biometric Scan Hub</title>
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
     <style>
@@ -15,19 +14,18 @@
             justify-content: center;
             padding: 16px;
             min-height: 100vh;
+            background-color: var(--background);
         }
     </style>
 </head>
 <body>
 
-    <div class="index-container" style="margin: 0 auto; width: 100%;">
-        
+    <div class="index-container">
         <div id="step-1" class="card" style="padding: 24px;">
             <div style="text-align: center; margin-bottom: 20px;">
                 <h3>ဇီဝအချက်အလက် စစ်ဆေးခြင်း</h3>
                 <p class="sub-title">ကျေးဇူးပြု၍ ကင်မရာကို တည့်တည့်ကြည့်ပါ</p>
             </div>
-            
             <button onclick="openScanModal()" class="btn-blue" style="padding: 14px; font-size: 1rem; margin-bottom: 12px;">
                 စကင်ဖတ်စနစ် စတင်မည်
             </button>
@@ -62,7 +60,7 @@
 
             <div class="form-group" style="margin-bottom: 20px;">
                 <label>မှတ်ချက် (Remark)</label>
-                <input type="text" id="remark" placeholder="ဥပမာ - နေမကောင်း၍ နောက်ကျခြင်း (မရှိက အလွတ်ထားပါ)">
+                <input type="text" id="remark" placeholder="ဥပမာ - နောက်ကျမှဝင်သည် (မရှိက အလွတ်ထားပါ)">
             </div>
 
             <button onclick="showConfirmModal()" class="btn-green" style="padding: 14px; font-size: 1rem;">
@@ -106,7 +104,7 @@
         <div class="card" style="width: 100%; max-width: 340px; margin: 16px; text-align: center; padding: 24px;">
             <h3 id="status-title" style="margin-bottom: 8px;"></h3>
             <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;"></p>
-            <button id="status-btn" onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
+            <button onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
         </div>
     </div>
 

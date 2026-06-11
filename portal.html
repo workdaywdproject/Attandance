@@ -13,19 +13,30 @@
             justify-content: center;
             padding: 16px;
             min-height: 100vh;
+            background-color: var(--background);
         }
-        /* Portal Control Custom Button Style */
+        .portal-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 32px 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            width: 100%;
+        }
         .portal-admin-btn {
             background-color: #6c757d;
             color: #ffffff;
-            font-size: 0.85rem;
+            font-size: 1rem;
             font-weight: 600;
-            padding: 10px 20px;
+            padding: 14px 16px;
             border: 1px solid var(--border);
             border-radius: 6px;
             cursor: pointer;
-            width: auto;
+            width: 100%;
             transition: all 0.2s ease;
+            display: block;
+            margin-top: 12px;
         }
         .portal-admin-btn:hover {
             background-color: #5a6268;
@@ -35,25 +46,24 @@
 </head>
 <body>
 
-    <div class="portal-container" style="margin: 0 auto; width: 100%;">
-        <div class="card" style="position: relative; width: 100%; padding: 24px; text-align: center;">
+    <div class="portal-container">
+        <div class="portal-card">
             
-            <div class="top-right-badge" style="margin-bottom: 24px; text-align: right;">
-                <button onclick="showAdminLoginModal()" class="portal-admin-btn">
-                    Admin Panel →
-                </button>
+            <div style="margin-bottom: 28px;">
+                <h3 style="font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: 8px;">ဝန်ထမ်းတက်ရောက်မှုစနစ်</h3>
+                <p class="sub-title" style="color: var(--text-muted); font-size: 0.85rem;">Biometric Verification Hub</p>
             </div>
 
-            <div style="margin-top: 10px;">
-                <h3 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 6px;">ဝန်ထမ်းတက်ရောက်မှုစနစ်</h3>
-                <p class="sub-title" style="margin-bottom: 30px;">Biometric Verification Hub</p>
-            </div>
-
-            <div style="margin-bottom: 10px;">
-                <button onclick="window.location.href='index.html'" class="btn-blue" style="padding: 14px; font-size: 1rem; width: 100%;">
+            <div>
+                <button onclick="window.location.href='index.html'" class="btn-blue" style="padding: 14px; font-size: 1rem; width: 100%; font-weight: 600;">
                     စနစ်စတင်အသုံးပြုမည်
                 </button>
             </div>
+
+            <button onclick="showAdminLoginModal()" class="portal-admin-btn">
+                Admin Panel
+            </button>
+
         </div>
     </div>
 
@@ -72,7 +82,7 @@
                 <label>စကားဝှက် (Password)</label>
                 <input type="password" id="admin-password" placeholder="Password ရိုက်ထည့်ပါ">
             </div>
-            <button onclick="loginAdmin()" class="btn-blue"><span style="color:#fff;">လော့ဂ်အင်ဝင်မည်</span></button>
+            <button onclick="loginAdmin()" class="btn-blue">လော့ဂ်အင်ဝင်မည်</button>
         </div>
     </div>
 
@@ -89,44 +99,26 @@
         const API_KEY = "sb_publishable_M0rAOJuDodV286QzEiSe1w_6-nNdTq8";
         const appSupabase = supabase.createClient(API_URL, API_KEY);
 
-        function showAdminLoginModal() {
-            document.getElementById('admin-login-modal').classList.remove('hidden');
-        }
-
+        function showAdminLoginModal() { document.getElementById('admin-login-modal').classList.remove('hidden'); }
         function closeAdminLoginModal() {
             document.getElementById('admin-login-modal').classList.add('hidden');
-            document.getElementById('admin-username').value = "";
-            document.getElementById('admin-password').value = "";
+            document.getElementById('admin-username').value = ""; document.getElementById('admin-password').value = "";
         }
-
         function showStatus(title, message, isSuccess = false) {
             const modal = document.getElementById('status-modal');
             const titleEl = document.getElementById('status-title');
             titleEl.style.color = isSuccess ? "var(--success)" : "var(--danger)";
-            titleEl.innerText = title;
-            document.getElementById('status-message').innerText = message;
+            titleEl.innerText = title; document.getElementById('status-message').innerText = message;
             modal.classList.remove('hidden');
         }
-
-        function closeStatusModal() {
-            document.getElementById('status-modal').classList.add('hidden');
-        }
+        function closeStatusModal() { document.getElementById('status-modal').classList.add('hidden'); }
 
         async function loginAdmin() {
             const user = document.getElementById('admin-username').value.trim();
             const pass = document.getElementById('admin-password').value.trim();
+            if (!user || !pass) { showStatus('သတိပေးချက်', 'အချက်အလက်များ ဖြည့်သွင်းပါ။'); return; }
 
-            if (!user || !pass) {
-                showStatus('သတိပေးချက်', 'အချက်အလက်များ ပြည့်စုံစွာ ဖြည့်သွင်းပါ။');
-                return;
-            }
-
-            const { data, error } = await appSupabase
-                .from('admin_settings')
-                .select('*')
-                .eq('username', user)
-                .eq('password', pass);
-
+            const { data, error } = await appSupabase.from('admin_settings').select('*').eq('username', user).eq('password', pass);
             if (error || !data || data.length === 0) {
                 showStatus('မအောင်မြင်ပါ', 'အသုံးပြုသူအမည် သို့မဟုတ် စကားဝှက် မှားယွင်းနေပါသည်။');
             } else {

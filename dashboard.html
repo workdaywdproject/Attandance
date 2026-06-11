@@ -21,7 +21,8 @@
 
     <div class="admin-layout">
         <div class="sidebar">
-            <div style="height: 20px;"></div> <button onclick="switchTab('dashboard-tab', this)" class="nav-menu-btn active" data-target="dashboard">Dashboard</button>
+            <div style="height: 20px;"></div>
+            <button onclick="switchTab('dashboard-tab', this)" class="nav-menu-btn active" data-target="dashboard">Dashboard</button>
             <button onclick="switchTab('add-employee-tab', this)" class="nav-menu-btn" data-target="add-emp">ဝန်ထမ်းအသစ်ထည့်</button>
             <button onclick="switchTab('view-employee-tab', this)" class="nav-menu-btn" data-target="view-emp">ဝန်ထမ်းများ</button>
             <button onclick="switchTab('admin-config-tab', this)" class="nav-menu-btn" data-target="security">လုံခြုံရေးအကောင့်</button>
@@ -32,18 +33,10 @@
         </div>
 
         <div class="bottom-nav">
-            <button onclick="switchTab('dashboard-tab', this)" class="bottom-nav-item active" data-target="dashboard">
-                <span>Dashboard</span>
-            </button>
-            <button onclick="switchTab('add-employee-tab', this)" class="bottom-nav-item" data-target="add-emp">
-                <span>အသစ်ထည့်</span>
-            </button>
-            <button onclick="switchTab('view-employee-tab', this)" class="bottom-nav-item" data-target="view-emp">
-                <span>ဝန်ထမ်းများ</span>
-            </button>
-            <button onclick="switchTab('admin-config-tab', this)" class="bottom-nav-item" data-target="security">
-                <span>လုံခြုံရေး</span>
-            </button>
+            <button onclick="switchTab('dashboard-tab', this)" class="bottom-nav-item active" data-target="dashboard"><span>Dashboard</span></button>
+            <button onclick="switchTab('add-employee-tab', this)" class="bottom-nav-item" data-target="add-emp"><span>အသစ်ထည့်</span></button>
+            <button onclick="switchTab('view-employee-tab', this)" class="bottom-nav-item" data-target="view-emp"><span>ဝန်ထမ်းများ</span></button>
+            <button onclick="switchTab('admin-config-tab', this)" class="bottom-nav-item" data-target="security"><span>လုံခြုံရေး</span></button>
         </div>
 
         <div class="main-content">
@@ -61,7 +54,7 @@
             <div id="dashboard-tab" class="tab-content active">
                 <div class="dashboard-grid">
                     <div class="card">
-                        <h3>တက်ရောက်မှု ပြက္ခဒိန်</h3>
+                        <h3>ตက်ရောက်မှု ပြက္ခဒိန်</h3>
                         <hr>
                         <div id="calendar"></div>
                     </div>
@@ -111,15 +104,9 @@
                     <div style="overflow-x: auto;">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>အမည်</th>
-                                    <th>ရာထူး</th>
-                                    <th>လုပ်ဆောင်ချက်</th>
-                                </tr>
+                                <tr><th>ID</th><th>အမည်</th><th>ရာထူး</th><th>လုပ်ဆောင်ချက်</th></tr>
                             </thead>
-                            <tbody id="employee-table-body">
-                                </tbody>
+                            <tbody id="employee-table-body"></tbody>
                         </table>
                     </div>
                 </div>
@@ -161,30 +148,28 @@
     </div>
 
     <div id="admin-scan-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999;">
-        <div class="card" style="width: 100%; max-width: 440px; margin: 16px; border: 1px solid var(--border); padding: 16px;">
+        <div class="card" style="width: 100%; max-width: 440px; margin: 16px; padding: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="color: var(--primary); white-space: nowrap; margin:0;">Face Verification</h3>
+                <h3 style="color: var(--primary); margin:0;">Face Verification</h3>
                 <button onclick="closeAdminScanModal()" class="btn-gray" style="width: auto; padding: 4px 12px; font-size: 0.8rem; margin: 0;">ပိတ်မည်</button>
             </div>
             <p id="admin-instruction" class="instruction-box" style="margin-bottom: 14px;">အချက်အလက်များအား ပြင်ဆင်နေပါသည်...</p>
-            <div class="video-container">
-                <video id="admin-video" autoplay muted playsinline></video>
-            </div>
+            <div class="video-container"><video id="admin-video" autoplay muted playsinline></video></div>
         </div>
     </div>
 
     <div id="status-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-        <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px; border: 1px solid var(--border);">
-            <h3 id="status-title" style="margin-bottom: 8px; white-space: nowrap;"></h3>
-            <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4; white-space: nowrap;"></p>
-            <button id="status-btn" onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
+        <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px;">
+            <h3 id="status-title" style="margin-bottom: 8px;"></h3>
+            <p id="status-message" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; line-height: 1.4;"></p>
+            <button onclick="closeStatusModal()" class="btn-blue" style="width: 50%; margin: 0 auto;">OK</button>
         </div>
     </div>
 
     <div id="delete-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000;">
-        <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px; border: 1px solid var(--border);">
-            <h3 style="margin-bottom: 8px; color: var(--danger); white-space: nowrap;">ပယ်ဖျက်ရန် အတည်ပြုခြင်း</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px; white-space: nowrap;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေჩာပါသလား?</p>
+        <div class="card" style="width: 100%; max-width: 360px; margin: 16px; text-align: center; padding: 24px;">
+            <h3 style="margin-bottom: 8px; color: var(--danger);">ပယ်ဖျက်ရန် အတည်ပြုခြင်း</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">ဤမှတ်တမ်းအား စနစ်အတွင်းမှ ပယ်ဖျက်ရန် သေჩာပါသလား?</p>
             <div class="button-row">
                 <button id="delete-confirm-btn" class="btn-red">ပယ်ဖျက်မည်</button>
                 <button onclick="closeDeleteModal()" class="btn-gray">မလုပ်တော့ပါ</button>
@@ -197,26 +182,19 @@
         function switchTab(tabId, clickedElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-
             const targetType = clickedElement.getAttribute('data-target');
             document.querySelectorAll('.nav-menu-btn, .bottom-nav-item').forEach(btn => {
-                if(btn.getAttribute('data-target') === targetType) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
+                if(btn.getAttribute('data-target') === targetType) btn.classList.add('active');
+                else btn.classList.remove('active');
             });
-
             let displayTitle = "Dashboard";
             if(tabId === 'add-employee-tab') displayTitle = "ဝန်ထမ်းအသစ်ထည့်ရန်";
             if(tabId === 'view-employee-tab') displayTitle = "ဝန်ထမ်းအချက်အလက်များ";
             if(tabId === 'admin-config-tab') displayTitle = "Admin အကောင့်စီမံရန်";
             document.getElementById('current-panel-title').innerText = displayTitle;
-
-            if(tabId === 'dashboard-tab') {
-                setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
-            }
+            if(tabId === 'dashboard-tab') { setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50); }
         }
+        function handleLogout() { sessionStorage.removeItem('admin_authenticated'); window.location.replace('portal.html'); }
     </script>
 </body>
 </html>
